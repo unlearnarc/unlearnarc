@@ -1,0 +1,34 @@
+{
+  "slug": "balanced-parentheses",
+  "title": "Balanced Parentheses",
+  "summary": "Uses a stack to verify every opening bracket has a matching close in the right order.",
+  "usage": "Expression parsing, compiler/syntax validation, editor bracket matching.",
+  "category": "Stack",
+  "difficulty": "EASY",
+  "visualizer": "STACK",
+  "complexity": { "time": "O(n)", "space": "O(n)" },
+  "javaSource": "boolean isValid(String s){\n  Deque<Character> st=new ArrayDeque<>();\n  Map<Character,Character> m=Map.of(')','(',']','[','}','{');\n  for(char c:s.toCharArray()){\n    if(m.containsValue(c)) st.push(c);\n    else if(st.isEmpty()||st.pop()!=m.get(c)) return false;\n  }\n  return st.isEmpty();\n}",
+  "pythonSource": "def is_valid(s):\n    st = []; pairs = {')':'(', ']':'[', '}':'{'}\n    for c in s:\n        if c in '([{': st.append(c)\n        elif not st or st.pop() != pairs[c]: return False\n    return not st",
+  "spec": {
+    "visualizer": "STACK",
+    "initialState": { "stack": [] },
+    "steps": [
+      { "title": "Input: ( [ ] )", "explanation": "Scan left to right. Push opening brackets.",
+        "state": { "stack": [] }, "line": 4, "lang": "java" },
+      { "title": "Read '('", "explanation": "Opening bracket — push onto stack.",
+        "state": { "stack": ["("] },
+        "highlights": [{ "target": "stack", "indices": [0], "style": "INSERT" }] },
+      { "title": "Read '['", "explanation": "Opening bracket — push.",
+        "state": { "stack": ["(", "["] },
+        "highlights": [{ "target": "stack", "indices": [1], "style": "INSERT" }] },
+      { "title": "Read ']'", "explanation": "Closing — top is '[', it matches, so pop.",
+        "state": { "stack": ["("] },
+        "highlights": [{ "target": "stack", "indices": [0], "style": "DELETE" }],
+        "input": { "key": "match", "prompt": "Does ']' correctly match the stack top '['?", "type": "BOOLEAN", "expected": true } },
+      { "title": "Read ')'", "explanation": "Closing — top is '(', matches, pop. Stack empty.",
+        "state": { "stack": [] } },
+      { "title": "Valid", "explanation": "Stack is empty at the end — the string is balanced.",
+        "state": { "stack": [] } }
+    ]
+  }
+}

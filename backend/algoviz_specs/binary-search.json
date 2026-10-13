@@ -1,0 +1,33 @@
+{
+  "slug": "binary-search",
+  "title": "Binary Search",
+  "summary": "Repeatedly halves a sorted range to locate a target in O(log n).",
+  "usage": "Lookup in sorted arrays / monotonic predicates. Requires sorted input.",
+  "category": "Searching",
+  "difficulty": "EASY",
+  "visualizer": "ARRAY",
+  "complexity": { "time": "O(log n)", "space": "O(1)" },
+  "javaSource": "int binarySearch(int[] a,int t){\n  int lo=0, hi=a.length-1;\n  while(lo<=hi){\n    int mid=(lo+hi)/2;\n    if(a[mid]==t) return mid;\n    if(a[mid]<t) lo=mid+1; else hi=mid-1;\n  }\n  return -1;\n}",
+  "pythonSource": "def binary_search(a, t):\n    lo, hi = 0, len(a)-1\n    while lo <= hi:\n        mid = (lo+hi)//2\n        if a[mid] == t: return mid\n        if a[mid] < t: lo = mid+1\n        else: hi = mid-1\n    return -1",
+  "spec": {
+    "visualizer": "ARRAY",
+    "initialState": { "array": [1, 3, 5, 7, 9, 11] },
+    "variables": [
+      { "name": "lo", "label": "lo", "color": "#3b82f6" },
+      { "name": "mid", "label": "mid", "color": "#22c55e" },
+      { "name": "hi", "label": "hi", "color": "#f59e0b" }
+    ],
+    "steps": [
+      { "title": "Target = 9", "explanation": "Search range covers the whole array.",
+        "state": { "array": [1, 3, 5, 7, 9, 11] }, "variables": { "lo": 0, "mid": 2, "hi": 5 },
+        "highlights": [{ "target": "array", "indices": [2], "style": "COMPARE" }], "line": 4, "lang": "java" },
+      { "title": "a[mid]=5 < 9", "explanation": "Go right: lo = mid + 1.",
+        "state": { "array": [1, 3, 5, 7, 9, 11] }, "variables": { "lo": 3, "mid": 4, "hi": 5 },
+        "highlights": [{ "target": "array", "indices": [4], "style": "COMPARE" }],
+        "input": { "key": "found", "prompt": "Is a[mid] now equal to the target 9?", "type": "BOOLEAN", "expected": true } },
+      { "title": "Found!", "explanation": "a[4] == 9. Return index 4.",
+        "state": { "array": [1, 3, 5, 7, 9, 11] }, "variables": { "lo": 3, "mid": 4, "hi": 5 },
+        "highlights": [{ "target": "array", "indices": [4], "style": "DONE" }] }
+    ]
+  }
+}

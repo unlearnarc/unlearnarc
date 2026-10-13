@@ -1,0 +1,91 @@
+/* =============================================================================
+   RTL (right-to-left) layout support — activated for Arabic (and any future
+   he/fa/ur). The app sets <html dir="rtl"> / <body data-dir="rtl"> from
+   i18n/index.ts on language change; these rules flip the few places where the
+   layout uses hard-coded physical directions (left/right) instead of logical
+   ones.
+
+   Strategy:
+   1. Most spacing already uses symmetric padding, so little needs flipping.
+   2. The sidebar is pinned to the physical LEFT and the content column is
+      offset with a LEFT margin — both must mirror to the RIGHT in RTL.
+   3. Directional affordances (chevrons, slide-in transforms, dropdown anchors)
+      are mirrored.
+   4. Numerals, code blocks and the logo stay LTR via `dir="ltr"` islands.
+   ============================================================================= */
+
+/* ── Global base: inherit document direction everywhere ───────────────────── */
+html[dir='rtl'] body {
+  direction: rtl;
+  text-align: right;
+}
+
+/* Keep code, math, numbers and brand mark in LTR even inside RTL pages. */
+html[dir='rtl'] code,
+html[dir='rtl'] pre,
+html[dir='rtl'] kbd,
+html[dir='rtl'] .ua-force-ltr,
+html[dir='rtl'] [data-force-ltr] {
+  direction: ltr;
+  text-align: left;
+  unicode-bidi: isolate;
+}
+
+/* ── Sidebar: pin to the right edge and slide in from the right on mobile ─── */
+html[dir='rtl'] aside {
+  left: auto !important;
+  right: 0 !important;
+  border-right: none;
+  border-left: 1px solid var(--ua-border);
+}
+
+/* Mobile drawer (< lg): slides in from the RIGHT edge.
+   IMPORTANT: scope these transform overrides to the mobile breakpoint only.
+   The sidebar element ALWAYS carries the `-translate-x-full` class (desktop
+   visibility comes from the more-specific `lg:translate-x-0`). Without the
+   media query, an !important transform here would push the sidebar 100% off
+   the right edge on desktop too — making it disappear in Arabic. */
+@media (max-width: 1023.98px) {
+  html[dir='rtl'] aside.-translate-x-full {
+    transform: translateX(100%) !important;
+  }
+  html[dir='rtl'] aside.translate-x-0 {
+    transform: translateX(0) !important;
+  }
+}
+
+/* Desktop (>= lg): the sidebar is pinned to the right and must stay fully on
+   screen. Tailwind builds its transform from the `--tw-translate-x` custom
+   property, so we neutralise that variable AND the composed transform to be
+   safe — otherwise a leftover `-translate-x-full` (always present in the class
+   list for the mobile drawer) would slide the desktop rail off the viewport,
+   which is exactly why the sidebar appeared "missing" in Arabic. */
+@media (min-width: 1024px) {
+  html[dir='rtl'] aside {
+    --tw-translate-x: 0 !important;
+    --tw-translate-y: 0 !important;
+    transform: none !important;
+  }
+}
+
+/* ── Content column: the desktop offset margin moves to the right ─────────── */
+@media (min-width: 1024px) {
+  html[dir='rtl'] .lg\:ml-64  { margin-left: 0 !important; margin-right: 16rem; }
+  html[dir='rtl'] .lg\:ml-\[72px\] { margin-left: 0 !important; margin-right: 72px; }
+}
+
+/* ── Flip chevrons / arrows that imply reading direction ──────────────────── */
+html[dir='rtl'] .ua-flip-rtl,
+html[dir='rtl'] [data-flip-rtl] {
+  transform: scaleX(-1);
+}
+
+/* ── TopBar search: push language switcher to the (visual) left in RTL ────── */
+html[dir='rtl'] .ml-auto { margin-left: 0; margin-right: auto; }
+
+/* ── Dropdowns / popovers anchored to an edge ─────────────────────────────── */
+html[dir='rtl'] .right-0 { right: auto; left: 0; }
+html[dir='rtl'] .left-0  { left: auto; right: 0; }
+
+/* Keep the ⌘K kbd hint readable (shortcut symbols are LTR by nature). */
+html[dir='rtl'] kbd { unicode-bidi: isolate; }

@@ -1,0 +1,65 @@
+{
+  "slug": "bubble-sort",
+  "title": "Bubble Sort",
+  "summary": "Repeatedly swaps adjacent out-of-order elements until sorted.",
+  "usage": "Teaching tool / tiny nearly-sorted datasets. Rarely used in production due to O(n^2).",
+  "category": "sorting",
+  "difficulty": "EASY",
+  "complexity": { "time": "O(n^2)", "space": "O(1)" },
+  "visualizer": "ARRAY",
+  "isPublished": true,
+  "javaSource": "void bubbleSort(int[] a) {\n  for (int i = 0; i < a.length - 1; i++) {\n    for (int j = 0; j < a.length - 1 - i; j++) {\n      if (a[j] > a[j + 1]) {\n        int t = a[j];\n        a[j] = a[j + 1];\n        a[j + 1] = t;\n      }\n    }\n  }\n}",
+  "pythonSource": "def bubble_sort(a):\n    for i in range(len(a) - 1):\n        for j in range(len(a) - 1 - i):\n            if a[j] > a[j + 1]:\n                a[j], a[j + 1] = a[j + 1], a[j]",
+  "spec": {
+    "visualizer": "ARRAY",
+    "initialState": { "array": [5, 2, 4, 1] },
+    "variables": [
+      { "name": "i", "label": "pass", "color": "#3b82f6" },
+      { "name": "j", "label": "index", "color": "#f59e0b" }
+    ],
+    "steps": [
+      {
+        "id": "s0",
+        "title": "Start",
+        "explanation": "Unsorted array. We compare adjacent pairs.",
+        "state": { "array": [5, 2, 4, 1] },
+        "variables": { "i": 0, "j": 0 },
+        "pointers": { "j": 0 },
+        "line": 4, "lang": "java"
+      },
+      {
+        "id": "s1",
+        "title": "Compare 5 and 2",
+        "explanation": "5 > 2, so we swap them.",
+        "state": { "array": [5, 2, 4, 1] },
+        "variables": { "i": 0, "j": 0 },
+        "highlights": [{ "target": "array", "indices": [0, 1], "style": "COMPARE" }],
+        "pointers": { "j": 0 },
+        "line": 4, "lang": "java",
+        "input": {
+          "key": "predict_swap_1",
+          "prompt": "Will these two be swapped?",
+          "type": "BOOLEAN",
+          "expected": true
+        }
+      },
+      {
+        "id": "s2",
+        "title": "Swapped",
+        "explanation": "Array is now [2, 5, 4, 1].",
+        "state": { "array": [2, 5, 4, 1] },
+        "variables": { "i": 0, "j": 1 },
+        "highlights": [{ "target": "array", "indices": [0, 1], "style": "SWAP" }],
+        "pointers": { "j": 1 }
+      },
+      {
+        "id": "s3",
+        "title": "Done",
+        "explanation": "After all passes the array is sorted.",
+        "state": { "array": [1, 2, 4, 5] },
+        "variables": { "i": 3, "j": 0 },
+        "highlights": [{ "target": "array", "indices": [0, 1, 2, 3], "style": "DONE" }]
+      }
+    ]
+  }
+}

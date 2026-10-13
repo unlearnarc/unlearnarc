@@ -1,0 +1,2434 @@
+{
+  "info": {
+    "name": "UnlearnArc Backend — Complete API",
+    "description": "Auto-generated from API_REFERENCE.md + full source code audit.\n\nBase URL: http://localhost:8085/api/v1\n\n## Auth model\n- ADMIN  → POST /auth/login  → JWT stored in `adminToken`\n- USER   → Google OAuth2 redirect → JWT stored manually in `userToken`\n\n## Collection variables\n| Variable | Purpose |\n|---|---|\n| `baseUrl` | http://localhost:8085/api/v1 |\n| `adminToken` | Populated automatically by the Login request |\n| `userToken` | Paste user JWT here after OAuth2 flow |\n| `domainId` | Set after creating a domain |\n| `skillId` | Set after creating a skill |\n| `courseId` | Set after creating a course |\n| `topicId` | Set after creating a topic |\n| `materialId` | Set after creating a study material |\n| `domainSkillMappingId` | Set after domain-skill mapping |\n| `skillCourseMappingId` | Set after skill-course mapping |\n| `userDomainMappingId` | Set after user-domain mapping |\n| `poolId` | Set after creating a question pool |\n| `questionId` | Set after creating a question |\n| `userId` | Set after creating a user |\n",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl",               "value": "http://localhost:8085/api/v1", "type": "string" },
+    { "key": "adminToken",            "value": "", "type": "string" },
+    { "key": "userToken",             "value": "", "type": "string" },
+    { "key": "domainId",              "value": "", "type": "string" },
+    { "key": "skillId",               "value": "", "type": "string" },
+    { "key": "courseId",              "value": "", "type": "string" },
+    { "key": "topicId",               "value": "", "type": "string" },
+    { "key": "materialId",            "value": "", "type": "string" },
+    { "key": "domainSkillMappingId",  "value": "", "type": "string" },
+    { "key": "skillCourseMappingId",  "value": "", "type": "string" },
+    { "key": "userDomainMappingId",   "value": "", "type": "string" },
+    { "key": "poolId",                "value": "", "type": "string" },
+    { "key": "topicPoolId",           "value": "", "type": "string" },
+    { "key": "questionId",            "value": "", "type": "string" },
+    { "key": "userId",                "value": "", "type": "string" },
+    { "key": "sessionPoolId",         "value": "", "type": "string" },
+    { "key": "sessionEntityId",       "value": "", "type": "string" }
+  ],
+  "item": [
+
+    {
+      "name": "1 · Admin Auth",
+      "description": "Admin email/password login, token refresh, and health check.\nBase: /api/v1/auth",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/auth/health", "host": ["{{baseUrl}}"], "path": ["auth","health"] },
+            "description": "Public — no token required. Returns 200 with 'UnlearnArc API is running'."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('success=true', () => {",
+                  "    const j = pm.response.json();",
+                  "    pm.expect(j.success).to.be.true;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Admin Login",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth","login"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"unlearnarc@gmail.com\",\n  \"password\": \"Admin@123\"\n}"
+            },
+            "description": "Public — rate limited to 10 attempts / 60 s per IP.\nReturns accessToken (24 h) + refreshToken (7 d)."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const j = pm.response.json();",
+                  "pm.test('Has accessToken', () => pm.expect(j.data.accessToken).to.be.a('string'));",
+                  "pm.test('Role is ADMIN', () => pm.expect(j.data.role).to.eql('ADMIN'));",
+                  "// Auto-save token to collection variable",
+                  "if (j.data && j.data.accessToken) {",
+                  "    pm.collectionVariables.set('adminToken', j.data.accessToken);",
+                  "    pm.collectionVariables.set('adminRefreshToken', j.data.refreshToken);",
+                  "    console.log('✅ adminToken saved');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Admin Token Refresh",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/auth/refresh", "host": ["{{baseUrl}}"], "path": ["auth","refresh"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{adminRefreshToken}}\"\n}"
+            },
+            "description": "Public — rotates both access and refresh tokens for the admin."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const j = pm.response.json();",
+                  "if (j.data && j.data.accessToken) {",
+                  "    pm.collectionVariables.set('adminToken', j.data.accessToken);",
+                  "    pm.collectionVariables.set('adminRefreshToken', j.data.refreshToken);",
+                  "    console.log('✅ adminToken refreshed');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Admin — Who Am I",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": { "raw": "{{baseUrl}}/auth/me", "host": ["{{baseUrl}}"], "path": ["auth","me"] },
+            "description": "Requires ADMIN token. Returns the authenticated admin email."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Contains email', () => {",
+                  "    const j = pm.response.json();",
+                  "    pm.expect(j.data).to.include('unlearnarc@gmail.com');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Admin Login — Wrong Password (expect 401)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth","login"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"unlearnarc@gmail.com\",\n  \"password\": \"WrongPass!\"\n}"
+            },
+            "description": "Negative test — expects HTTP 401."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 401', () => pm.response.to.have.status(401));",
+                  "pm.test('success=false', () => pm.expect(pm.response.json().success).to.be.false);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+
+    {
+      "name": "2 · User Auth (OAuth2)",
+      "description": "Google OAuth2 flow endpoints for regular users.\nBase: /api/v1/user-auth\n\nNote: initiate OAuth2 flow in browser:\nhttp://localhost:8085/oauth2/authorization/google",
+      "item": [
+        {
+          "name": "User Token Refresh",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/user-auth/refresh", "host": ["{{baseUrl}}"], "path": ["user-auth","refresh"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{userRefreshToken}}\"\n}"
+            },
+            "description": "Public — rotates user access + refresh tokens. The refresh token must carry role=USER claim."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const j = pm.response.json();",
+                  "if (j.data && j.data.accessToken) {",
+                  "    pm.collectionVariables.set('userToken', j.data.accessToken);",
+                  "    pm.collectionVariables.set('userRefreshToken', j.data.refreshToken);",
+                  "    console.log('✅ userToken refreshed');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "User — My Profile",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{userToken}}" }],
+            "url": { "raw": "{{baseUrl}}/user-auth/me", "host": ["{{baseUrl}}"], "path": ["user-auth","me"] },
+            "description": "Requires USER or ADMIN token. Returns profile: id, name, email, region, rank, points, profilePicture, isActive."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const j = pm.response.json();",
+                  "pm.test('Has id', () => pm.expect(j.data.id).to.be.a('string'));",
+                  "pm.test('Has email', () => pm.expect(j.data.email).to.be.a('string'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "User Token Refresh — Admin token rejected (expect 400)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/user-auth/refresh", "host": ["{{baseUrl}}"], "path": ["user-auth","refresh"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{adminRefreshToken}}\"\n}"
+            },
+            "description": "Negative test — passing an admin refresh token to user-auth/refresh must be rejected."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Not 200 (admin token rejected)', () => pm.expect(pm.response.code).to.not.eql(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+
+    {
+      "name": "3 · Domains",
+      "description": "ADMIN: full CRUD   USER: read-only\nBase: /api/v1/domains",
+      "item": [
+        {
+          "name": "Create Domain",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/domains", "host": ["{{baseUrl}}"], "path": ["domains"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Backend Engineering\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "const j = pm.response.json();",
+                  "pm.test('Has id', () => pm.expect(j.data.id).to.be.a('string'));",
+                  "pm.collectionVariables.set('domainId', j.data.id);",
+                  "console.log('✅ domainId:', j.data.id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "List All Domains",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": { "raw": "{{baseUrl}}/domains", "host": ["{{baseUrl}}"], "path": ["domains"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Data is array', () => pm.expect(pm.response.json().data).to.be.an('array'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Domain by ID",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": { "raw": "{{baseUrl}}/domains/{{domainId}}", "host": ["{{baseUrl}}"], "path": ["domains","{{domainId}}"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('ID matches', () => {",
+                  "    pm.expect(pm.response.json().data.id).to.eql(pm.collectionVariables.get('domainId'));",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update Domain",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/domains/{{domainId}}", "host": ["{{baseUrl}}"], "path": ["domains","{{domainId}}"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Backend Engineering (Updated)\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Name updated', () => {",
+                  "    pm.expect(pm.response.json().data.name).to.include('Updated');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create Domain — Duplicate (expect 400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/domains", "host": ["{{baseUrl}}"], "path": ["domains"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Backend Engineering\"\n}"
+            },
+            "description": "Negative — duplicate name should return 400."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400', () => pm.response.to.have.status(400));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Domain — Not Found (expect 404)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": { "raw": "{{baseUrl}}/domains/00000000-0000-0000-0000-000000000000", "host": ["{{baseUrl}}"], "path": ["domains","00000000-0000-0000-0000-000000000000"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 404', () => pm.response.to.have.status(404));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete Domain",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": { "raw": "{{baseUrl}}/domains/{{domainId}}", "host": ["{{baseUrl}}"], "path": ["domains","{{domainId}}"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Deleted', () => pm.expect(pm.response.json().message).to.include('Deleted'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+
+    {
+      "name": "4 · Users",
+      "description": "ADMIN only — full CRUD. Regular users are auto-created on first Google OAuth2 login.\nBase: /api/v1/users",
+      "item": [
+        {
+          "name": "Create User (manual)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/users", "host": ["{{baseUrl}}"], "path": ["users"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Jane Doe\",\n  \"email\": \"jane.doe@example.com\",\n  \"region\": \"IN\",\n  \"rank\": 0,\n  \"points\": 0\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "const j = pm.response.json();",
+                  "pm.collectionVariables.set('userId', j.data.id);",
+                  "console.log('✅ userId:', j.data.id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "List All Users",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": { "raw": "{{baseUrl}}/users", "host": ["{{baseUrl}}"], "path": ["users"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Array', () => pm.expect(pm.response.json().data).to.be.an('array'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get User by ID",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": { "raw": "{{baseUrl}}/users/{{userId}}", "host": ["{{baseUrl}}"], "path": ["users","{{userId}}"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('ID matches', () => {",
+                  "    pm.expect(pm.response.json().data.id).to.eql(pm.collectionVariables.get('userId'));",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update User",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/users/{{userId}}", "host": ["{{baseUrl}}"], "path": ["users","{{userId}}"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Jane Doe\",\n  \"email\": \"jane.doe@example.com\",\n  \"region\": \"US\",\n  \"rank\": 2,\n  \"points\": 150\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Points updated', () => pm.expect(pm.response.json().data.points).to.eql(150));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete User",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": { "raw": "{{baseUrl}}/users/{{userId}}", "host": ["{{baseUrl}}"], "path": ["users","{{userId}}"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "List Users — Unauthorized (USER token, expect 403)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{userToken}}" }],
+            "url": { "raw": "{{baseUrl}}/users", "host": ["{{baseUrl}}"], "path": ["users"] },
+            "description": "USER role cannot access /users — expects 403."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 403', () => pm.response.to.have.status(403));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+
+    {
+      "name": "5 · Skills",
+      "description": "ADMIN: full CRUD   USER+: read-only   Skills are global and reusable.\nBase: /api/v1/skills",
+      "item": [
+        {
+          "name": "Create Skill",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/skills", "host": ["{{baseUrl}}"], "path": ["skills"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Spring Boot\",\n  \"level\": \"INTERMEDIATE\"\n}"
+            },
+            "description": "level enum: BEGINNER · INTERMEDIATE · ADVANCED · EXPERT"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "const j = pm.response.json();",
+                  "pm.collectionVariables.set('skillId', j.data.id);",
+                  "console.log('✅ skillId:', j.data.id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "List All Skills",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": { "raw": "{{baseUrl}}/skills", "host": ["{{baseUrl}}"], "path": ["skills"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Array', () => pm.expect(pm.response.json().data).to.be.an('array'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Skill by ID",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": { "raw": "{{baseUrl}}/skills/{{skillId}}", "host": ["{{baseUrl}}"], "path": ["skills","{{skillId}}"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update Skill",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/skills/{{skillId}}", "host": ["{{baseUrl}}"], "path": ["skills","{{skillId}}"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Spring Boot\",\n  \"level\": \"ADVANCED\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Level updated', () => pm.expect(pm.response.json().data.level).to.eql('ADVANCED'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete Skill",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": { "raw": "{{baseUrl}}/skills/{{skillId}}", "host": ["{{baseUrl}}"], "path": ["skills","{{skillId}}"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+
+    {
+      "name": "6 · Courses",
+      "description": "ADMIN: full CRUD   USER+: read-only\nBase: /api/v1/courses",
+      "item": [
+        {
+          "name": "Create Course",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/courses", "host": ["{{baseUrl}}"], "path": ["courses"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Java Mastery\",\n  \"imgUrl\": 1001,\n  \"totalTime\": \"10:00:00\",\n  \"topicsCount\": 12,\n  \"qusPool\": null,\n  \"level\": \"ADVANCED\"\n}"
+            },
+            "description": "level enum: BEGINNER · INTERMEDIATE · ADVANCED · EXPERT\nimgUrl: numeric icon reference ID\ntotalTime format: HH:mm:ss"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "const j = pm.response.json();",
+                  "pm.collectionVariables.set('courseId', j.data.id);",
+                  "console.log('✅ courseId:', j.data.id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "List All Courses",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": { "raw": "{{baseUrl}}/courses", "host": ["{{baseUrl}}"], "path": ["courses"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Array', () => pm.expect(pm.response.json().data).to.be.an('array'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Course by ID",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": { "raw": "{{baseUrl}}/courses/{{courseId}}", "host": ["{{baseUrl}}"], "path": ["courses","{{courseId}}"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('ID matches', () => pm.expect(pm.response.json().data.id).to.eql(pm.collectionVariables.get('courseId')));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update Course",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/courses/{{courseId}}", "host": ["{{baseUrl}}"], "path": ["courses","{{courseId}}"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Java Mastery\",\n  \"imgUrl\": 1001,\n  \"totalTime\": \"12:00:00\",\n  \"topicsCount\": 15,\n  \"qusPool\": null,\n  \"level\": \"EXPERT\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Level updated', () => pm.expect(pm.response.json().data.level).to.eql('EXPERT'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete Course",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": { "raw": "{{baseUrl}}/courses/{{courseId}}", "host": ["{{baseUrl}}"], "path": ["courses","{{courseId}}"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+
+    {
+      "name": "7 · Topics",
+      "description": "ADMIN: full CRUD   USER+: read-only\nBase: /api/v1/topics\n\nNOTE: Run '6 · Create Course' first so courseId is set.",
+      "item": [
+        {
+          "name": "Create Topic",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/topics", "host": ["{{baseUrl}}"], "path": ["topics"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Intro to JPA\",\n  \"time\": \"01:30:00\",\n  \"topicOrder\": 1,\n  \"level\": \"BEGINNER\",\n  \"courseId\": \"{{courseId}}\"\n}"
+            },
+            "description": "topicOrder controls display sequence within a course.\ntime format: HH:mm:ss"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "const j = pm.response.json();",
+                  "pm.collectionVariables.set('topicId', j.data.id);",
+                  "console.log('✅ topicId:', j.data.id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "List All Topics",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": { "raw": "{{baseUrl}}/topics", "host": ["{{baseUrl}}"], "path": ["topics"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Topic by ID",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": { "raw": "{{baseUrl}}/topics/{{topicId}}", "host": ["{{baseUrl}}"], "path": ["topics","{{topicId}}"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Topics by Course (ordered)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": { "raw": "{{baseUrl}}/topics/course/{{courseId}}", "host": ["{{baseUrl}}"], "path": ["topics","course","{{courseId}}"] },
+            "description": "Returns topics for a course ordered by topicOrder."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Array', () => pm.expect(pm.response.json().data).to.be.an('array'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update Topic",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/topics/{{topicId}}", "host": ["{{baseUrl}}"], "path": ["topics","{{topicId}}"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Intro to JPA (Updated)\",\n  \"time\": \"02:00:00\",\n  \"topicOrder\": 1,\n  \"level\": \"INTERMEDIATE\",\n  \"courseId\": \"{{courseId}}\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete Topic",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": { "raw": "{{baseUrl}}/topics/{{topicId}}", "host": ["{{baseUrl}}"], "path": ["topics","{{topicId}}"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+
+    {
+      "name": "8 · Study Materials",
+      "description": "ADMIN: full CRUD   USER+: read-only\nBase: /api/v1/study-materials\n\nNOTE: Run '7 · Create Topic' first.",
+      "item": [
+        {
+          "name": "Create Study Material",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/study-materials", "host": ["{{baseUrl}}"], "path": ["study-materials"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"VIDEO\",\n  \"topicId\": \"{{topicId}}\",\n  \"url\": \"https://example.com/jpa-intro.mp4\"\n}"
+            },
+            "description": "type enum: VIDEO · ARTICLE · PDF · QUIZ · EXERCISE · SLIDES"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set('materialId', pm.response.json().data.id);",
+                  "console.log('✅ materialId:', pm.response.json().data.id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "List All Study Materials",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": { "raw": "{{baseUrl}}/study-materials", "host": ["{{baseUrl}}"], "path": ["study-materials"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Study Material by ID",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": { "raw": "{{baseUrl}}/study-materials/{{materialId}}", "host": ["{{baseUrl}}"], "path": ["study-materials","{{materialId}}"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Materials by Topic",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": { "raw": "{{baseUrl}}/study-materials/topic/{{topicId}}", "host": ["{{baseUrl}}"], "path": ["study-materials","topic","{{topicId}}"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Array', () => pm.expect(pm.response.json().data).to.be.an('array'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update Study Material",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/study-materials/{{materialId}}", "host": ["{{baseUrl}}"], "path": ["study-materials","{{materialId}}"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"ARTICLE\",\n  \"topicId\": \"{{topicId}}\",\n  \"url\": \"https://example.com/jpa-article\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Type updated', () => pm.expect(pm.response.json().data.type).to.eql('ARTICLE'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete Study Material",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": { "raw": "{{baseUrl}}/study-materials/{{materialId}}", "host": ["{{baseUrl}}"], "path": ["study-materials","{{materialId}}"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+
+    {
+      "name": "9 · Domain ↔ Skill Mappings",
+      "description": "ADMIN: write   USER+: read\nBase: /api/v1/domain-skill-mappings\n\nNOTE: Run '3 · Create Domain' and '5 · Create Skill' first.",
+      "item": [
+        {
+          "name": "Link Skill to Domain",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/domain-skill-mappings", "host": ["{{baseUrl}}"], "path": ["domain-skill-mappings"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"domainId\": \"{{domainId}}\",\n  \"skillId\": \"{{skillId}}\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set('domainSkillMappingId', pm.response.json().data.id);",
+                  "console.log('✅ domainSkillMappingId:', pm.response.json().data.id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "List All Domain-Skill Mappings",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": { "raw": "{{baseUrl}}/domain-skill-mappings", "host": ["{{baseUrl}}"], "path": ["domain-skill-mappings"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Mapping by ID",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": { "raw": "{{baseUrl}}/domain-skill-mappings/{{domainSkillMappingId}}", "host": ["{{baseUrl}}"], "path": ["domain-skill-mappings","{{domainSkillMappingId}}"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Skills in Domain",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": { "raw": "{{baseUrl}}/domain-skill-mappings/domain/{{domainId}}", "host": ["{{baseUrl}}"], "path": ["domain-skill-mappings","domain","{{domainId}}"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Array', () => pm.expect(pm.response.json().data).to.be.an('array'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Domains for Skill",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": { "raw": "{{baseUrl}}/domain-skill-mappings/skill/{{skillId}}", "host": ["{{baseUrl}}"], "path": ["domain-skill-mappings","skill","{{skillId}}"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Remove Domain-Skill Mapping",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": { "raw": "{{baseUrl}}/domain-skill-mappings/{{domainSkillMappingId}}", "host": ["{{baseUrl}}"], "path": ["domain-skill-mappings","{{domainSkillMappingId}}"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+
+    {
+      "name": "10 · User ↔ Domain Mappings",
+      "description": "ADMIN only\nBase: /api/v1/user-domain-mappings\n\nNOTE: Run '3 · Create Domain' and '4 · Create User' first.",
+      "item": [
+        {
+          "name": "Assign Domain to User",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/user-domain-mappings", "host": ["{{baseUrl}}"], "path": ["user-domain-mappings"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"{{userId}}\",\n  \"domainId\": \"{{domainId}}\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set('userDomainMappingId', pm.response.json().data.id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "List All User-Domain Mappings",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": { "raw": "{{baseUrl}}/user-domain-mappings", "host": ["{{baseUrl}}"], "path": ["user-domain-mappings"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Mapping by ID",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": { "raw": "{{baseUrl}}/user-domain-mappings/{{userDomainMappingId}}", "host": ["{{baseUrl}}"], "path": ["user-domain-mappings","{{userDomainMappingId}}"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Domains for User",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": { "raw": "{{baseUrl}}/user-domain-mappings/user/{{userId}}", "host": ["{{baseUrl}}"], "path": ["user-domain-mappings","user","{{userId}}"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Users in Domain",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": { "raw": "{{baseUrl}}/user-domain-mappings/domain/{{domainId}}", "host": ["{{baseUrl}}"], "path": ["user-domain-mappings","domain","{{domainId}}"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Remove User-Domain Mapping",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": { "raw": "{{baseUrl}}/user-domain-mappings/{{userDomainMappingId}}", "host": ["{{baseUrl}}"], "path": ["user-domain-mappings","{{userDomainMappingId}}"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+
+    {
+      "name": "11 · Skill ↔ Course Mappings",
+      "description": "ADMIN: write   USER+: read\nBase: /api/v1/skill-course-mappings\n\nNOTE: Run '5 · Create Skill' and '6 · Create Course' first.",
+      "item": [
+        {
+          "name": "Link Course to Skill",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/skill-course-mappings", "host": ["{{baseUrl}}"], "path": ["skill-course-mappings"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"skillId\": \"{{skillId}}\",\n  \"courseId\": \"{{courseId}}\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set('skillCourseMappingId', pm.response.json().data.id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "List All Skill-Course Mappings",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": { "raw": "{{baseUrl}}/skill-course-mappings", "host": ["{{baseUrl}}"], "path": ["skill-course-mappings"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Mapping by ID",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": { "raw": "{{baseUrl}}/skill-course-mappings/{{skillCourseMappingId}}", "host": ["{{baseUrl}}"], "path": ["skill-course-mappings","{{skillCourseMappingId}}"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Courses for Skill",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": { "raw": "{{baseUrl}}/skill-course-mappings/skill/{{skillId}}", "host": ["{{baseUrl}}"], "path": ["skill-course-mappings","skill","{{skillId}}"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Skills for Course",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": { "raw": "{{baseUrl}}/skill-course-mappings/course/{{courseId}}", "host": ["{{baseUrl}}"], "path": ["skill-course-mappings","course","{{courseId}}"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Remove Skill-Course Mapping",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": { "raw": "{{baseUrl}}/skill-course-mappings/{{skillCourseMappingId}}", "host": ["{{baseUrl}}"], "path": ["skill-course-mappings","{{skillCourseMappingId}}"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+
+    {
+      "name": "12 · Question Pools",
+      "description": "ADMIN: write   USER+: read\nBase: /api/v1/question-pools\n\nBusiness rule: easyCount + mediumCount + hardCount MUST equal totalQuestions.\ntimeLimitMinutes: 0 = unlimited.",
+      "item": [
+        {
+          "name": "Create COURSE-Scoped Pool",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/question-pools", "host": ["{{baseUrl}}"], "path": ["question-pools"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Java Basics Pool\",\n  \"description\": \"Entry-level Java test pool\",\n  \"scopeType\": \"COURSE\",\n  \"totalQuestions\": 9,\n  \"easyCount\": 3,\n  \"mediumCount\": 3,\n  \"hardCount\": 3,\n  \"passPercentage\": 60,\n  \"timeLimitMinutes\": 30\n}"
+            },
+            "description": "scopeType enum: DOMAIN · COURSE · TOPIC"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "const j = pm.response.json();",
+                  "pm.collectionVariables.set('poolId', j.data.id);",
+                  "console.log('✅ poolId:', j.data.id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create TOPIC-Scoped Pool",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/question-pools", "host": ["{{baseUrl}}"], "path": ["question-pools"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"JPA Topic Pool\",\n  \"description\": \"Quick quiz for JPA topic\",\n  \"scopeType\": \"TOPIC\",\n  \"totalQuestions\": 6,\n  \"easyCount\": 2,\n  \"mediumCount\": 2,\n  \"hardCount\": 2,\n  \"passPercentage\": 50,\n  \"timeLimitMinutes\": 15\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set('topicPoolId', pm.response.json().data.id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "List All Pools",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": { "raw": "{{baseUrl}}/question-pools", "host": ["{{baseUrl}}"], "path": ["question-pools"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Array', () => pm.expect(pm.response.json().data).to.be.an('array'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Pool by ID",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": { "raw": "{{baseUrl}}/question-pools/{{poolId}}", "host": ["{{baseUrl}}"], "path": ["question-pools","{{poolId}}"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Has availability stats', () => {",
+                  "    const d = pm.response.json().data;",
+                  "    pm.expect(d).to.have.property('activeQuestionCount');",
+                  "    pm.expect(d).to.have.property('easyAvailable');",
+                  "    pm.expect(d).to.have.property('mediumAvailable');",
+                  "    pm.expect(d).to.have.property('hardAvailable');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Pools by Scope (COURSE)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": { "raw": "{{baseUrl}}/question-pools/scope/COURSE", "host": ["{{baseUrl}}"], "path": ["question-pools","scope","COURSE"] },
+            "description": "scopeType path param: DOMAIN · COURSE · TOPIC"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update Pool",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/question-pools/{{poolId}}", "host": ["{{baseUrl}}"], "path": ["question-pools","{{poolId}}"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Java Basics Pool v2\",\n  \"description\": \"Updated pool\",\n  \"scopeType\": \"COURSE\",\n  \"totalQuestions\": 9,\n  \"easyCount\": 3,\n  \"mediumCount\": 3,\n  \"hardCount\": 3,\n  \"passPercentage\": 65,\n  \"timeLimitMinutes\": 45\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('PassPercentage updated', () => pm.expect(pm.response.json().data.passPercentage).to.eql(65));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Toggle Pool Active/Inactive",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": { "raw": "{{baseUrl}}/question-pools/{{poolId}}/toggle-active", "host": ["{{baseUrl}}"], "path": ["question-pools","{{poolId}}","toggle-active"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Map Pool → Course",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/question-pools/map", "host": ["{{baseUrl}}"], "path": ["question-pools","map"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"poolId\": \"{{poolId}}\",\n  \"domainId\": null,\n  \"courseId\": \"{{courseId}}\",\n  \"topicId\": null\n}"
+            },
+            "description": "Provide only the field matching the pool's scopeType:\n- DOMAIN → domainId\n- COURSE → courseId\n- TOPIC  → topicId"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Map Topic Pool → Topic",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/question-pools/map", "host": ["{{baseUrl}}"], "path": ["question-pools","map"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"poolId\": \"{{topicPoolId}}\",\n  \"domainId\": null,\n  \"courseId\": null,\n  \"topicId\": \"{{topicId}}\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Pools by Course",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": { "raw": "{{baseUrl}}/question-pools/by-course/{{courseId}}", "host": ["{{baseUrl}}"], "path": ["question-pools","by-course","{{courseId}}"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Pools by Topic",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": { "raw": "{{baseUrl}}/question-pools/by-topic/{{topicId}}", "host": ["{{baseUrl}}"], "path": ["question-pools","by-topic","{{topicId}}"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Pools by Domain",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": { "raw": "{{baseUrl}}/question-pools/by-domain/{{domainId}}", "host": ["{{baseUrl}}"], "path": ["question-pools","by-domain","{{domainId}}"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create Pool — Bad Distribution (expect 400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/question-pools", "host": ["{{baseUrl}}"], "path": ["question-pools"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Bad Distribution Pool\",\n  \"scopeType\": \"COURSE\",\n  \"totalQuestions\": 9,\n  \"easyCount\": 3,\n  \"mediumCount\": 3,\n  \"hardCount\": 4,\n  \"passPercentage\": 60\n}"
+            },
+            "description": "Negative test — 3+3+4=10 ≠ totalQuestions(9) → must fail with 400."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400', () => pm.response.to.have.status(400));",
+                  "pm.test('success=false', () => pm.expect(pm.response.json().success).to.be.false);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete Pool",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": { "raw": "{{baseUrl}}/question-pools/{{poolId}}", "host": ["{{baseUrl}}"], "path": ["question-pools","{{poolId}}"] },
+            "description": "Deletes pool AND all its scope mappings (domain/course/topic)."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+
+    {
+      "name": "13 · Questions",
+      "description": "ADMIN: write   USER+: read (answers returned WITHOUT isCorrect during active sessions)\nBase: /api/v1/questions\n\nNOTE: Run '12 · Create Pool' and map it to a course first.",
+      "item": [
+        {
+          "name": "Create Question (MCQ)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/questions", "host": ["{{baseUrl}}"], "path": ["questions"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"poolId\": \"{{poolId}}\",\n  \"questionText\": \"What does JVM stand for?\",\n  \"questionType\": \"MCQ\",\n  \"difficulty\": \"EASY\",\n  \"points\": 1,\n  \"explanation\": \"Java Virtual Machine — the runtime environment for Java bytecode.\",\n  \"answers\": [\n    { \"answerText\": \"Java Virtual Machine\",  \"isCorrect\": true,  \"displayOrder\": 0 },\n    { \"answerText\": \"Java Verified Module\",   \"isCorrect\": false, \"displayOrder\": 1 },\n    { \"answerText\": \"Java Variable Method\",   \"isCorrect\": false, \"displayOrder\": 2 },\n    { \"answerText\": \"Just Very Much\",         \"isCorrect\": false, \"displayOrder\": 3 }\n  ]\n}"
+            },
+            "description": "MCQ: exactly 1 isCorrect=true\nMinimum 2 answer options required\nDefault points if omitted: EASY=1, MEDIUM=2, HARD=3"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "const j = pm.response.json();",
+                  "pm.collectionVariables.set('questionId', j.data.id);",
+                  "console.log('✅ questionId:', j.data.id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create Question (MULTIPLE_CORRECT)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/questions", "host": ["{{baseUrl}}"], "path": ["questions"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"poolId\": \"{{poolId}}\",\n  \"questionText\": \"Which of the following are valid Java access modifiers?\",\n  \"questionType\": \"MULTIPLE_CORRECT\",\n  \"difficulty\": \"MEDIUM\",\n  \"points\": 2,\n  \"explanation\": \"Java has four access modifiers: public, protected, default (package-private), and private.\",\n  \"answers\": [\n    { \"answerText\": \"public\",    \"isCorrect\": true,  \"displayOrder\": 0 },\n    { \"answerText\": \"protected\", \"isCorrect\": true,  \"displayOrder\": 1 },\n    { \"answerText\": \"private\",   \"isCorrect\": true,  \"displayOrder\": 2 },\n    { \"answerText\": \"internal\",  \"isCorrect\": false, \"displayOrder\": 3 }\n  ]\n}"
+            },
+            "description": "MULTIPLE_CORRECT: ≥ 2 isCorrect=true answers required\nFull marks only if ALL correct answers selected AND no incorrect ones."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Bulk Create Questions",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/questions/bulk", "host": ["{{baseUrl}}"], "path": ["questions","bulk"] },
+            "body": {
+              "mode": "raw",
+              "raw": "[\n  {\n    \"poolId\": \"{{poolId}}\",\n    \"questionText\": \"HTTP 404 means?\",\n    \"questionType\": \"MCQ\",\n    \"difficulty\": \"EASY\",\n    \"points\": 1,\n    \"answers\": [\n      { \"answerText\": \"Server Error\",  \"isCorrect\": false, \"displayOrder\": 0 },\n      { \"answerText\": \"Unauthorized\",  \"isCorrect\": false, \"displayOrder\": 1 },\n      { \"answerText\": \"Not Found\",     \"isCorrect\": true,  \"displayOrder\": 2 },\n      { \"answerText\": \"Forbidden\",     \"isCorrect\": false, \"displayOrder\": 3 }\n    ]\n  },\n  {\n    \"poolId\": \"{{poolId}}\",\n    \"questionText\": \"Which HTTP verb is idempotent?\",\n    \"questionType\": \"MCQ\",\n    \"difficulty\": \"EASY\",\n    \"points\": 1,\n    \"answers\": [\n      { \"answerText\": \"POST\",   \"isCorrect\": false, \"displayOrder\": 0 },\n      { \"answerText\": \"PUT\",    \"isCorrect\": true,  \"displayOrder\": 1 },\n      { \"answerText\": \"PATCH\",  \"isCorrect\": false, \"displayOrder\": 2 },\n      { \"answerText\": \"CONNECT\",\"isCorrect\": false, \"displayOrder\": 3 }\n    ]\n  },\n  {\n    \"poolId\": \"{{poolId}}\",\n    \"questionText\": \"Which annotation maps GET in Spring MVC?\",\n    \"questionType\": \"MCQ\",\n    \"difficulty\": \"MEDIUM\",\n    \"points\": 2,\n    \"answers\": [\n      { \"answerText\": \"@PostMapping\",   \"isCorrect\": false, \"displayOrder\": 0 },\n      { \"answerText\": \"@GetMapping\",    \"isCorrect\": true,  \"displayOrder\": 1 },\n      { \"answerText\": \"@RequestBody\",   \"isCorrect\": false, \"displayOrder\": 2 },\n      { \"answerText\": \"@PathVariable\",  \"isCorrect\": false, \"displayOrder\": 3 }\n    ]\n  },\n  {\n    \"poolId\": \"{{poolId}}\",\n    \"questionText\": \"@Transactional(readOnly=true) does what?\",\n    \"questionType\": \"MCQ\",\n    \"difficulty\": \"MEDIUM\",\n    \"points\": 2,\n    \"answers\": [\n      { \"answerText\": \"Prevents any DB write\",             \"isCorrect\": false, \"displayOrder\": 0 },\n      { \"answerText\": \"Hints Hibernate to skip dirty checking\", \"isCorrect\": true, \"displayOrder\": 1 },\n      { \"answerText\": \"Opens a new connection\",            \"isCorrect\": false, \"displayOrder\": 2 },\n      { \"answerText\": \"Disables caching\",                 \"isCorrect\": false, \"displayOrder\": 3 }\n    ]\n  },\n  {\n    \"poolId\": \"{{poolId}}\",\n    \"questionText\": \"Which annotation enables component scanning?\",\n    \"questionType\": \"MCQ\",\n    \"difficulty\": \"MEDIUM\",\n    \"points\": 2,\n    \"answers\": [\n      { \"answerText\": \"@Bean\",           \"isCorrect\": false, \"displayOrder\": 0 },\n      { \"answerText\": \"@ComponentScan\",  \"isCorrect\": true,  \"displayOrder\": 1 },\n      { \"answerText\": \"@Primary\",        \"isCorrect\": false, \"displayOrder\": 2 },\n      { \"answerText\": \"@Qualifier\",      \"isCorrect\": false, \"displayOrder\": 3 }\n    ]\n  },\n  {\n    \"poolId\": \"{{poolId}}\",\n    \"questionText\": \"Which are valid Spring bean scopes?\",\n    \"questionType\": \"MULTIPLE_CORRECT\",\n    \"difficulty\": \"HARD\",\n    \"points\": 3,\n    \"answers\": [\n      { \"answerText\": \"singleton\", \"isCorrect\": true,  \"displayOrder\": 0 },\n      { \"answerText\": \"prototype\", \"isCorrect\": true,  \"displayOrder\": 1 },\n      { \"answerText\": \"global\",    \"isCorrect\": false, \"displayOrder\": 2 },\n      { \"answerText\": \"static\",    \"isCorrect\": false, \"displayOrder\": 3 }\n    ]\n  },\n  {\n    \"poolId\": \"{{poolId}}\",\n    \"questionText\": \"Which HTTP status codes indicate client errors?\",\n    \"questionType\": \"MULTIPLE_CORRECT\",\n    \"difficulty\": \"HARD\",\n    \"points\": 3,\n    \"answers\": [\n      { \"answerText\": \"400 Bad Request\",          \"isCorrect\": true,  \"displayOrder\": 0 },\n      { \"answerText\": \"404 Not Found\",            \"isCorrect\": true,  \"displayOrder\": 1 },\n      { \"answerText\": \"500 Internal Server Error\",\"isCorrect\": false, \"displayOrder\": 2 },\n      { \"answerText\": \"200 OK\",                   \"isCorrect\": false, \"displayOrder\": 3 }\n    ]\n  },\n  {\n    \"poolId\": \"{{poolId}}\",\n    \"questionText\": \"Which are true about JPA @OneToMany?\",\n    \"questionType\": \"MULTIPLE_CORRECT\",\n    \"difficulty\": \"HARD\",\n    \"points\": 3,\n    \"answers\": [\n      { \"answerText\": \"FetchType.LAZY is default\",         \"isCorrect\": true,  \"displayOrder\": 0 },\n      { \"answerText\": \"CascadeType.ALL includes REMOVE\",  \"isCorrect\": true,  \"displayOrder\": 1 },\n      { \"answerText\": \"It cannot use orphanRemoval\",      \"isCorrect\": false, \"displayOrder\": 2 },\n      { \"answerText\": \"mappedBy specifies the owning side\",\"isCorrect\": true,  \"displayOrder\": 3 }\n    ]\n  }\n]"
+            },
+            "description": "Creates all 8 remaining questions (plus the 1 MCQ already created = 9 total matching pool distribution)."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "pm.test('Returned 8 questions', () => pm.expect(pm.response.json().data).to.have.length(8));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get All Questions in Pool",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": { "raw": "{{baseUrl}}/questions/pool/{{poolId}}", "host": ["{{baseUrl}}"], "path": ["questions","pool","{{poolId}}"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Array', () => pm.expect(pm.response.json().data).to.be.an('array'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Questions by Pool + Difficulty (EASY)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": { "raw": "{{baseUrl}}/questions/pool/{{poolId}}/difficulty/EASY", "host": ["{{baseUrl}}"], "path": ["questions","pool","{{poolId}}","difficulty","EASY"] },
+            "description": "difficulty path param: EASY · MEDIUM · HARD"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('All EASY', () => {",
+                  "    pm.response.json().data.forEach(q => pm.expect(q.difficulty).to.eql('EASY'));",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Question by ID",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": { "raw": "{{baseUrl}}/questions/{{questionId}}", "host": ["{{baseUrl}}"], "path": ["questions","{{questionId}}"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Has answers', () => pm.expect(pm.response.json().data.answers).to.be.an('array').with.length.above(0));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update Question",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/questions/{{questionId}}", "host": ["{{baseUrl}}"], "path": ["questions","{{questionId}}"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"poolId\": \"{{poolId}}\",\n  \"questionText\": \"What does JVM stand for? (revised)\",\n  \"questionType\": \"MCQ\",\n  \"difficulty\": \"EASY\",\n  \"points\": 1,\n  \"explanation\": \"JVM = Java Virtual Machine.\",\n  \"answers\": [\n    { \"answerText\": \"Java Virtual Machine\",  \"isCorrect\": true,  \"displayOrder\": 0 },\n    { \"answerText\": \"Just Very Much\",         \"isCorrect\": false, \"displayOrder\": 1 },\n    { \"answerText\": \"Java Verified Module\",   \"isCorrect\": false, \"displayOrder\": 2 },\n    { \"answerText\": \"Java Variable Method\",   \"isCorrect\": false, \"displayOrder\": 3 }\n  ]\n}"
+            },
+            "description": "Replaces ALL answers. Provide the full updated answer list."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Toggle Question Active/Inactive",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": { "raw": "{{baseUrl}}/questions/{{questionId}}/toggle-active", "host": ["{{baseUrl}}"], "path": ["questions","{{questionId}}","toggle-active"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create MCQ — 0 Correct (expect 400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/questions", "host": ["{{baseUrl}}"], "path": ["questions"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"poolId\": \"{{poolId}}\",\n  \"questionText\": \"Invalid MCQ\",\n  \"questionType\": \"MCQ\",\n  \"difficulty\": \"EASY\",\n  \"points\": 1,\n  \"answers\": [\n    { \"answerText\": \"Option A\", \"isCorrect\": false, \"displayOrder\": 0 },\n    { \"answerText\": \"Option B\", \"isCorrect\": false, \"displayOrder\": 1 }\n  ]\n}"
+            },
+            "description": "Negative test — MCQ with 0 correct answers must be rejected with 400."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400', () => pm.response.to.have.status(400));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create MULTIPLE_CORRECT — Only 1 Correct (expect 400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/questions", "host": ["{{baseUrl}}"], "path": ["questions"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"poolId\": \"{{poolId}}\",\n  \"questionText\": \"Invalid MULTIPLE_CORRECT question\",\n  \"questionType\": \"MULTIPLE_CORRECT\",\n  \"difficulty\": \"HARD\",\n  \"points\": 3,\n  \"answers\": [\n    { \"answerText\": \"Only correct one\", \"isCorrect\": true,  \"displayOrder\": 0 },\n    { \"answerText\": \"Wrong\",            \"isCorrect\": false, \"displayOrder\": 1 }\n  ]\n}"
+            },
+            "description": "Negative test — MULTIPLE_CORRECT requires ≥ 2 correct answers."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400', () => pm.response.to.have.status(400));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete Question",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": { "raw": "{{baseUrl}}/questions/{{questionId}}", "host": ["{{baseUrl}}"], "path": ["questions","{{questionId}}"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+
+    {
+      "name": "14 · Test Engine",
+      "description": "Available to both USER and ADMIN.\nBase: /api/v1/tests\n\nPRE-REQUISITE: Pool must have ≥ easyCount EASY + ≥ mediumCount MEDIUM + ≥ hardCount HARD active questions.\nRun folder '12' and '13' first, ensuring the pool is active and mapped to the course.",
+      "item": [
+        {
+          "name": "Generate Test Session (COURSE scope)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/tests/generate", "host": ["{{baseUrl}}"], "path": ["tests","generate"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"scopeType\": \"COURSE\",\n  \"entityId\": \"{{courseId}}\",\n  \"poolId\": null\n}"
+            },
+            "description": "scopeType: DOMAIN · COURSE · TOPIC\nentityId: UUID of the domain/course/topic\npoolId: optional — omit to auto-select first active pool\n\nisCorrect is HIDDEN in the response — only answer IDs and text returned."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const j = pm.response.json().data;",
+                  "// Persist poolId and entityId for grading",
+                  "pm.collectionVariables.set('sessionPoolId', j.poolId);",
+                  "pm.collectionVariables.set('sessionEntityId', j.entityId);",
+                  "",
+                  "pm.test('Has questions', () => pm.expect(j.questions).to.be.an('array').with.length.above(0));",
+                  "pm.test('isCorrect is HIDDEN', () => {",
+                  "    let exposed = false;",
+                  "    j.questions.forEach(q => q.answers.forEach(a => {",
+                  "        if ('isCorrect' in a) exposed = true;",
+                  "    }));",
+                  "    pm.expect(exposed).to.be.false;",
+                  "});",
+                  "",
+                  "// Build grade payload — select first answer of each question",
+                  "const answers = j.questions.map(q => ({",
+                  "    questionId: q.id,",
+                  "    selectedAnswerIds: [q.answers[0].id]",
+                  "}));",
+                  "pm.collectionVariables.set('gradePayload', JSON.stringify({",
+                  "    poolId: j.poolId,",
+                  "    entityId: j.entityId,",
+                  "    answers: answers",
+                  "}));",
+                  "console.log('✅ Session generated, gradePayload stored');"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Generate Test Session (TOPIC scope)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/tests/generate", "host": ["{{baseUrl}}"], "path": ["tests","generate"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"scopeType\": \"TOPIC\",\n  \"entityId\": \"{{topicId}}\",\n  \"poolId\": null\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Generate with explicit poolId",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/tests/generate", "host": ["{{baseUrl}}"], "path": ["tests","generate"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"scopeType\": \"COURSE\",\n  \"entityId\": \"{{courseId}}\",\n  \"poolId\": \"{{poolId}}\"\n}"
+            },
+            "description": "Explicit poolId bypasses scope-based pool auto-selection."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Pool ID matches', () => {",
+                  "    pm.expect(pm.response.json().data.poolId).to.eql(pm.collectionVariables.get('poolId'));",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Grade Test (auto-built from session)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/tests/grade", "host": ["{{baseUrl}}"], "path": ["tests","grade"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{{gradePayload}}"
+            },
+            "description": "gradePayload is auto-built by the Generate test above.\nPro-tip: run Generate first, then Grade.\n\nResponse reveals isCorrect on ALL answers after submission."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const d = pm.response.json().data;",
+                  "pm.test('Has score fields', () => {",
+                  "    pm.expect(d).to.have.property('correctCount');",
+                  "    pm.expect(d).to.have.property('wrongCount');",
+                  "    pm.expect(d).to.have.property('skippedCount');",
+                  "    pm.expect(d).to.have.property('scorePercentage');",
+                  "    pm.expect(d).to.have.property('passed');",
+                  "});",
+                  "pm.test('isCorrect is REVEALED', () => {",
+                  "    const q = d.questionResults[0];",
+                  "    pm.expect(q.allAnswers[0]).to.have.property('isCorrect');",
+                  "});",
+                  "pm.test('Difficulty breakdowns exist', () => {",
+                  "    pm.expect(d.easy).to.be.an('object');",
+                  "    pm.expect(d.medium).to.be.an('object');",
+                  "    pm.expect(d.hard).to.be.an('object');",
+                  "});",
+                  "console.log(`Score: ${d.earnedPoints}/${d.totalPoints} (${d.scorePercentage}%) — passed=${d.passed}`);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Grade Test — Manual Payload",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/tests/grade", "host": ["{{baseUrl}}"], "path": ["tests","grade"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"poolId\": \"{{sessionPoolId}}\",\n  \"entityId\": \"{{sessionEntityId}}\",\n  \"answers\": [\n    {\n      \"questionId\": \"REPLACE_WITH_QUESTION_UUID\",\n      \"selectedAnswerIds\": [\"REPLACE_WITH_ANSWER_UUID\"]\n    },\n    {\n      \"questionId\": \"REPLACE_WITH_QUESTION_UUID_2\",\n      \"selectedAnswerIds\": []\n    }\n  ]\n}"
+            },
+            "description": "Manual payload template. Empty selectedAnswerIds = question skipped.\nReplace UUIDs with values from the Generate response."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 or 404', () => {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 404]);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Generate — No Pool Found (expect 404)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/tests/generate", "host": ["{{baseUrl}}"], "path": ["tests","generate"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"scopeType\": \"DOMAIN\",\n  \"entityId\": \"00000000-0000-0000-0000-000000000000\"\n}"
+            },
+            "description": "Negative test — no pool exists for this domain UUID, expects 404."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 404', () => pm.response.to.have.status(404));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+
+    {
+      "name": "15 · Security & Edge Cases",
+      "description": "Cross-cutting auth / rate-limit / role enforcement tests.",
+      "item": [
+        {
+          "name": "No Token — Protected Endpoint (expect 401)",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/domains", "host": ["{{baseUrl}}"], "path": ["domains"] },
+            "description": "Calling a protected endpoint with no Authorization header must return 401."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 401', () => pm.response.to.have.status(401));",
+                  "pm.test('success=false', () => pm.expect(pm.response.json().success).to.be.false);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Expired / Malformed Token (expect 401)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer this.is.not.a.valid.jwt" }],
+            "url": { "raw": "{{baseUrl}}/domains", "host": ["{{baseUrl}}"], "path": ["domains"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 401', () => pm.response.to.have.status(401));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "USER token on ADMIN write endpoint (expect 403)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{userToken}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/domains", "host": ["{{baseUrl}}"], "path": ["domains"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Unauthorized domain attempt\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 403', () => pm.response.to.have.status(403));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Response Envelope Structure Check",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": { "raw": "{{baseUrl}}/auth/health", "host": ["{{baseUrl}}"], "path": ["auth","health"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Envelope fields present', () => {",
+                  "    const j = pm.response.json();",
+                  "    pm.expect(j).to.have.property('success');",
+                  "    pm.expect(j).to.have.property('timestamp');",
+                  "    pm.expect(j.success).to.be.a('boolean');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "CORS Preflight — OPTIONS",
+          "request": {
+            "method": "OPTIONS",
+            "header": [
+              { "key": "Origin", "value": "http://localhost:3000" },
+              { "key": "Access-Control-Request-Method", "value": "POST" },
+              { "key": "Access-Control-Request-Headers", "value": "Authorization, Content-Type" }
+            ],
+            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth","login"] },
+            "description": "Verify CORS preflight returns 200 with correct headers from localhost:3000."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Preflight status 200 or 204', () => {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 204]);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    }
+
+  ]
+}

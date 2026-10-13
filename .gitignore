@@ -1,0 +1,44 @@
+# ─── Dev logs ────────────────────────────────────────────────────────────────
+.dev-logs/
+
+# ─── OS / editor ─────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/
+*.iml
+
+# ─── Secrets / local env (NEVER commit) ─────────────────────────────────────────
+.env
+.env.*
+!.env.example
+**/application-local.properties
+**/application-secret.properties
+
+# ─── Node / frontend ─────────────────────────────────────────────────────────
+node_modules/
+dist/
+!packages/algo-visualizer/dist/
+!packages/algo-visualizer/dist/**
+dist-ssr/
+.vite/
+*.local
+coverage/
+playwright-report/
+test-results/
+student/public/wasm/*.whl
+student/public/wasm/*.zip
+
+# ─── Java / backend ──────────────────────────────────────────────────────────
+target/
+*.class
+*.jar
+!.mvn/wrapper/maven-wrapper.jar
+.mvn/.gradle/
+HELP.md
+
+# ─── Logs ────────────────────────────────────────────────────────────────────
+*.log
+npm-debug.log*
+yarn-error.log*

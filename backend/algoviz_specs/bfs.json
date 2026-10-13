@@ -1,0 +1,46 @@
+{
+  "slug": "bfs",
+  "title": "Breadth-First Search",
+  "summary": "Explores a graph level by level using a FIFO queue.",
+  "usage": "Shortest path in unweighted graphs, level-order traversal, connectivity.",
+  "category": "Graph",
+  "difficulty": "MEDIUM",
+  "visualizer": "GRAPH",
+  "complexity": { "time": "O(V + E)", "space": "O(V)" },
+  "javaSource": "void bfs(List<List<Integer>> g,int s){\n  boolean[] seen=new boolean[g.size()];\n  Queue<Integer> q=new LinkedList<>();\n  q.add(s); seen[s]=true;\n  while(!q.isEmpty()){\n    int u=q.poll();\n    for(int v:g.get(u)) if(!seen[v]){ seen[v]=true; q.add(v); }\n  }\n}",
+  "pythonSource": "from collections import deque\ndef bfs(g, s):\n    seen = {s}; q = deque([s])\n    while q:\n        u = q.popleft()\n        for v in g[u]:\n            if v not in seen: seen.add(v); q.append(v)",
+  "spec": {
+    "visualizer": "GRAPH",
+    "initialState": {
+      "nodes": [{ "id": "A" }, { "id": "B" }, { "id": "C" }, { "id": "D" }, { "id": "E" }],
+      "edges": [{ "from": "A", "to": "B" }, { "from": "A", "to": "C" }, { "from": "B", "to": "D" }, { "from": "C", "to": "E" }]
+    },
+    "steps": [
+      { "title": "Start at A", "explanation": "Enqueue A and mark visited.",
+        "state": {
+          "nodes": [{ "id": "A" }, { "id": "B" }, { "id": "C" }, { "id": "D" }, { "id": "E" }],
+          "edges": [{ "from": "A", "to": "B" }, { "from": "A", "to": "C" }, { "from": "B", "to": "D" }, { "from": "C", "to": "E" }]
+        },
+        "highlights": [{ "target": "nodes", "indices": ["A"], "style": "ACTIVE" }], "line": 4, "lang": "java" },
+      { "title": "Visit neighbours of A", "explanation": "Enqueue B and C (level 1).",
+        "state": {
+          "nodes": [{ "id": "A" }, { "id": "B" }, { "id": "C" }, { "id": "D" }, { "id": "E" }],
+          "edges": [{ "from": "A", "to": "B" }, { "from": "A", "to": "C" }, { "from": "B", "to": "D" }, { "from": "C", "to": "E" }]
+        },
+        "highlights": [{ "target": "nodes", "indices": ["A"], "style": "DONE" }, { "target": "nodes", "indices": ["B", "C"], "style": "VISIT" }, { "target": "edges", "indices": [0, 1], "style": "PATH" }] },
+      { "title": "Expand B then C", "explanation": "Enqueue D (from B) and E (from C) — level 2.",
+        "state": {
+          "nodes": [{ "id": "A" }, { "id": "B" }, { "id": "C" }, { "id": "D" }, { "id": "E" }],
+          "edges": [{ "from": "A", "to": "B" }, { "from": "A", "to": "C" }, { "from": "B", "to": "D" }, { "from": "C", "to": "E" }]
+        },
+        "highlights": [{ "target": "nodes", "indices": ["A", "B", "C"], "style": "DONE" }, { "target": "nodes", "indices": ["D", "E"], "style": "VISIT" }, { "target": "edges", "indices": [2, 3], "style": "PATH" }],
+        "input": { "key": "order", "prompt": "In BFS, is D visited before E?", "type": "BOOLEAN", "expected": true } },
+      { "title": "Complete", "explanation": "All nodes visited in order A,B,C,D,E.",
+        "state": {
+          "nodes": [{ "id": "A" }, { "id": "B" }, { "id": "C" }, { "id": "D" }, { "id": "E" }],
+          "edges": [{ "from": "A", "to": "B" }, { "from": "A", "to": "C" }, { "from": "B", "to": "D" }, { "from": "C", "to": "E" }]
+        },
+        "highlights": [{ "target": "nodes", "indices": ["A", "B", "C", "D", "E"], "style": "DONE" }] }
+    ]
+  }
+}

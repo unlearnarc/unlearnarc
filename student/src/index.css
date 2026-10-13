@@ -1,0 +1,91 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+/* ── Design tokens + reusable component classes (single source of truth) ── */
+@import './styles/theme.css';
+@import './styles/components.css';
+@import './styles/rtl.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  *, *::before, *::after { box-sizing: border-box; }
+
+  html {
+    font-family: var(--ua-font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    margin: 0;
+    background-color: var(--ua-background);
+    color: var(--ua-text-primary);
+    line-height: var(--ua-leading-normal);
+  }
+
+  ::-webkit-scrollbar       { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--ua-border-strong); border-radius: 100px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--ua-primary-300); }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   Legacy / short component classes — kept for backwards compatibility.
+   They now delegate to the ua-* classes above, which read from tokens.
+   (You can keep using `.card`, `.btn-primary`, etc. anywhere.)
+   ───────────────────────────────────────────────────────────────────────── */
+@layer components {
+  .card         { @apply ua-card; }
+  .card--flat   { @apply ua-card--flat; }
+  .card-lg      { @apply ua-card--lg; }
+
+  .btn-primary   { @apply ua-btn ua-btn--primary; }
+  .btn-secondary { @apply ua-btn ua-btn--secondary; }
+  .btn-ghost     { @apply ua-btn ua-btn--ghost; }
+
+  .input  { @apply ua-input; }
+
+  .badge             { @apply ua-badge; }
+  .badge-primary     { @apply ua-badge ua-badge--primary; }
+  .badge-success     { @apply ua-badge ua-badge--success; }
+  .badge-warning     { @apply ua-badge ua-badge--warning; }
+  .badge-danger      { @apply ua-badge ua-badge--danger; }
+  .badge-achievement { @apply ua-badge ua-badge--achievement; }
+  .badge-muted       { @apply ua-badge ua-badge--muted; }
+
+  .diff-easy   { @apply ua-badge ua-badge--easy; }
+  .diff-medium { @apply ua-badge ua-badge--medium; }
+  .diff-hard   { @apply ua-badge ua-badge--hard; }
+
+  .progress-bar  { @apply ua-progress; }
+  .progress-fill { @apply ua-progress__fill; }
+
+  .nav-link      { @apply ua-nav-link; }
+  .nav-link.active { @apply ua-is-active; }
+
+  .quiz-surface  { @apply ua-quiz-surface; }
+}
+
+@layer utilities {
+  /* Thin, theme-aware scrollbar for the dashboard section panels */
+  .ua-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: var(--ua-border) transparent;
+  }
+  .ua-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
+  .ua-scroll::-webkit-scrollbar-track { background: transparent; }
+  .ua-scroll::-webkit-scrollbar-thumb {
+    background-color: var(--ua-border);
+    border-radius: 9999px;
+  }
+  .ua-scroll:hover::-webkit-scrollbar-thumb { background-color: var(--ua-text-muted); }
+
+  .text-gradient-primary { @apply ua-text-gradient; }
+  .glass-card            { @apply ua-glass; }
+  .animate-fade-in       { @apply ua-animate-fade-in; }
+  .animate-slide-up      { @apply ua-animate-slide-up; }
+  .animate-scale-in      { @apply ua-animate-scale-in; }
+}

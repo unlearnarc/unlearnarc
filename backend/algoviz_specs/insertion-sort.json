@@ -1,0 +1,40 @@
+{
+  "slug": "insertion-sort",
+  "title": "Insertion Sort",
+  "summary": "Builds the sorted array one element at a time by inserting each item into its correct position.",
+  "usage": "Efficient for small or nearly-sorted data; stable and in-place. O(n^2) worst case.",
+  "category": "Sorting",
+  "difficulty": "EASY",
+  "visualizer": "ARRAY",
+  "complexity": { "time": "O(n^2)", "space": "O(1)" },
+  "javaSource": "void insertionSort(int[] a){\n  for(int i=1;i<a.length;i++){\n    int key=a[i], j=i-1;\n    while(j>=0 && a[j]>key){ a[j+1]=a[j]; j--; }\n    a[j+1]=key;\n  }\n}",
+  "pythonSource": "def insertion_sort(a):\n    for i in range(1, len(a)):\n        key = a[i]; j = i - 1\n        while j >= 0 and a[j] > key:\n            a[j+1] = a[j]; j -= 1\n        a[j+1] = key",
+  "spec": {
+    "visualizer": "ARRAY",
+    "initialState": { "array": [5, 2, 4, 1] },
+    "variables": [
+      { "name": "i", "label": "i", "color": "#f59e0b" },
+      { "name": "key", "label": "key", "color": "#3b82f6" }
+    ],
+    "steps": [
+      { "title": "Start", "explanation": "Element 0 is trivially sorted. We insert from index 1 onward.",
+        "state": { "array": [5, 2, 4, 1] }, "variables": { "i": 1, "key": 2 }, "line": 2, "lang": "java" },
+      { "title": "Insert 2", "explanation": "key=2 < 5, shift 5 right.",
+        "state": { "array": [5, 5, 4, 1] }, "variables": { "i": 1, "key": 2 },
+        "highlights": [{ "target": "array", "indices": [0, 1], "style": "COMPARE" }], "line": 4, "lang": "java" },
+      { "title": "Placed 2", "explanation": "Sorted region: [2, 5].",
+        "state": { "array": [2, 5, 4, 1] }, "variables": { "i": 2, "key": 4 },
+        "highlights": [{ "target": "array", "indices": [0], "style": "DONE" }] },
+      { "title": "Insert 4", "explanation": "key=4 < 5, shift 5; 4 > 2 so stop.",
+        "state": { "array": [2, 4, 5, 1] }, "variables": { "i": 3, "key": 1 },
+        "highlights": [{ "target": "array", "indices": [1], "style": "INSERT" }],
+        "input": { "key": "pred1", "prompt": "Does key=1 move to the very front?", "type": "BOOLEAN", "expected": true } },
+      { "title": "Insert 1", "explanation": "1 is smaller than all; it moves to the front.",
+        "state": { "array": [1, 2, 4, 5] }, "variables": { "i": 3, "key": 1 },
+        "highlights": [{ "target": "array", "indices": [0], "style": "INSERT" }] },
+      { "title": "Done", "explanation": "Array fully sorted.",
+        "state": { "array": [1, 2, 4, 5] },
+        "highlights": [{ "target": "array", "indices": [0, 1, 2, 3], "style": "DONE" }] }
+    ]
+  }
+}

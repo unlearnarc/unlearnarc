@@ -1,0 +1,63 @@
+/* =============================================================================
+   UnlearnArc Admin — Design Tokens (single source of truth)
+   -----------------------------------------------------------------------------
+   Professional slate + blue theme. Mirrors the student app's token system.
+   Change a value here and it propagates everywhere through Tailwind + base CSS.
+   The admin console is dark-only (color-scheme: dark).
+   ============================================================================= */
+
+:root {
+  color-scheme: dark;
+
+  /* ---- Brand / Primary scale (professional blue) ---------------------- */
+  --ua-brand-50:  #eff6ff;
+  --ua-brand-100: #dbeafe;
+  --ua-brand-200: #bfdbfe;
+  --ua-brand-300: #93c5fd;
+  --ua-brand-400: #60a5fa;
+  --ua-brand-500: #3b82f6;   /* primary accent */
+  --ua-brand-600: #2563eb;   /* primary action */
+  --ua-brand-700: #1d4ed8;
+  --ua-brand-800: #1e40af;
+  --ua-brand-900: #1e3a8a;
+
+  --ua-brand:        var(--ua-brand-500);
+  --ua-brand-hover:  var(--ua-brand-400);
+  --ua-focus-ring:   var(--ua-brand-500);
+
+  /* ---- Neutral surfaces (slate, dark) -------------------------------- */
+  --ua-bg:            #0b1220;   /* app background */
+  --ua-surface:       #111a2b;   /* cards / panels */
+  --ua-surface-soft:  #16233a;   /* nested / hover surfaces */
+  --ua-surface-raised:#1a2942;   /* modals, dropdowns */
+  --ua-sidebar:       #0e1626;
+
+  /* ---- Borders ------------------------------------------------------- */
+  --ua-border:        rgba(148, 163, 184, 0.12);
+  --ua-border-strong: rgba(148, 163, 184, 0.22);
+
+  /* ---- Text ---------------------------------------------------------- */
+  --ua-text-primary:   #f1f5f9;
+  --ua-text-secondary: #94a3b8;
+  --ua-text-muted:     #64748b;
+
+  /* ---- Semantic / status -------------------------------------------- */
+  --ua-success: #10b981;
+  --ua-warning: #f59e0b;
+  --ua-danger:  #f43f5e;
+  --ua-info:    #38bdf8;
+
+  /* ---- Gradients ----------------------------------------------------- */
+  --ua-gradient-brand: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+
+  /* ---- Typography ---------------------------------------------------- */
+  --ua-font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --ua-font-mono: ui-monospace, 'SFMono-Regular', 'JetBrains Mono', Menlo, monospace;
+
+  /* ---- Radius -------------------------------------------------------- */
+  --ua-radius-sm:  8px;
+  --ua-radius-md:  10px;
+  --ua-radius-lg:  14px;
+  --ua-radius-xl:  18px;
+  --ua-radius-2xl: 20px;
+}

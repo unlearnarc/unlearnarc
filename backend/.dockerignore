@@ -1,0 +1,13 @@
+target/
+*.log
+.git
+.gitignore
+.env
+.env.*
+!.env.example
+*.md
+seed_*.sh
+smoke_test.sh
+verify_oas.sh
+.seed_questions.py
+UnlearnArc.postman_collection.json

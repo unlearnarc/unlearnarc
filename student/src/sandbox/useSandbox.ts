@@ -1,0 +1,85 @@
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { SandboxClient, type RunOptions } from './SandboxClient';
+import type { ExecutionResult, InitProgress, Language } from './types';
+
+export type SandboxStatus =
+  | 'idle'
+  | 'installing'   // first-ever download on this machine
+  | 'loading'      // warming from local cache
+  | 'ready'
+  | 'running'
+  | 'error';
+
+export interface UseSandbox {
+  status: SandboxStatus;
+  /** Aggregate 0..1 install/load progress. */
+  progress: number;
+  /** True once the runtime is installed on this machine (served from cache). */
+  installedFromCache: boolean;
+  error: string | null;
+  lastResult: ExecutionResult | null;
+  init: () => Promise<void>;
+  run: (code: string, opts?: RunOptions) => Promise<ExecutionResult>;
+}
+
+/**
+ * React binding for the worker-isolated sandbox. One SandboxClient per hook
+ * instance, torn down on unmount. The expensive WASM install happens once per
+ * machine/browser (Cache API) — subsequent mounts resolve from cache instantly.
+ */
+export function useSandbox(language: Language): UseSandbox {
+  const clientRef = useRef<SandboxClient | null>(null);
+  const [status, setStatus] = useState<SandboxStatus>('idle');
+  const [progress, setProgress] = useState(0);
+  const [installedFromCache, setInstalledFromCache] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [lastResult, setLastResult] = useState<ExecutionResult | null>(null);
+
+  if (!clientRef.current) clientRef.current = new SandboxClient();
+
+  const init = useCallback(async () => {
+    const client = clientRef.current!;
+    setError(null);
+
+    const alreadyInstalled = await SandboxClient.isInstalled(language);
+    setInstalledFromCache(alreadyInstalled);
+    setStatus(alreadyInstalled ? 'loading' : 'installing');
+
+    // Track per-asset progress → aggregate ratio.
+    const perAsset = new Map<string, number>();
+    const onProgress = (p: InitProgress) => {
+      perAsset.set(p.assetId, p.ratio);
+      const vals = [...perAsset.values()];
+      const avg = vals.reduce((a, b) => a + b, 0) / Math.max(vals.length, 1);
+      setProgress(avg);
+    };
+
+    try {
+      await client.init(language, onProgress);
+      setProgress(1);
+      setStatus('ready');
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+      setStatus('error');
+    }
+  }, [language]);
+
+  const run = useCallback(async (code: string, opts?: RunOptions) => {
+    const client = clientRef.current!;
+    setStatus('running');
+    const result = await client.run(code, opts);
+    setLastResult(result);
+    setStatus('ready');
+    return result;
+  }, []);
+
+  // Tear down worker on unmount / language change.
+  useEffect(() => {
+    return () => {
+      clientRef.current?.dispose();
+      clientRef.current = null;
+    };
+  }, [language]);
+
+  return { status, progress, installedFromCache, error, lastResult, init, run };
+}

@@ -1,0 +1,395 @@
+/* =============================================================================
+   UnlearnArc — Component Classes (Bootstrap-style, token-driven)
+   -----------------------------------------------------------------------------
+   Reusable semantic classes built ENTIRELY on the custom properties defined in
+   theme.css. Add a class name to any element and it just works — no hardcoded
+   hex values, no Tailwind arbitrary values.
+   Prefix convention: `ua-` so nothing clashes with Tailwind utilities.
+   ============================================================================= */
+
+/* ─────────────────────────── Surfaces / Cards ─────────────────────────── */
+.ua-card {
+  background: var(--ua-surface);
+  border: 1px solid var(--ua-border);
+  border-radius: var(--ua-radius-lg);
+  box-shadow: var(--ua-shadow-card);
+  transition: box-shadow var(--ua-dur-normal) var(--ua-ease),
+              transform var(--ua-dur-normal) var(--ua-ease);
+}
+.ua-card:hover            { box-shadow: var(--ua-shadow-hover); }
+.ua-card--interactive:hover { transform: translateY(-4px); }
+.ua-card--lg {
+  background: var(--ua-surface);
+  border: 1px solid var(--ua-border);
+  border-radius: var(--ua-radius-xl);
+  box-shadow: var(--ua-shadow-card);
+}
+.ua-card--flat { box-shadow: none; }
+.ua-surface      { background: var(--ua-surface); }
+.ua-surface-soft { background: var(--ua-surface-soft); }
+.ua-surface-dark { background: var(--ua-gradient-dark); color: var(--ua-text-on-dark); }
+
+/* ─────────────────────────────── Buttons ─────────────────────────────── */
+.ua-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-family: var(--ua-font-sans);
+  font-size: var(--ua-fs-sm);
+  font-weight: var(--ua-fw-semibold);
+  line-height: 1;
+  padding: 0.625rem 1.25rem;
+  border-radius: var(--ua-radius-md);
+  border: 1px solid transparent;
+  cursor: pointer;
+  user-select: none;
+  transition: background var(--ua-dur-fast) var(--ua-ease),
+              border-color var(--ua-dur-fast) var(--ua-ease),
+              color var(--ua-dur-fast) var(--ua-ease),
+              transform var(--ua-dur-fast) var(--ua-ease),
+              box-shadow var(--ua-dur-fast) var(--ua-ease);
+}
+.ua-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.ua-btn:focus-visible {
+  outline: 2px solid var(--ua-primary);
+  outline-offset: 2px;
+}
+
+.ua-btn--primary {
+  background: var(--ua-primary);
+  color: #fff;
+}
+.ua-btn--primary:hover:not(:disabled)  { background: var(--ua-primary-hover); transform: translateY(-1px); box-shadow: var(--ua-shadow-hover); }
+.ua-btn--primary:active:not(:disabled) { transform: translateY(0); }
+
+.ua-btn--secondary {
+  background: var(--ua-surface);
+  border-color: var(--ua-border);
+  color: var(--ua-text-primary);
+}
+.ua-btn--secondary:hover:not(:disabled)  { background: var(--ua-surface-soft); border-color: var(--ua-border-strong); transform: translateY(-1px); }
+.ua-btn--secondary:active:not(:disabled) { transform: translateY(0); }
+
+.ua-btn--ghost {
+  background: transparent;
+  color: var(--ua-text-secondary);
+  padding: 0.5rem 1rem;
+}
+.ua-btn--ghost:hover:not(:disabled) { background: var(--ua-primary-soft); color: var(--ua-primary); }
+
+.ua-btn--danger {
+  background: var(--ua-danger);
+  color: #fff;
+}
+.ua-btn--danger:hover:not(:disabled) { background: var(--ua-danger-hover); transform: translateY(-1px); }
+
+.ua-btn--on-dark {
+  background: rgba(255,255,255,0.08);
+  border-color: rgba(255,255,255,0.14);
+  color: #fff;
+}
+.ua-btn--on-dark:hover:not(:disabled) { background: rgba(255,255,255,0.16); }
+
+/* size modifiers */
+.ua-btn--sm  { padding: 0.4rem 0.8rem;  font-size: var(--ua-fs-xs); }
+.ua-btn--lg  { padding: 0.8rem 2rem;    font-size: var(--ua-fs-base); }
+.ua-btn--block { width: 100%; }
+
+/* ─────────────────────────────── Inputs ──────────────────────────────── */
+.ua-input,
+.ua-select,
+.ua-textarea {
+  width: 100%;
+  font-family: var(--ua-font-sans);
+  font-size: var(--ua-fs-sm);
+  color: var(--ua-text-primary);
+  background: var(--ua-surface);
+  border: 1px solid var(--ua-border);
+  border-radius: var(--ua-radius-md);
+  padding: 0.625rem 0.875rem;
+  transition: border-color var(--ua-dur-fast) var(--ua-ease),
+              box-shadow var(--ua-dur-fast) var(--ua-ease);
+}
+.ua-input::placeholder,
+.ua-textarea::placeholder { color: var(--ua-text-muted); }
+.ua-input:focus,
+.ua-select:focus,
+.ua-textarea:focus {
+  outline: none;
+  border-color: var(--ua-primary);
+  box-shadow: 0 0 0 3px rgba(65,105,225,0.18);
+}
+.ua-label {
+  display: block;
+  font-size: var(--ua-fs-sm);
+  font-weight: var(--ua-fw-medium);
+  color: var(--ua-text-primary);
+  margin-bottom: 0.375rem;
+}
+
+/* ─────────────────────── Badges / Pills / Chips ──────────────────────── */
+.ua-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.125rem 0.625rem;
+  border-radius: var(--ua-radius-full);
+  font-size: var(--ua-fs-xs);
+  font-weight: var(--ua-fw-medium);
+  line-height: 1.4;
+}
+.ua-badge--primary     { background: var(--ua-primary-soft);      color: var(--ua-primary); }
+.ua-badge--success     { background: var(--ua-success-soft);      color: var(--ua-success); }
+.ua-badge--warning     { background: var(--ua-warning-soft);      color: var(--ua-warning); }
+.ua-badge--danger      { background: var(--ua-danger-soft);       color: var(--ua-danger); }
+.ua-badge--achievement { background: var(--ua-achievement-soft);  color: var(--ua-achievement); }
+.ua-badge--muted       { background: var(--ua-surface-soft);      color: var(--ua-text-secondary); }
+
+/* difficulty aliases */
+.ua-badge--easy   { background: var(--ua-success-soft); color: var(--ua-success); }
+.ua-badge--medium { background: var(--ua-warning-soft); color: var(--ua-warning); }
+.ua-badge--hard   { background: var(--ua-danger-soft);  color: var(--ua-danger); }
+
+/* chip (filter buttons) */
+.ua-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.375rem 0.75rem;
+  border-radius: var(--ua-radius-full);
+  font-size: var(--ua-fs-xs);
+  font-weight: var(--ua-fw-medium);
+  background: var(--ua-surface);
+  border: 1px solid var(--ua-border);
+  color: var(--ua-text-secondary);
+  cursor: pointer;
+  transition: all var(--ua-dur-fast) var(--ua-ease);
+}
+.ua-chip:hover      { border-color: var(--ua-primary); color: var(--ua-primary); }
+.ua-chip--active    { background: var(--ua-primary); border-color: var(--ua-primary); color: #fff; }
+
+/* ───────────────────────────── Progress bar ─────────────────────────── */
+.ua-progress {
+  width: 100%;
+  height: 0.375rem;
+  border-radius: var(--ua-radius-full);
+  background: var(--ua-border);
+  overflow: hidden;
+}
+.ua-progress__fill {
+  height: 100%;
+  border-radius: var(--ua-radius-full);
+  background: var(--ua-primary);
+  transition: width var(--ua-dur-slow) var(--ua-ease);
+}
+
+/* ───────────────────────────── Navigation ───────────────────────────── */
+.ua-nav-link {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.875rem;
+  border-radius: var(--ua-radius-md);
+  font-size: var(--ua-fs-sm);
+  font-weight: var(--ua-fw-medium);
+  color: var(--ua-text-secondary);
+  transition: background var(--ua-dur-fast) var(--ua-ease),
+              color var(--ua-dur-fast) var(--ua-ease);
+}
+.ua-nav-link:hover          { background: var(--ua-surface-soft); color: var(--ua-text-primary); }
+.ua-nav-link.ua-is-active   { background: var(--ua-primary-soft);  color: var(--ua-primary); }
+
+/* ─────────────────────────── Typography help ────────────────────────── */
+.ua-h1 { font-size: var(--ua-fs-2xl); font-weight: var(--ua-fw-bold); color: var(--ua-text-primary); line-height: var(--ua-leading-tight); }
+.ua-h2 { font-size: var(--ua-fs-lg);  font-weight: var(--ua-fw-semibold); color: var(--ua-text-primary); }
+.ua-text        { color: var(--ua-text-primary); }
+.ua-text-muted  { color: var(--ua-text-muted); }
+.ua-text-secondary { color: var(--ua-text-secondary); }
+.ua-text-on-dark   { color: var(--ua-text-on-dark); }
+
+.ua-text-gradient {
+  background: var(--ua-gradient-card);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* ─────────────────────────────── Modal ──────────────────────────────── */
+.ua-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--ua-z-modal);
+  background: rgba(13,20,36,0.45);
+  backdrop-filter: blur(4px);
+}
+.ua-modal {
+  background: var(--ua-surface);
+  border-radius: var(--ua-radius-xl);
+  box-shadow: var(--ua-shadow-lg);
+}
+
+/* ───────────────────────── Glass / dark helpers ─────────────────────── */
+.ua-glass {
+  background: rgba(255,255,255,0.08);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,0.12);
+}
+.ua-quiz-surface { background: var(--ua-gradient-dark); }
+
+/* ────────────────────────────── Animations ──────────────────────────── */
+@keyframes ua-fade-in  { from { opacity: 0 } to { opacity: 1 } }
+@keyframes ua-slide-up { from { opacity: 0; transform: translateY(12px) } to { opacity: 1; transform: translateY(0) } }
+@keyframes ua-scale-in { from { opacity: 0; transform: scale(0.95) } to { opacity: 1; transform: scale(1) } }
+
+.ua-animate-fade-in  { animation: ua-fade-in  var(--ua-dur-normal) var(--ua-ease); }
+.ua-animate-slide-up { animation: ua-slide-up 0.3s var(--ua-ease); }
+.ua-animate-scale-in { animation: ua-scale-in 0.2s var(--ua-ease); }
+
+/* ────────────────────────────── Skeletons ───────────────────────────────
+   Shimmer placeholder used by <Skeleton/>. A moving highlight sweeps across a
+   neutral base so loading states feel alive instead of a dead grey box.
+   Respects prefers-reduced-motion (falls back to a gentle pulse).
+   ───────────────────────────────────────────────────────────────────────── */
+.ua-skeleton {
+  position: relative;
+  overflow: hidden;
+  background: var(--ua-surface-soft);
+}
+.ua-skeleton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.45) 50%,
+    transparent 100%
+  );
+  animation: ua-shimmer 1.4s var(--ua-ease) infinite;
+}
+[data-theme="dark"] .ua-skeleton::after {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.08) 50%,
+    transparent 100%
+  );
+}
+@keyframes ua-shimmer {
+  100% { transform: translateX(100%); }
+}
+
+/* ─────────────────────── Attractiveness helpers ──────────────────────────
+   Small, reusable polish primitives you can drop onto existing markup.
+   ───────────────────────────────────────────────────────────────────────── */
+
+/* Gradient top-border accent that reveals on hover — gives flat cards depth. */
+.ua-card--accent { position: relative; overflow: hidden; }
+.ua-card--accent::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: var(--ua-brand-gradient);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform var(--ua-dur-normal) var(--ua-ease);
+}
+.ua-card--accent:hover::before { transform: scaleX(1); }
+
+/* Icon tile with a soft ring — upgrades the plain coloured squares. */
+.ua-icon-tile {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--ua-radius-lg);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.06),
+              0 1px 2px rgba(30,55,90,0.06);
+}
+
+/* Subtle decorative dotted/grid texture for hero surfaces. */
+.ua-hero-grid {
+  background-image: radial-gradient(rgba(255,255,255,0.14) 1px, transparent 1px);
+  background-size: 18px 18px;
+}
+
+/* Count-up friendly big number. */
+.ua-stat-value {
+  font-size: var(--ua-fs-3xl);
+  font-weight: var(--ua-fw-extrabold);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--ua-text-primary);
+}
+
+/* Staggered entrance — add .ua-stagger to a container; children fade/slide in
+   sequentially. Set --i on each child (0,1,2…). */
+.ua-stagger > * {
+  opacity: 0;
+  animation: ua-slide-up 0.4s var(--ua-ease) forwards;
+  animation-delay: calc(var(--i, 0) * 60ms);
+}
+
+/* Respect reduced-motion for ALL the motion above. */
+@media (prefers-reduced-motion: reduce) {
+  .ua-skeleton::after { animation: ua-pulse 1.6s ease-in-out infinite; transform: none; }
+  .ua-stagger > *     { animation: none; opacity: 1; }
+  .ua-card--interactive:hover { transform: none; }
+}
+@keyframes ua-pulse { 0%,100% { opacity: 0.6 } 50% { opacity: 1 } }
+
+/* ───────────── Productivity utilities (dock / tool overlays) ───────────── */
+/* Used by ToolShell (fade-in overlay) and FocusPanel (ambient breathing orb). */
+@keyframes ua-fade { from { opacity: 0 } to { opacity: 1 } }
+@keyframes ua-breathe {
+  0%, 100% { transform: scale(1);   opacity: 0.55; }
+  50%      { transform: scale(1.18); opacity: 0.9;  }
+}
+
+/* ───────────────────────── Rich-Text (stories) ───────────────────────── */
+/* Shared typography for both the editor surface and the read-only viewer.    */
+.ua-rte-content { color: var(--ua-text-primary); font-size: var(--ua-fs-sm); line-height: var(--ua-leading-relaxed, 1.7); word-break: break-word; }
+.ua-rte-content p            { margin: 0 0 0.75rem; }
+.ua-rte-content p:last-child { margin-bottom: 0; }
+.ua-rte-content h1,
+.ua-rte-content h2,
+.ua-rte-content h3,
+.ua-rte-content h4 { font-weight: var(--ua-fw-semibold); line-height: 1.3; margin: 1.1rem 0 0.5rem; color: var(--ua-text-primary); }
+.ua-rte-content h1 { font-size: 1.35rem; }
+.ua-rte-content h2 { font-size: 1.15rem; }
+.ua-rte-content h3 { font-size: 1.02rem; }
+.ua-rte-content ul,
+.ua-rte-content ol { margin: 0 0 0.75rem; padding-left: 1.4rem; }
+.ua-rte-content li { margin: 0.2rem 0; }
+.ua-rte-content ul { list-style: disc; }
+.ua-rte-content ol { list-style: decimal; }
+.ua-rte-content a  { color: var(--ua-primary-500); text-decoration: underline; text-underline-offset: 2px; }
+.ua-rte-content a:hover { color: var(--ua-primary-600); }
+.ua-rte-content blockquote {
+  margin: 0 0 0.75rem; padding: 0.35rem 0 0.35rem 0.9rem;
+  border-left: 3px solid var(--ua-primary-300);
+  color: var(--ua-text-secondary); font-style: italic;
+}
+.ua-rte-content code {
+  font-family: var(--ua-font-mono, ui-monospace, monospace);
+  font-size: 0.85em; background: var(--ua-surface-soft);
+  padding: 0.1rem 0.35rem; border-radius: 6px;
+}
+.ua-rte-content pre {
+  margin: 0 0 0.75rem; padding: 0.75rem 0.9rem;
+  background: var(--ua-surface-soft); border: 1px solid var(--ua-border);
+  border-radius: var(--ua-radius-md); overflow-x: auto;
+  font-family: var(--ua-font-mono, ui-monospace, monospace); font-size: 0.82rem;
+}
+.ua-rte-content pre code { background: none; padding: 0; }
+.ua-rte-content strong { font-weight: var(--ua-fw-semibold); }
+
+/* Placeholder for the empty contentEditable editor */
+.ua-rte-content[contenteditable]:empty::before,
+.ua-rte-content[contenteditable][data-placeholder]:empty::before {
+  content: attr(data-placeholder);
+  color: var(--ua-text-muted);
+  pointer-events: none;
+}

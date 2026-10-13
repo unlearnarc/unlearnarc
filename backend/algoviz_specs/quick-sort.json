@@ -1,0 +1,32 @@
+{
+  "slug": "quick-sort",
+  "title": "Quick Sort",
+  "summary": "Partition around a pivot so smaller elements go left, larger go right; recurse.",
+  "usage": "Fast in-place average O(n log n). Most-used general sort. Worst case O(n^2).",
+  "category": "Sorting",
+  "difficulty": "MEDIUM",
+  "visualizer": "ARRAY",
+  "complexity": { "time": "O(n log n) avg", "space": "O(log n)" },
+  "javaSource": "void quickSort(int[] a,int lo,int hi){\n  if(lo>=hi) return;\n  int p=partition(a,lo,hi);\n  quickSort(a,lo,p-1); quickSort(a,p+1,hi);\n}",
+  "pythonSource": "def quick_sort(a, lo, hi):\n    if lo >= hi: return\n    p = partition(a, lo, hi)\n    quick_sort(a, lo, p-1); quick_sort(a, p+1, hi)",
+  "spec": {
+    "visualizer": "ARRAY",
+    "initialState": { "array": [5, 2, 4, 1] },
+    "variables": [{ "name": "pivot", "label": "pivot", "color": "#eab308" }],
+    "steps": [
+      { "title": "Choose pivot", "explanation": "Pivot = last element (1).",
+        "state": { "array": [5, 2, 4, 1] }, "variables": { "pivot": 1 },
+        "highlights": [{ "target": "array", "indices": [3], "style": "PIVOT" }], "line": 3, "lang": "java" },
+      { "title": "Partition", "explanation": "All values > 1, so pivot moves to the front.",
+        "state": { "array": [1, 2, 4, 5] }, "variables": { "pivot": 1 },
+        "highlights": [{ "target": "array", "indices": [0], "style": "SWAP" }] },
+      { "title": "Recurse right", "explanation": "Sort [2,4,5]; pivot now 5.",
+        "state": { "array": [1, 2, 4, 5] }, "variables": { "pivot": 5 },
+        "highlights": [{ "target": "array", "indices": [3], "style": "PIVOT" }],
+        "input": { "key": "qsdone", "prompt": "Is the array already sorted at this point?", "type": "BOOLEAN", "expected": true } },
+      { "title": "Done", "explanation": "All partitions settled.",
+        "state": { "array": [1, 2, 4, 5] },
+        "highlights": [{ "target": "array", "indices": [0, 1, 2, 3], "style": "DONE" }] }
+    ]
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "slug": "flood-fill",
+  "title": "Flood Fill",
+  "summary": "Fills a connected region of a grid starting from a seed cell (like paint bucket).",
+  "usage": "Image paint-bucket, connected-region labeling, maze/region analysis.",
+  "category": "Matrix",
+  "difficulty": "MEDIUM",
+  "visualizer": "MATRIX",
+  "complexity": { "time": "O(rows * cols)", "space": "O(rows * cols)" },
+  "javaSource": "void fill(int[][] g,int r,int c,int from,int to){\n  if(r<0||c<0||r>=g.length||c>=g[0].length||g[r][c]!=from) return;\n  g[r][c]=to;\n  fill(g,r+1,c,from,to); fill(g,r-1,c,from,to);\n  fill(g,r,c+1,from,to); fill(g,r,c-1,from,to);\n}",
+  "pythonSource": "def fill(g, r, c, src, tgt):\n    if r<0 or c<0 or r>=len(g) or c>=len(g[0]) or g[r][c]!=src: return\n    g[r][c] = tgt\n    for dr,dc in ((1,0),(-1,0),(0,1),(0,-1)):\n        fill(g, r+dr, c+dc, src, tgt)",
+  "spec": {
+    "visualizer": "MATRIX",
+    "initialState": { "matrix": [[1, 1, 0], [1, 0, 0], [0, 0, 1]], "cursor": [0, 0], "visited": [] },
+    "steps": [
+      { "title": "Seed at (0,0)", "explanation": "Start fill from the top-left '1' region.",
+        "state": { "matrix": [[1, 1, 0], [1, 0, 0], [0, 0, 1]], "cursor": [0, 0], "visited": [] }, "line": 3, "lang": "java" },
+      { "title": "Fill (0,0)", "explanation": "Mark (0,0) and move to its '1' neighbours.",
+        "state": { "matrix": [[2, 1, 0], [1, 0, 0], [0, 0, 1]], "cursor": [0, 1], "visited": [[0, 0]] } },
+      { "title": "Fill (0,1) & (1,0)", "explanation": "Both are part of the same connected region.",
+        "state": { "matrix": [[2, 2, 0], [2, 0, 0], [0, 0, 1]], "cursor": [1, 0], "visited": [[0, 0], [0, 1]] },
+        "input": { "key": "corner", "prompt": "Will the bottom-right '1' at (2,2) get filled?", "type": "BOOLEAN", "expected": false } },
+      { "title": "Region complete", "explanation": "(2,2) is disconnected, so it stays. Only the connected region changed.",
+        "state": { "matrix": [[2, 2, 0], [2, 0, 0], [0, 0, 1]], "cursor": [1, 0], "visited": [[0, 0], [0, 1], [1, 0]] } }
+    ]
+  }
+}
