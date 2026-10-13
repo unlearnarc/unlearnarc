@@ -1,0 +1,7 @@
+{
+  "installCommand": "npm install --prefix student",
+  "buildCommand": "npm run build --prefix student",
+  "outputDirectory": "student/dist",
+  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }],
+  "headers": [ /* COOP: same-origin, COEP: require-corp, CORP: cross-origin */ ]
+}
