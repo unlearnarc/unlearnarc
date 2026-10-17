@@ -1,0 +1,27 @@
+.ua-question-modal {
+  position: fixed;
+  inset: 0;
+  margin: auto;
+  width: min(480px, calc(100% - 24px));
+  max-height: calc(100dvh - 32px);
+  padding: 24px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  border: 1px solid var(--ua-border);
+  border-radius: 20px;
+  background: var(--ua-surface);
+  color: var(--ua-text-primary);
+  box-shadow: 0 24px 90px rgb(0 0 0 / 30%);
+}
+.ua-question-modal::backdrop {
+  background: rgb(8 15 28 / 58%);
+  --ua-question-blur: blur(8px);
+  backdrop-filter: var(--ua-question-blur);
+  -webkit-backdrop-filter: var(--ua-question-blur);
+}
+.ua-question-modal:focus-visible { outline: 2px solid var(--ua-focus-ring); }
+.ua-question-modal button { min-height: 44px; }
+.ua-question-modal input { min-width: 0; min-height: 44px; }
+@media (max-width: 480px) {
+  .ua-question-modal { padding: 18px; border-radius: 16px; }
+}

@@ -4,7 +4,8 @@ import com.unlearnarc.course.entity.Course;
 import com.unlearnarc.course.repository.CourseRepository;
 import com.unlearnarc.domain.entity.Domain;
 import com.unlearnarc.domain.repository.DomainRepository;
-import com.unlearnarc.enrollment.repository.EnrolledCourseRepository;
+import com.unlearnarc.enrollment.service.LearningProgressService;
+import com.unlearnarc.enrollment.dto.CourseProgressResponse;
 import com.unlearnarc.mapping.repository.DomainSkillMappingRepository;
 import com.unlearnarc.mapping.repository.SkillCourseMappingRepository;
 import com.unlearnarc.role.dto.RoadmapResponse;
@@ -33,7 +34,7 @@ import java.util.stream.Collectors;
  *
  * Skills (and thus their courses) are grouped into ordered stages by
  * {@link SkillLevel} so the learner progresses BEGINNER → EXPERT. Course
- * completion is derived from the caller's enrollments.
+ * completion is derived from the caller's persisted quiz results.
  */
 @Service
 @RequiredArgsConstructor
@@ -48,7 +49,7 @@ public class RoadmapService {
     private final DomainRepository domainRepository;
     private final SkillRepository skillRepository;
     private final CourseRepository courseRepository;
-    private final EnrolledCourseRepository enrolledCourseRepo;
+    private final LearningProgressService progressService;
 
     /** Stage ordering: lower levels come first in the roadmap. */
     private static final List<SkillLevel> LEVEL_ORDER = List.of(
@@ -81,12 +82,11 @@ public class RoadmapService {
                 ? List.of()
                 : skillRepository.findAllById(skillIds);
 
-        // Pre-load the user's completed course ids once.
-        Set<String> completedCourseIds = (userId == null || userId.isBlank())
-                ? Set.of()
-                : enrolledCourseRepo.findByUserIdOrderByEnrolledAtDesc(userId).stream()
-                    .map(e -> e.getCourseId())
-                    .collect(Collectors.toSet());
+        Set<String> roadmapCourseIds = new LinkedHashSet<>();
+        for (Skill skill : skills) {
+            skillCourseRepo.findBySkillId(skill.getId()).forEach(m -> roadmapCourseIds.add(m.getCourseId()));
+        }
+        Map<String, CourseProgressResponse> progressByCourse = progressService.forCourses(userId, roadmapCourseIds);
 
         // Build SkillNode list, de-duplicating courses within a skill.
         List<SkillNode> skillNodes = new ArrayList<>();
@@ -105,13 +105,18 @@ public class RoadmapService {
 
             List<CourseNode> courseNodes = new ArrayList<>();
             for (Course c : courses) {
-                boolean done = completedCourseIds.contains(c.getId());
+                CourseProgressResponse progress = progressByCourse.get(c.getId());
+                boolean done = progress.completed();
                 courseNodes.add(CourseNode.builder()
                         .courseId(c.getId())
                         .courseName(c.getName())
                         .imgUrl(c.getImgUrl())
                         .level(c.getLevel())
-                        .topicsCount(c.getTopicsCount())
+                        .topicsCount(progress.totalTopics())
+                        .enrolled(progress.enrolled())
+                        .progressPercent(progress.progressPercent())
+                        .completedTopics(progress.completedTopics())
+                        .bestCourseScore(progress.bestCourseScore())
                         .totalTime(c.getTotalTime() == null ? null : c.getTotalTime().toString())
                         .completed(done)
                         .build());

@@ -69,6 +69,49 @@ public interface TestAnalyticsRepository extends JpaRepository<TestResult, Strin
     List<EntityPerformanceProjection> aggregateByEntity(@Param("userId") String userId,
                                                         @Param("since") Instant since);
 
+    /**
+     * Rolled-up performance for ONE scope (entityType + entityId) for a user, used
+     * by the adaptive test generator on the Tests page to decide the difficulty mix.
+     * Returns null-safe aggregates; caller treats an empty Optional as "no history".
+     */
+    @Query("""
+            SELECT COUNT(r)                 AS attempts,
+                   AVG(r.scorePercentage)   AS avgScore,
+                   MAX(r.scorePercentage)   AS maxScore,
+                   SUM(r.easyTotal)         AS easyTotal,
+                   SUM(r.easyCorrect)       AS easyCorrect,
+                   SUM(r.mediumTotal)       AS mediumTotal,
+                   SUM(r.mediumCorrect)     AS mediumCorrect,
+                   SUM(r.hardTotal)         AS hardTotal,
+                   SUM(r.hardCorrect)       AS hardCorrect,
+                   MAX(r.createdAt)         AS lastAttemptedAt
+            FROM TestResult r
+            WHERE r.entityType = :entityType
+              AND r.entityId   = :entityId
+              AND r.id IN (
+                SELECT a.testId FROM UserTestAttempt a
+                WHERE a.userId = :userId
+              )
+            """)
+    ScopeHistoryProjection scopeHistory(
+            @Param("userId")     String userId,
+            @Param("entityType") com.unlearnarc.quspool.entity.QuestionPool.ScopeType entityType,
+            @Param("entityId")   String entityId);
+
+    /** Projection for {@link #scopeHistory} — drives adaptive difficulty selection. */
+    interface ScopeHistoryProjection {
+        Long    getAttempts();
+        Double  getAvgScore();
+        Double  getMaxScore();
+        Long    getEasyTotal();
+        Long    getEasyCorrect();
+        Long    getMediumTotal();
+        Long    getMediumCorrect();
+        Long    getHardTotal();
+        Long    getHardCorrect();
+        Instant getLastAttemptedAt();
+    }
+
     /** Projection for {@link #aggregateByEntity}. */
     interface EntityPerformanceProjection {
         com.unlearnarc.quspool.entity.QuestionPool.ScopeType getEntityType();

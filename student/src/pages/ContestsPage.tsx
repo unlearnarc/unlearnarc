@@ -6,7 +6,7 @@ import { contestAPI } from '../api/endpoints';
 import { EmptyState, Spinner } from '../components/ui';
 import { formatDateTime } from '../i18n/format';
 import type { Contest, ContestPhase } from '../types';
-import { Trophy, Users, ListChecks, Clock, Timer, Code2 } from 'lucide-react';
+import { Trophy, ListChecks, Clock, Timer, Code2 } from 'lucide-react';
 import clsx from 'clsx';
 
 const PHASE_TONE: Record<ContestPhase, string> = {
@@ -74,12 +74,14 @@ export const ContestsPage: React.FC = () => {
                   <h3 className="text-base font-semibold text-text-primary group-hover:text-primary-500 transition line-clamp-2">
                     {c.title}
                   </h3>
-                  <span className={clsx(
-                    'shrink-0 text-[11px] font-medium px-2 py-0.5 rounded-full border',
-                    tone,
-                  )}>
-                    {phaseLabel(c.phase)}
-                  </span>
+                  {c.phase !== 'RUNNING' && (
+                    <span className={clsx(
+                      'shrink-0 text-[11px] font-medium px-2 py-0.5 rounded-full border',
+                      tone,
+                    )}>
+                      {phaseLabel(c.phase)}
+                    </span>
+                  )}
                 </div>
 
                 {c.description && (
@@ -88,7 +90,6 @@ export const ContestsPage: React.FC = () => {
 
                 <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-xs text-text-secondary">
                   <span className="flex items-center gap-1"><ListChecks size={13} /> {t('contests.problemsCount', { count: c.problemCount })}</span>
-                  <span className="flex items-center gap-1"><Users size={13} /> {c.participantCount}</span>
                   <span className="flex items-center gap-1"><Clock size={13} /> {formatWindow(c)}</span>
                   {c.durationMinutes > 0 && (
                     <span className="flex items-center gap-1"><Timer size={13} /> {t('contests.durationMin', { count: c.durationMinutes })}</span>

@@ -31,4 +31,11 @@ public class TestGenerationRequest {
 
     /** Optional – if the entity has multiple pools, choose a specific one */
     private String poolId;
+
+    /**
+     * When true the engine personalises the difficulty mix from the learner's past
+     * attempts on this scope (Tests-page "Generate" flow). When false/omitted the
+     * engine uses the plain union-of-pools mix (topic/course/domain quiz flow).
+     */
+    private boolean adaptive;
 }

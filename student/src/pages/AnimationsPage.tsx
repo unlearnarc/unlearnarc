@@ -142,10 +142,22 @@ export const AnimationsPage: React.FC = () => {
             </div>
           )}
 
-          <div className="grid lg:grid-cols-[260px,1fr] gap-4">
+          <div className="grid lg:grid-cols-[260px_minmax(0,1fr)] gap-4">
+            {/* Compact scene picker keeps the player near the top on phones. */}
+            <label className="lg:hidden flex flex-col gap-1.5 text-xs font-semibold text-text-secondary min-w-0">
+              Choose an animation
+              <select
+                aria-label="Choose an animation"
+                value={selectedId ?? ''}
+                onChange={event => setActiveId(event.target.value)}
+                className="w-full min-w-0 min-h-11 rounded-lg border border-border bg-surface text-text-primary px-3 text-sm"
+              >
+                {filtered.map(scene => <option key={scene.id} value={scene.id}>{scene.title}</option>)}
+              </select>
+            </label>
             {/* scene list */}
             <aside
-              className="rounded-xl border border-border divide-y divide-border overflow-hidden self-start"
+              className="hidden lg:block rounded-xl border border-border divide-y divide-border overflow-hidden self-start"
               role="tablist"
               aria-label="Scenes"
             >
@@ -185,8 +197,8 @@ export const AnimationsPage: React.FC = () => {
 
             {/* active scene */}
             <section
-              className="rounded-2xl border border-border p-4 md:p-5 space-y-3 min-w-0"
-              style={{ background: '#16232E' }}
+              className="rounded-2xl border border-border p-2.5 sm:p-4 md:p-5 space-y-3 min-w-0"
+              style={{ background: 'var(--ua-surface)' }}
               aria-label={trace?.title ?? 'Animation'}
             >
               {detailLoading || !trace ? (

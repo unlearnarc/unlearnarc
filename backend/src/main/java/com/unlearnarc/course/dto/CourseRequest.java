@@ -13,8 +13,8 @@ public class CourseRequest {
     @NotBlank(message = "Course name must not be blank")
     private String name;
 
-    @NotNull(message = "Image URL must not be null")
-    private Long imgUrl;
+    @NotBlank(message = "Image URL must not be blank")
+    private String imgUrl;
 
     @NotNull(message = "Total time must not be null")
     private LocalTime totalTime;

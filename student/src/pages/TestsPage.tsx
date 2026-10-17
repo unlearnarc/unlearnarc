@@ -5,6 +5,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { domainAPI, courseAPI, topicAPI, poolAPI, testAPI } from '../api/endpoints';
 import { Badge, ProgressBar, QuizBackground, QuizQuestionCard, Spinner } from '../components/ui';
 import { InsightsView } from '../components/insights/InsightsView';
+import { SearchableSelect } from '../components/ui/SearchableSelect';
 import { useFullScreen } from '../components/layout/AppLayout';
 import { useMascot } from '../components/mascot';
 import { formatDateTime } from '../i18n/format';
@@ -16,9 +17,12 @@ import {
   Trophy, CheckCircle,
   XCircle, ChevronRight, ChevronLeft,
   RotateCcw, ArrowRight, BookOpen, Globe, Layers, Timer,
-  History, AlertTriangle, Sparkles,
+  History, Sparkles,
 } from 'lucide-react';
 import clsx from 'clsx';
+import { PracticeStat } from '../components/ui/PracticeLayout';
+import { useAuth } from '../context/AuthContext';
+import { Flame, Star, Target } from 'lucide-react';
 
 // ── Scope Selector ───────────────────────────────────────────────────────────
 type ScopeType = 'DOMAIN' | 'COURSE' | 'TOPIC';
@@ -27,21 +31,32 @@ interface ScopeConfig {
   scopeType: ScopeType;
   entityId: string;
   poolId?: string;
+  /**
+   * Which generation flow to use:
+   *  - true  → ADAPTIVE: backend reshapes the difficulty mix from the learner's
+   *            past history on this scope (Tests-page "Start test" button).
+   *  - false → DIRECT: fixed pool mix drawn from the union of child pools
+   *            (deep-linked topic/course quiz from the course page).
+   */
+  adaptive: boolean;
 }
 
 const ScopeSelector: React.FC<{
   onStart: (cfg: ScopeConfig) => void;
   onViewHistory: () => void;
-}> = ({ onStart, onViewHistory }) => {
+  initialConfig?: ScopeConfig | null;
+  initialCourseId?: string;
+}> = ({ onStart, onViewHistory, initialConfig, initialCourseId = '' }) => {
   const { t } = useTranslation();
-  const [scope, setScope]         = useState<ScopeType>('COURSE');
-  const [domainId, setDomainId]   = useState('');
-  const [courseId, setCourseId]   = useState('');
-  const [topicId, setTopicId]     = useState('');
+  const { user } = useAuth();
+  const [scope, setScope]         = useState<ScopeType>(initialConfig?.scopeType ?? 'COURSE');
+  const [domainId, setDomainId]   = useState(initialConfig?.scopeType === 'DOMAIN' ? initialConfig.entityId : '');
+  const [courseId, setCourseId]   = useState(initialConfig?.scopeType === 'COURSE' ? initialConfig.entityId : initialCourseId);
+  const [topicId, setTopicId]     = useState(initialConfig?.scopeType === 'TOPIC' ? initialConfig.entityId : '');
 
-  const { data: domainsRes } = useQuery({ queryKey: ['domains'],  queryFn: domainAPI.getAll });
-  const { data: coursesRes } = useQuery({ queryKey: ['courses'],  queryFn: courseAPI.getAll });
-  const { data: topicsRes }  = useQuery({
+  const { data: domainsRes, isFetching: domainsLoading, isError: domainsError, refetch: retryDomains } = useQuery({ queryKey: ['domains'],  queryFn: domainAPI.getAll });
+  const { data: coursesRes, isFetching: coursesLoading, isError: coursesError, refetch: retryCourses } = useQuery({ queryKey: ['courses'],  queryFn: courseAPI.getAll });
+  const { data: topicsRes, isFetching: topicsLoading, isError: topicsError, refetch: retryTopics } = useQuery({
     queryKey: ['topics', courseId],
     queryFn:  () => topicAPI.getByCourse(courseId),
     enabled:  !!courseId && scope === 'TOPIC',
@@ -50,7 +65,7 @@ const ScopeSelector: React.FC<{
   // We no longer ask the learner to pick a pool — the backend auto-selects the
   // best pool for the chosen scope/tag. We still fetch pools purely to show a
   // readiness hint ("N tests available") and gate the Start button.
-  const { data: poolsRes, isFetching: poolsLoading } = useQuery({
+  const { data: poolsRes, isFetching: poolsLoading, isError: poolsError, refetch: retryPools } = useQuery({
     queryKey: ['pools', scope, domainId, courseId, topicId],
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     queryFn:  (): Promise<any> => {
@@ -69,7 +84,7 @@ const ScopeSelector: React.FC<{
   const pools: QuestionPool[]  = (poolsRes as any)?.data?.data ?? [];
 
   const entityId = scope === 'DOMAIN' ? domainId : scope === 'COURSE' ? courseId : topicId;
-  const canStart = !!entityId && pools.length > 0;
+  const canStart = !!entityId && !poolsLoading && !poolsError && pools.length > 0;
 
   const SCOPES: { type: ScopeType; icon: React.ReactNode; label: string; desc: string }[] = [
     { type: 'DOMAIN', icon: <Globe size={18} />,        label: t('tests.domainTest'),  desc: t('tests.domainTestDesc') },
@@ -78,131 +93,70 @@ const ScopeSelector: React.FC<{
   ];
 
   return (
-    <div className="max-w-4xl mx-auto space-y-5 animate-slide-up">
-      {/* Flat header row */}
-      <div className="flex flex-wrap items-center gap-3">
-        <div className="mr-auto text-left">
-          <h1 className="text-xl font-bold text-text-primary">{t('tests.takeATest')}</h1>
-          <p className="text-xs text-text-secondary">{t('tests.subtitle')}</p>
-        </div>
-        <button
-          onClick={onViewHistory}
-          className="btn-secondary text-sm"
-        >
-          <History size={14} /> {t('tests.testHistory')}
+    <div className="practice-page">
+      <header className="flex items-center justify-between gap-3">
+        <h1 className="min-w-0 text-xl font-bold tracking-tight sm:text-2xl">{t('tests.takeATest')}</h1>
+        <button type="button" onClick={onViewHistory}
+          className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl px-3 text-xs font-semibold text-primary-500 transition hover:bg-primary-50 sm:text-sm">
+          <History size={17} aria-hidden="true" />{t('tests.testHistory')}
         </button>
+      </header>
+      <div className="practice-stats" role="group" aria-label={t('practice.redesign.stats', 'Your practice at a glance')}>
+        <PracticeStat icon={Flame} value={user?.currentStreak ?? '—'} label={t('dashboard.learningHome.dayStreak')} tone="warm" />
+        <PracticeStat icon={Star} value={user?.points ?? '—'} label={t('dashboard.learningHome.learningPoints')} tone="gold" />
+        <PracticeStat icon={BookOpen} value={coursesRes ? courses.length : '—'} label={t('practice.redesign.courses', 'Courses to explore')} />
+        <PracticeStat icon={Globe} value={domainsRes ? domains.length : '—'} label={t('practice.redesign.domains', 'Learning worlds')} tone="mint" />
       </div>
-
-      {/* 2-col: scope picker (left) | config (right); single col on mobile */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
-        {/* Scope choices — vertical flat list */}
-        <div className="space-y-2.5">
+      <section className="space-y-4" aria-labelledby="practice-scope-heading">
+        <div className="practice-section-heading"><div><h2 id="practice-scope-heading"><span className="practice-step">1</span>{t('practice.redesign.pick', 'Choose your adventure')}</h2><p>{t('practice.redesign.pickHint', 'Explore a whole world or focus on one small skill.')}</p></div></div>
+        <div className="practice-scope-grid">
           {SCOPES.map(({ type, icon, label, desc }) => (
-            <button
-              key={type}
-              onClick={() => { setScope(type); setDomainId(''); setCourseId(''); setTopicId(''); }}
-              className={clsx(
-                'card card--flat border rounded-[12px] p-4 w-full text-left flex items-center gap-3 transition-colors',
-                scope === type ? 'border-primary-500 bg-primary-50' : 'border-border hover:border-primary-300'
-              )}
-            >
-              <div className={clsx('w-10 h-10 rounded-lg flex items-center justify-center shrink-0',
-                scope === type ? 'bg-primary-500 text-white' : 'bg-surface-soft text-text-secondary')}>
-                {icon}
-              </div>
-              <div className="min-w-0">
-                <p className="text-sm font-semibold text-text-primary">{label}</p>
-                <p className="text-[11px] text-text-muted mt-0.5 leading-snug">{desc}</p>
-              </div>
+            <button key={type} onClick={() => { setScope(type); setDomainId(''); setCourseId(''); setTopicId(''); }}
+              aria-pressed={scope === type} className={clsx('practice-scope', type === 'DOMAIN' && 'practice-tone-mint', type === 'TOPIC' && 'practice-tone-gold')}>
+              <span className="practice-scope-heading"><span className="practice-icon">{icon}</span><strong>{label}</strong></span>
+              {scope === type && <CheckCircle size={19} className="practice-scope-check" aria-hidden="true" />}
+              <p>{desc}</p>
             </button>
           ))}
         </div>
-
-      {/* Entity pickers */}
-      <div className="card card--flat border border-border rounded-[14px] p-5 space-y-4">
-        {(scope === 'DOMAIN') && (
-          <div>
-            <label className="text-xs font-semibold text-text-secondary uppercase tracking-wider block mb-2">{t('tests.selectDomain')}</label>
-            <select
-              value={domainId}
-              onChange={e => { setDomainId(e.target.value); }}
-              className="input"
-            >
-              <option value="">{t('tests.chooseDomain')}</option>
-              {domains.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
-            </select>
+      </section>
+      <div className="practice-setup-grid">
+        <section className="practice-panel practice-setup" aria-labelledby="practice-setup-heading">
+          <h2 id="practice-setup-heading"><span className="practice-step">2</span>{t('practice.redesign.destination', 'Pick your learning destination')}</h2>
+          {scope === 'DOMAIN' && <div>
+            <label htmlFor="practice-domain" className="text-sm font-semibold block mb-2">{t('tests.selectDomain')}</label>
+            <SearchableSelect id="practice-domain" value={domainId} onChange={setDomainId}
+              placeholder={t('tests.chooseDomain')} options={domains.map(item => ({ value: item.id, label: item.name }))}
+              loading={domainsLoading} error={domainsError} onRetry={() => { void retryDomains(); }} />
+          </div>}
+          {(scope === 'COURSE' || scope === 'TOPIC') && <div>
+            <label htmlFor="practice-course" className="text-sm font-semibold block mb-2">{t('tests.selectCourse')}</label>
+            <SearchableSelect id="practice-course" value={courseId} onChange={id => { setCourseId(id); setTopicId(''); }}
+              placeholder={t('tests.chooseCourse')} options={courses.map(item => ({ value: item.id, label: item.name }))}
+              loading={coursesLoading} error={coursesError} onRetry={() => { void retryCourses(); }} />
+          </div>}
+          {scope === 'TOPIC' && courseId && <div>
+            <label htmlFor="practice-topic" className="text-sm font-semibold block mb-2">{t('tests.selectTopic')}</label>
+            <SearchableSelect key={courseId} id="practice-topic" value={topicId} onChange={setTopicId}
+              placeholder={t('tests.chooseTopic')} options={topics.map(item => ({ value: item.id, label: item.name }))}
+              loading={topicsLoading} error={topicsError} onRetry={() => { void retryTopics(); }} />
+          </div>}
+          <div aria-live="polite">
+            {entityId && poolsLoading && <div className="flex items-center gap-2 text-sm text-text-secondary"><Spinner size="sm" />{t('tests.checkingTests')}</div>}
+            {entityId && !poolsLoading && !poolsError && pools.length > 0 && <div className="p-4 bg-primary-50 rounded-2xl space-y-2">
+              <p className="flex items-center gap-2 text-sm font-semibold text-primary-500"><CheckCircle size={17} />{pools.length === 1 ? t('tests.testReady') : t('tests.testsAvailable', { count: pools.length })}</p>
+              <p className="text-xs text-text-secondary leading-relaxed">{t('tests.autoDrawNote')}</p>
+            </div>}
+            {entityId && !poolsLoading && !poolsError && !pools.length && <p className="text-sm text-warning">{t('tests.noTests')}</p>}
           </div>
-        )}
-
-        {(scope === 'COURSE' || scope === 'TOPIC') && (
-          <div>
-            <label className="text-xs font-semibold text-text-secondary uppercase tracking-wider block mb-2">{t('tests.selectCourse')}</label>
-            <select
-              value={courseId}
-              onChange={e => { setCourseId(e.target.value); setTopicId(''); }}
-              className="input"
-            >
-              <option value="">{t('tests.chooseCourse')}</option>
-              {courses.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-            </select>
-          </div>
-        )}
-
-        {scope === 'TOPIC' && courseId && (
-          <div>
-            <label className="text-xs font-semibold text-text-secondary uppercase tracking-wider block mb-2">{t('tests.selectTopic')}</label>
-            <select
-              value={topicId}
-              onChange={e => { setTopicId(e.target.value); }}
-              className="input"
-            >
-              <option value="">{t('tests.chooseTopic')}</option>
-              {topics.map(tp => <option key={tp.id} value={tp.id}>{tp.name}</option>)}
-            </select>
-          </div>
-        )}
-
-        {/* Readiness hint — the learner never picks a pool; the engine auto-selects
-            the best one for the chosen scope. We just reassure them a test exists. */}
-        {entityId && poolsLoading && (
-          <div className="bg-surface-soft rounded-[10px] p-4 border border-border flex items-center gap-2">
-            <Spinner size="sm" />
-            <p className="text-xs text-text-secondary">{t('tests.checkingTests')}</p>
-          </div>
-        )}
-
-        {entityId && !poolsLoading && pools.length > 0 && (
-          <div className="bg-primary-50 rounded-[10px] p-4 border border-primary-200">
-            <div className="flex items-center gap-2 mb-1">
-              <CheckCircle size={14} className="text-primary-500" />
-              <p className="text-xs font-semibold text-primary-500">
-                {pools.length === 1
-                  ? t('tests.testReady')
-                  : t('tests.testsAvailable', { count: pools.length })}
-              </p>
-            </div>
-            <p className="text-[11px] text-text-muted leading-snug">
-              {t('tests.autoDrawNote')}
-            </p>
-          </div>
-        )}
-
-        {entityId && !poolsLoading && pools.length === 0 && (
-          <div className="bg-warning-soft rounded-[10px] p-4 border border-warning/30">
-            <p className="text-xs text-warning font-medium">
-              {t('tests.noTests')}
-            </p>
-          </div>
-        )}
-
-        <button
-          disabled={!canStart}
-          onClick={() => onStart({ scopeType: scope, entityId })}
-          className="btn-primary w-full justify-center py-3 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {t('tests.startTest')} <ArrowRight size={16} className="ua-flip-rtl" />
-        </button>
-      </div>
+          {entityId && poolsError && <div className="practice-state" role="alert"><p>{t('practice.redesign.poolError', 'We could not check the available tests.')}</p><button className="practice-button" onClick={() => { void retryPools(); }}>{t('dashboard.learningHome.retry')}</button></div>}
+          <button disabled={!canStart} onClick={() => onStart({ scopeType: scope, entityId, adaptive: true })} className="practice-button practice-button-primary w-full">{t('tests.startTest')}<ArrowRight size={17} className="ua-flip-rtl" /></button>
+        </section>
+        <aside className="practice-note">
+          <span className="practice-icon"><Sparkles size={25} aria-hidden="true" /></span>
+          <h2>{t('practice.redesign.grow', 'A little practice goes a long way')}</h2><p>{t('tests.adaptiveNote')}</p>
+          <ol><li>{t('practice.redesign.stepOne', 'Choose something you want to learn.')}</li><li>{t('practice.redesign.stepTwo', 'Give it a go. Every answer helps you grow.')}</li><li>{t('practice.redesign.stepThree', 'Review your discoveries and try again.')}</li></ol>
+        </aside>
       </div>
     </div>
   );
@@ -238,8 +192,8 @@ const QuizInterface: React.FC<{
 
   const q: TestQuestion = session.questions[current];
   const selected = answers[q.id] ?? [];
-  const answered = Object.keys(answers).length;
-  const progress = ((current + 1) / session.questions.length) * 100;
+  const answered = session.questions.filter(question => (answers[question.id]?.length ?? 0) > 0).length;
+  const progress = session.questions.length ? (answered / session.questions.length) * 100 : 0;
 
   const toggleAnswer = (answerId: string) => {
     if (q.questionType === 'MCQ') {
@@ -276,9 +230,22 @@ const QuizInterface: React.FC<{
     <QuizBackground>
 
         {/* Header bar */}
-        <div className="flex items-center justify-between">
+        <div className="quiz-session-header flex items-center justify-between">
           <div>
-            <p className="text-text-on-dark text-sm font-medium">{session.poolName}</p>
+            <div className="quiz-session-title flex items-center gap-2">
+              <p className="text-text-on-dark text-sm font-medium">{session.poolName}</p>
+              {session.strategy && session.strategy !== 'DEFAULT' && session.strategy !== 'DEFAULT_NO_HISTORY' && (
+                <span className={clsx(
+                  'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold',
+                  session.strategy === 'MASTERY'   && 'bg-achievement/20 text-achievement',
+                  session.strategy === 'ADVANCING' && 'bg-primary-500/20 text-primary-200',
+                  session.strategy === 'REINFORCE' && 'bg-warning/20 text-warning',
+                )}>
+                  <Sparkles size={10} />
+                  {t(`tests.strategy.${session.strategy}`)}
+                </span>
+              )}
+            </div>
             <p className="text-text-muted text-xs mt-0.5">
               {t('tests.questionOf', { current: current + 1, total: session.totalQuestions })}
               · {t('tests.answeredCount', { count: answered })}
@@ -299,11 +266,12 @@ const QuizInterface: React.FC<{
         </div>
 
         {/* Progress */}
-        <div>
+        <div className="quiz-completion" role="progressbar" aria-label="Questions answered" aria-valuemin={0} aria-valuemax={100} aria-valuenow={progress} aria-valuetext={`${answered} of ${session.questions.length} questions answered`}>
           <ProgressBar
             value={progress}
-            color={urgentTimer ? 'bg-danger' : 'bg-primary-500'}
-            height="h-1"
+            className="quiz-solid-progress"
+            animate={false}
+            height="h-2"
           />
           <div className="flex justify-between text-[11px] text-text-secondary mt-1">
             <span>{t('tests.percentComplete', { percent: Math.round(progress) })}</span>
@@ -319,7 +287,7 @@ const QuizInterface: React.FC<{
         />
 
         {/* Navigation */}
-        <div className="flex items-center justify-between">
+        <div className="quiz-navigation flex items-center justify-between">
           <button
             onClick={() => setCurrent(v => Math.max(0, v - 1))}
             disabled={current === 0}
@@ -381,30 +349,25 @@ const ResultsView: React.FC<{
   const passed = result.passed;
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6 animate-slide-up">
+    <div className="practice-page practice-result mx-auto animate-slide-up">
       {/* Hero result */}
-      <div className={clsx(
-        'rounded-[20px] p-8 sm:p-10 text-center text-white relative overflow-hidden',
-        passed
-          ? 'bg-gradient-to-br from-success to-success'
-          : 'bg-gradient-to-br from-danger to-danger'
-      )}>
+      <div className="practice-result-hero text-center relative overflow-hidden">
         <div className="relative z-10">
-          <div className="w-20 h-20 rounded-full bg-white/20 flex items-center justify-center mx-auto mb-5">
+          <div className="result-medal w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-5">
             {passed
-              ? <Trophy size={36} className="text-white" />
-              : <XCircle size={36} className="text-white" />
+              ? <Trophy size={36} />
+              : <Target size={36} />
             }
           </div>
           <h2 className="text-3xl font-bold mb-1">{pct}%</h2>
-          <p className="text-white/80 text-lg mb-3">
-            {passed ? t('tests.passed') : t('tests.notPassed')}
+          <p className="result-subtitle text-lg mb-3">
+            {passed ? t('tests.passed') : t('practice.redesign.resultEncouragement', 'Not there yet — your next discovery is one practice away.')}
           </p>
-          <p className="text-white/70 text-sm">
+          <p className="result-meta text-sm">
             {t('tests.pointsSummary', { earned: result.earnedPoints, total: result.totalPoints })} ·&nbsp;
             {t('tests.correctCount', { count: result.correctAnswers })} · {t('tests.wrongCount', { count: result.wrongAnswers })} · {t('tests.skippedCount', { count: result.skippedAnswers })}
           </p>
-          <p className="text-white/60 text-xs mt-1">{t('tests.passMark', { percent: result.passPercentage })}</p>
+          <p className="result-meta text-xs mt-1">{t('tests.passMark', { percent: result.passPercentage })}</p>
         </div>
         <div className="absolute -right-12 -top-12 w-48 h-48 rounded-full bg-white/10" />
         <div className="absolute -left-8 bottom-4 w-28 h-28 rounded-full bg-white/10" />
@@ -445,6 +408,7 @@ const ResultsView: React.FC<{
       {/* Breakdown toggle */}
       <div className="card overflow-hidden">
         <button
+          aria-expanded={showBreakdown}
           onClick={() => setShowBreakdown(v => !v)}
           className="w-full flex items-center justify-between px-5 py-4 text-sm font-semibold text-text-primary hover:bg-bg-soft transition"
         >
@@ -517,11 +481,11 @@ const ResultsView: React.FC<{
       </div>
 
       <div className="flex gap-3">
-        <button onClick={onRetry} className="btn-secondary flex-1 justify-center py-3">
+        <button onClick={onRetry} className="practice-button flex-1">
           <RotateCcw size={15} /> {t('tests.tryAgain')}
         </button>
         {onViewHistory && (
-          <button onClick={onViewHistory} className="btn-ghost flex-1 justify-center py-3">
+          <button onClick={onViewHistory} className="practice-button flex-1">
             <History size={15} /> {t('tests.history')}
           </button>
         )}
@@ -575,87 +539,45 @@ const HistoryView: React.FC<{
   onInsights: () => void;
 }> = ({ onBack, onReview, onInsights }) => {
   const { t } = useTranslation();
-  const { data, isLoading } = useQuery({
-    queryKey: ['test-history', 0],
-    queryFn:  () => testAPI.history(0, 50),
+  const [page, setPage] = useState(0);
+  const { data, isLoading, isError, refetch } = useQuery({
+    queryKey: ['test-history', page, 12], queryFn: () => testAPI.history(page, 12),
   });
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const pageData: Page<TestAttemptSummary> | undefined = (data as any)?.data?.data;
+  const pageData: Page<TestAttemptSummary> | undefined = data?.data?.data;
   const attempts = pageData?.content ?? [];
-
+  const average = attempts.length ? Math.round(attempts.reduce((sum, a) => sum + a.scorePercentage, 0) / attempts.length) : null;
+  const best = attempts.length ? Math.round(Math.max(...attempts.map(a => a.scorePercentage))) : null;
   return (
-    <div className="max-w-4xl mx-auto space-y-5 animate-slide-up">
-      <div className="flex flex-wrap items-center gap-3">
-        <div className="flex items-center gap-2 mr-auto">
-          <History size={20} className="text-primary-500" />
-          <h1 className="text-xl font-bold text-text-primary">{t('tests.testHistory')}</h1>
+    <div className="practice-page">
+      <header className="flex flex-wrap items-center justify-between gap-3">
+        <h1 className="text-xl font-bold tracking-tight sm:text-2xl">{t('tests.testHistory')}</h1>
+        <div className="flex flex-wrap items-center gap-2">
+          <button type="button" onClick={onInsights} className="practice-button"><Sparkles size={16} aria-hidden="true" />{t('tests.deepInsights')}</button>
+          <button type="button" onClick={onBack} className="practice-button"><Target size={16} aria-hidden="true" />{t('tests.takeATestShort')}</button>
         </div>
-        <button onClick={onBack} className="btn-secondary text-sm">
-          <ArrowRight size={14} className="rotate-180 ua-flip-rtl" /> {t('tests.takeATestShort')}
-        </button>
+      </header>
+      <div className="practice-stats">
+        <PracticeStat icon={BookOpen} value={pageData?.totalElements ?? '—'} label={t('dashboard.learningHome.practiceRounds')} />
+        <PracticeStat icon={Trophy} value={best === null ? '—' : `${best}%`} label={t('practice.redesign.pageBest', 'Best on this page')} tone="gold" />
+        <PracticeStat icon={Target} value={average === null ? '—' : `${average}%`} label={t('practice.redesign.pageAverage', 'Average on this page')} tone="mint" />
+        <PracticeStat icon={CheckCircle} value={data ? attempts.filter(a => a.passed).length : '—'} label={t('practice.redesign.pagePassed', 'Passed on this page')} tone="warm" />
       </div>
-
-      {/* Deep-insights entry point — the heavy analysis is computed server-side. */}
-      <button
-        onClick={onInsights}
-        className="card card--flat border border-primary-200 rounded-[14px] p-4 w-full text-left hover:border-primary-400 transition flex items-center gap-3 bg-primary-50/50"
-      >
-        <div className="w-10 h-10 rounded-xl bg-primary-500 text-white flex items-center justify-center shrink-0">
-          <Sparkles size={18} />
-        </div>
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold text-text-primary">{t('tests.deepInsights')}</p>
-          <p className="text-xs text-text-muted mt-0.5">
-            {t('tests.deepInsightsDesc')}
-          </p>
-        </div>
-        <ChevronRight size={16} className="text-primary-500 shrink-0 ua-flip-rtl" />
-      </button>
-
-      {isLoading && (
-        <div className="flex justify-center py-16"><Spinner size="lg" /></div>
-      )}
-
-      {!isLoading && attempts.length === 0 && (
-        <div className="card card--flat border border-border rounded-[14px] p-10 text-center">
-          <AlertTriangle size={28} className="text-text-muted mx-auto mb-3" />
-          <p className="text-sm text-text-secondary">{t('tests.noAttempts')}</p>
-        </div>
-      )}
-
-      {/* Attempt list — 2-col grid on desktop, single col on mobile */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-2.5">
-        {attempts.map(a => (
-          <button
-            key={a.attemptId}
-            onClick={() => onReview(a.attemptId)}
-            className="card card--flat border border-border rounded-[12px] p-4 w-full text-left hover:border-primary-300 transition flex items-center gap-4"
-          >
-            <div className={clsx(
-              'w-11 h-11 rounded-xl flex flex-col items-center justify-center shrink-0 text-xs font-bold',
-              a.passed ? 'bg-success-soft text-success' : 'bg-danger-soft text-danger'
-            )}>
-              {Math.round(a.scorePercentage)}%
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2">
-                <p className="text-sm font-semibold text-text-primary truncate">{a.poolName}</p>
-                <Badge label={a.entityType} />
-              </div>
-              <p className="text-xs text-text-muted mt-0.5">
-                {t('tests.correctFraction', { correct: a.correctCount, total: a.totalQuestions })}
-                {a.improvementNeeded && <span className="text-warning"> · {t('tests.needsImprovement')}</span>}
-                {a.timeTakenSeconds != null && <span> · {t('tests.duration', { m: Math.floor(a.timeTakenSeconds / 60), s: a.timeTakenSeconds % 60 })}</span>}
-              </p>
-              <p className="text-[11px] text-text-muted mt-0.5">
-                {formatDateTime(a.attemptedAt)}
-              </p>
-            </div>
-            <ChevronRight size={16} className="text-text-muted shrink-0 ua-flip-rtl" />
-          </button>
-        ))}
-      </div>
+      <section className="space-y-4" aria-labelledby="practice-journal-heading">
+        <div className="practice-section-heading"><div><h2 id="practice-journal-heading">{t('practice.redesign.pastAdventures', 'Your practice adventures')}</h2><p>{t('practice.redesign.reviewHint', 'Open a round to discover what clicked and what to try next.')}</p></div></div>
+        {isLoading && <div className="practice-state" role="status"><Spinner size="lg" />{t('common.loading')}</div>}
+        {isError && <div className="practice-state" role="alert"><p>{t('dashboard.learningHome.loadError')}</p><button className="practice-button" onClick={() => { void refetch(); }}>{t('dashboard.learningHome.retry')}</button></div>}
+        {!isLoading && !isError && !attempts.length && <div className="practice-state"><Sparkles size={30} aria-hidden="true" /><p>{t('tests.noAttempts')}</p><button className="practice-button practice-button-primary" onClick={onBack}>{t('tests.takeATestShort')}<ArrowRight size={16} /></button></div>}
+        {!isError && <div className="practice-journal">{attempts.map(a => <button key={a.attemptId} onClick={() => onReview(a.attemptId)} className="practice-attempt">
+          <div className="practice-attempt-top"><span className={`practice-attempt-score ${a.passed ? 'practice-tone-mint' : ''}`}><span className="practice-icon">{a.passed ? <Trophy size={24} /> : <Target size={24} />}</span>{Math.round(a.scorePercentage)}%</span><Badge label={a.entityType} /></div>
+          <div><h3>{a.poolName}</h3><p>{t('tests.correctFraction', { correct: a.correctCount, total: a.totalQuestions })}{a.timeTakenSeconds != null && <> · {t('tests.duration', { m: Math.floor(a.timeTakenSeconds / 60), s: a.timeTakenSeconds % 60 })}</>}</p><p className="font-semibold">{t(a.passed ? 'dashboard.learningHome.wellDone' : 'dashboard.learningHome.keepPracticing')}</p></div>
+          <div className="practice-attempt-footer"><time dateTime={a.attemptedAt}>{formatDateTime(a.attemptedAt)}</time><span className="practice-review-label">{t('tests.reviewAnswers')}<ArrowRight size={15} className="ua-flip-rtl" /></span></div>
+        </button>)}</div>}
+      </section>
+      {pageData && pageData.totalPages > 1 && <nav className="practice-pagination" aria-label={t('practice.redesign.pagination', 'Practice history pages')}>
+        <button className="practice-button" disabled={page === 0} onClick={() => setPage(p => p - 1)}><ChevronLeft size={16} className="ua-flip-rtl" />{t('tests.previous')}</button>
+        <span>{page + 1} / {pageData.totalPages}</span>
+        <button className="practice-button" disabled={page + 1 >= pageData.totalPages} onClick={() => setPage(p => p + 1)}>{t('tests.next')}<ChevronRight size={16} className="ua-flip-rtl" /></button>
+      </nav>}
     </div>
   );
 };
@@ -665,7 +587,8 @@ type Phase = 'select' | 'loading' | 'quiz' | 'result' | 'history' | 'review' | '
 
 export const TestsPage: React.FC = () => {
   const { t } = useTranslation();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const handledDeepLink = React.useRef<string | null>(null);
   const [phase,   setPhase]   = useState<Phase>('select');
   const [session, setSession] = useState<TestSession | null>(null);
   const [result,  setResult]  = useState<TestResultResponse | null>(null);
@@ -676,6 +599,9 @@ export const TestsPage: React.FC = () => {
   const preScope    = searchParams.get('scope')    as ScopeType | null;
   const preEntityId = searchParams.get('entityId');
   const preView     = searchParams.get('view');   // 'insights' | 'history'
+  // Deep-links from a course/topic page are the DIRECT flow (fixed pool mix,
+  // union of child pools). Opt into the adaptive flow with ?adaptive=1 only.
+  const preAdaptive = searchParams.get('adaptive') === '1';
 
   const queryClient = useQueryClient();
   const { fire } = useMascot();
@@ -684,6 +610,12 @@ export const TestsPage: React.FC = () => {
     mutationFn: (cfg: ScopeConfig) => testAPI.generate({
       scopeType: cfg.scopeType,
       entityId:  cfg.entityId,
+      // Two flows share this one endpoint, distinguished by `adaptive`:
+      //  • ADAPTIVE (true)  — Tests-page "Start test": backend reshapes the
+      //    difficulty mix from the learner's past attempts on this scope.
+      //  • DIRECT   (false) — deep-linked topic/course quiz from the course page:
+      //    fixed pool mix drawn from the union of child pools.
+      adaptive:  cfg.adaptive,
     }),
     onSuccess: (res) => {
       setSession(res.data.data ?? res.data);
@@ -693,7 +625,7 @@ export const TestsPage: React.FC = () => {
   });
 
   const gradeMutation = useMutation({
-    mutationFn: (payload: { poolId: string; entityId: string; answers: { questionId: string; selectedAnswerIds: string[] }[]; timeTakenSeconds: number }) =>
+    mutationFn: (payload: { poolId: string; entityId: string; scopeType?: ScopeType; answers: { questionId: string; selectedAnswerIds: string[] }[]; timeTakenSeconds: number }) =>
       testAPI.grade(payload),
     onSuccess: (res) => {
       const graded = res.data.data ?? res.data;
@@ -703,6 +635,10 @@ export const TestsPage: React.FC = () => {
       fire(graded?.passed ? 'TEST_PASSED' : 'TEST_FAILED');
       // The attempt is now persisted server-side — refresh the history list.
       queryClient.invalidateQueries({ queryKey: ['test-history'] });
+      queryClient.invalidateQueries({ queryKey: ['insights-dashboard'] });
+      queryClient.invalidateQueries({ queryKey: ['insights-improvement'] });
+      queryClient.invalidateQueries({ queryKey: ['course-progress'] });
+      queryClient.invalidateQueries({ queryKey: ['roadmap'] });
     },
   });
 
@@ -718,31 +654,41 @@ export const TestsPage: React.FC = () => {
   ) => {
     if (!session || !config) return;
     gradeMutation.mutate({
-      poolId:   session.poolId,
-      entityId: config.entityId,
+      poolId:    session.poolId,
+      entityId:  config.entityId,
+      scopeType: config.scopeType,   // record the TRUE tested scope for history/insights
       answers,
       timeTakenSeconds,
     });
   };
 
   const handleRetry = () => {
+    setSearchParams({}, { replace: true });
     setPhase('select');
     setSession(null);
     setResult(null);
     setConfig(null);
+    generateMutation.reset();
   };
 
-  // Auto-start / deep-link on mount from URL params
+  // Consume each deep-link once, including React StrictMode's repeated effects.
+  // Watching the URL also supports navigation while this page stays mounted.
   useEffect(() => {
-    if (preScope && preEntityId && phase === 'select') {
-      handleStart({ scopeType: preScope, entityId: preEntityId });
+    const key = searchParams.toString();
+    if (handledDeepLink.current === key) return;
+    handledDeepLink.current = key;
+    if (preEntityId && (preScope === 'DOMAIN' || preScope === 'COURSE' || preScope === 'TOPIC')) {
+      setSession(null);
+      setResult(null);
+      handleStart({ scopeType: preScope, entityId: preEntityId, adaptive: preAdaptive });
     } else if (preView === 'insights') {
       setPhase('insights');
     } else if (preView === 'history') {
       setPhase('history');
     }
+    // Startup is URL-driven, not phase-driven: an error must not restart it.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [searchParams]);
 
   if (phase === 'loading') return (
     <div className="flex flex-col items-center justify-center py-32 gap-4">
@@ -796,7 +742,14 @@ export const TestsPage: React.FC = () => {
 
   return (
     <div className="animate-fade-in">
-      <ScopeSelector onStart={handleStart} onViewHistory={() => setPhase('history')} />
+      {generateMutation.isError && (
+        <div role="alert" className="card mb-4 p-4 space-y-3">
+          <p className="text-sm text-text-secondary">{t('tests.quizLoadError', 'Unable to start this quiz. Please try again.')}</p>
+          {config && <button type="button" className="btn-secondary" onClick={() => handleStart(config)}>{t('dashboard.learningHome.retry')}</button>}
+        </div>
+      )}
+      <ScopeSelector onStart={handleStart} onViewHistory={() => setPhase('history')}
+        initialConfig={config} initialCourseId={searchParams.get('courseId') ?? ''} />
     </div>
   );
 };

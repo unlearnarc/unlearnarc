@@ -59,6 +59,16 @@ export const courseAPI = {
   getBySkill: (skillId: string) => api.get(`/skill-course-mappings/skill/${skillId}`),
 };
 
+// ── Mappings (Domain→Skill→Course join tables) ───────────────────────────────
+// Needed to resolve which courses belong to a domain: the relationship is two
+// hops — Domain ─(domainSkill)─► Skill ─(skillCourse)─► Course.
+export const mappingAPI = {
+  /** All domain↔skill links. */
+  domainSkill: () => api.get('/domain-skill-mappings'),
+  /** All skill↔course links. */
+  skillCourse: () => api.get('/skill-course-mappings'),
+};
+
 // ── Enrollments ("My Learnings") ──────────────────────────────────────────────
 export const enrollmentAPI = {
   /** Courses the authenticated user has started learning. */
@@ -67,6 +77,8 @@ export const enrollmentAPI = {
   status:    (courseId: string) => api.get(`/enrollments/course/${courseId}/status`),
   /** Start learning a course — maps it to the user. Idempotent. */
   enroll:    (courseId: string) => api.post(`/enrollments/course/${courseId}`),
+  /** Server-derived course and topic quiz mastery for the current learner. */
+  progress: (courseId: string) => api.get(`/enrollments/course/${courseId}/progress`),
   /** Stop learning a course. */
   unenroll:  (courseId: string) => api.delete(`/enrollments/course/${courseId}`),
 };
@@ -90,6 +102,15 @@ export const topicAPI = {
 export const studyMaterialAPI = {
   getByTopic: (topicId: string) => api.get(`/study-materials/topic/${topicId}`),
   getById:    (id: string)      => api.get(`/study-materials/${id}`),
+};
+
+// ── Notes (book-style lessons rendered in-app) ───────────────────────────────
+export const noteAPI = {
+  // published-only summaries for learners
+  getByTopic:  (topicId: string)  => api.get(`/notes/topic/${topicId}`),
+  getByCourse: (courseId: string) => api.get(`/notes/course/${courseId}`),
+  // full lesson body (published only for students; backend enforces)
+  getById:     (id: string)       => api.get(`/notes/${id}`),
 };
 
 // ── Question Pools ───────────────────────────────────────────────────────────

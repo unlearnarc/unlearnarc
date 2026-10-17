@@ -8,7 +8,7 @@ Character ids (see src/components/mascot/characters.ts):
 
 Optional per-mood files for richer reactions (checked first, then the base file):
   /mascot/<id>.<mood>.lottie   e.g. luna.celebrate.lottie, max.wave.lottie
-  moods: idle | happy | celebrate | encourage | proud | thinking | wave | love
+  moods: idle | happy | celebrate | encourage | proud | thinking | wave | walking | sleeping | surprised
 
 ## IMPORTANT: why the character showed the SVG (not Lottie) before
 The dev/prod server is a SPA — it returns index.html (HTTP 200, text/html) for

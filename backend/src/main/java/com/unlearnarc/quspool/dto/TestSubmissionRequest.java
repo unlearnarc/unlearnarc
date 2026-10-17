@@ -21,6 +21,15 @@ public class TestSubmissionRequest {
     @NotNull(message = "entityId is required")
     private String entityId;
 
+    /**
+     * What the learner actually tested against (DOMAIN | COURSE | TOPIC). Carried
+     * from the generation request so the stored attempt records the TRUE scope,
+     * not the resolved pool's own scope — which may be a child pool under union
+     * resolution. Optional for backward-compat; grade() falls back to the pool's
+     * scope when absent.
+     */
+    private com.unlearnarc.quspool.entity.QuestionPool.ScopeType scopeType;
+
     @NotEmpty(message = "At least one answer is required")
     private List<QuestionAnswer> answers;
 

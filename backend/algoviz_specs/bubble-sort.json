@@ -1,0 +1,1841 @@
+{
+  "slug": "bubble-sort",
+  "title": "Bubble Sort",
+  "summary": "Compare neighbours and swap inverted pairs until no swaps remain.",
+  "usage": "How it works\nEach pass moves the largest remaining value to the end. The suffix is final after each pass. Use for learning adjacent comparisons, not large datasets. The early-exit flag avoids extra passes on sorted input.\n\nProperties and prerequisites\nStable: yes (equal neighbours are not swapped). In-place: yes.\n\nComplexity\nTime: O(n\u00b2) average/worst; O(n) best. Space: O(1).\n\nExample\nInput: [5, 2, 4, 1, 3]. Output: [1, 2, 3, 4, 5].\n\nTry it\nUse Play/Pause, Previous/Next, the timeline, and playback speed. Answer the prediction checkpoints to continue; feedback reveals the expected answer. Python is the line-synchronized walkthrough; Java is an equivalent complete implementation. Sorting functions accept empty arrays, duplicates, negative values, and already sorted inputs. Java methods belong inside a class; Python functions can be called directly.",
+  "category": "Sorting",
+  "difficulty": "EASY",
+  "visualizer": "ARRAY",
+  "complexity": {
+    "time": "O(n\u00b2) average/worst; O(n) best",
+    "space": "O(1)"
+  },
+  "pythonSource": "def bubble_sort(a):\n    for end in range(len(a) - 1, 0, -1):\n        swapped = False  # Begin a pass over the unsorted prefix.\n        for j in range(end):\n            if a[j] > a[j + 1]:  # Compare adjacent values.\n                a[j], a[j + 1] = a[j + 1], a[j]  # Swap out-of-order neighbours.\n                swapped = True\n        if not swapped:  # A pass without swaps proves the array is sorted.\n            break\n    return a\n",
+  "javaSource": "static void bubbleSort(int[] a) {\n    for (int end = a.length - 1; end > 0; end--) {\n        boolean swapped = false;\n        for (int j = 0; j < end; j++) {\n            if (a[j] > a[j + 1]) {\n                int t = a[j]; a[j] = a[j + 1]; a[j + 1] = t;\n                swapped = true;\n            }\n        }\n        if (!swapped) break;\n    }\n}",
+  "spec": {
+    "visualizer": "ARRAY",
+    "initialState": {
+      "array": [
+        5,
+        2,
+        4,
+        1,
+        3
+      ]
+    },
+    "variables": [
+      {
+        "name": "end",
+        "label": "end"
+      },
+      {
+        "name": "j",
+        "label": "j"
+      },
+      {
+        "name": "swapped",
+        "label": "swapped"
+      }
+    ],
+    "steps": [
+      {
+        "title": "Start the walkthrough",
+        "explanation": "Sort ascending. Python steps show the state BEFORE each highlighted line executes.",
+        "state": {
+          "array": [
+            5,
+            2,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {},
+        "input": {
+          "key": "bubble-sort-prediction",
+          "type": "NUMBER",
+          "prompt": "Which value will be at index 0 after sorting?",
+          "expected": 1
+        }
+      },
+      {
+        "title": "for end in range(len(a) - 1, 0, -1):",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            5,
+            2,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {},
+        "pointers": {},
+        "line": 2,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "swapped = False ",
+        "explanation": "Begin a pass over the unsorted prefix.",
+        "state": {
+          "array": [
+            5,
+            2,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "end": 4
+        },
+        "pointers": {
+          "end": 4
+        },
+        "line": 3,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              4
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "for j in range(end):",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            5,
+            2,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "end": 4,
+          "swapped": false
+        },
+        "pointers": {
+          "end": 4
+        },
+        "line": 4,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              4
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "if a[j] > a[j + 1]: ",
+        "explanation": "Compare adjacent values.",
+        "state": {
+          "array": [
+            5,
+            2,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "end": 4,
+          "swapped": false,
+          "j": 0
+        },
+        "pointers": {
+          "end": 4,
+          "j": 0
+        },
+        "line": 5,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              4
+            ],
+            "style": "COMPARE"
+          }
+        ]
+      },
+      {
+        "title": "a[j], a[j + 1] = a[j + 1], a[j] ",
+        "explanation": "Swap out-of-order neighbours.",
+        "state": {
+          "array": [
+            5,
+            2,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "end": 4,
+          "swapped": false,
+          "j": 0
+        },
+        "pointers": {
+          "end": 4,
+          "j": 0
+        },
+        "line": 6,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              4
+            ],
+            "style": "ACTIVE"
+          }
+        ],
+        "input": {
+          "key": "bubble-sort-next",
+          "type": "NUMBER",
+          "prompt": "After the highlighted Python line executes, what value will be at index 0?",
+          "expected": 2
+        }
+      },
+      {
+        "title": "swapped = True",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            2,
+            5,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "end": 4,
+          "swapped": false,
+          "j": 0
+        },
+        "pointers": {
+          "end": 4,
+          "j": 0
+        },
+        "line": 7,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              4
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "for j in range(end):",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            2,
+            5,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "end": 4,
+          "swapped": true,
+          "j": 0
+        },
+        "pointers": {
+          "end": 4,
+          "j": 0
+        },
+        "line": 4,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              4
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "if a[j] > a[j + 1]: ",
+        "explanation": "Compare adjacent values.",
+        "state": {
+          "array": [
+            2,
+            5,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "end": 4,
+          "swapped": true,
+          "j": 1
+        },
+        "pointers": {
+          "end": 4,
+          "j": 1
+        },
+        "line": 5,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              1,
+              4
+            ],
+            "style": "COMPARE"
+          }
+        ]
+      },
+      {
+        "title": "a[j], a[j + 1] = a[j + 1], a[j] ",
+        "explanation": "Swap out-of-order neighbours.",
+        "state": {
+          "array": [
+            2,
+            5,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "end": 4,
+          "swapped": true,
+          "j": 1
+        },
+        "pointers": {
+          "end": 4,
+          "j": 1
+        },
+        "line": 6,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              1,
+              4
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "swapped = True",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            2,
+            4,
+            5,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "end": 4,
+          "swapped": true,
+          "j": 1
+        },
+        "pointers": {
+          "end": 4,
+          "j": 1
+        },
+        "line": 7,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              1,
+              4
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "for j in range(end):",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            2,
+            4,
+            5,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "end": 4,
+          "swapped": true,
+          "j": 1
+        },
+        "pointers": {
+          "end": 4,
+          "j": 1
+        },
+        "line": 4,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              1,
+              4
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "if a[j] > a[j + 1]: ",
+        "explanation": "Compare adjacent values.",
+        "state": {
+          "array": [
+            2,
+            4,
+            5,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "end": 4,
+          "swapped": true,
+          "j": 2
+        },
+        "pointers": {
+          "end": 4,
+          "j": 2
+        },
+        "line": 5,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              2,
+              4
+            ],
+            "style": "COMPARE"
+          }
+        ]
+      },
+      {
+        "title": "a[j], a[j + 1] = a[j + 1], a[j] ",
+        "explanation": "Swap out-of-order neighbours.",
+        "state": {
+          "array": [
+            2,
+            4,
+            5,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "end": 4,
+          "swapped": true,
+          "j": 2
+        },
+        "pointers": {
+          "end": 4,
+          "j": 2
+        },
+        "line": 6,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              2,
+              4
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "swapped = True",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            2,
+            4,
+            1,
+            5,
+            3
+          ]
+        },
+        "variables": {
+          "end": 4,
+          "swapped": true,
+          "j": 2
+        },
+        "pointers": {
+          "end": 4,
+          "j": 2
+        },
+        "line": 7,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              2,
+              4
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "for j in range(end):",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            2,
+            4,
+            1,
+            5,
+            3
+          ]
+        },
+        "variables": {
+          "end": 4,
+          "swapped": true,
+          "j": 2
+        },
+        "pointers": {
+          "end": 4,
+          "j": 2
+        },
+        "line": 4,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              2,
+              4
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "if a[j] > a[j + 1]: ",
+        "explanation": "Compare adjacent values.",
+        "state": {
+          "array": [
+            2,
+            4,
+            1,
+            5,
+            3
+          ]
+        },
+        "variables": {
+          "end": 4,
+          "swapped": true,
+          "j": 3
+        },
+        "pointers": {
+          "end": 4,
+          "j": 3
+        },
+        "line": 5,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              3,
+              4
+            ],
+            "style": "COMPARE"
+          }
+        ]
+      },
+      {
+        "title": "a[j], a[j + 1] = a[j + 1], a[j] ",
+        "explanation": "Swap out-of-order neighbours.",
+        "state": {
+          "array": [
+            2,
+            4,
+            1,
+            5,
+            3
+          ]
+        },
+        "variables": {
+          "end": 4,
+          "swapped": true,
+          "j": 3
+        },
+        "pointers": {
+          "end": 4,
+          "j": 3
+        },
+        "line": 6,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              3,
+              4
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "swapped = True",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            2,
+            4,
+            1,
+            3,
+            5
+          ]
+        },
+        "variables": {
+          "end": 4,
+          "swapped": true,
+          "j": 3
+        },
+        "pointers": {
+          "end": 4,
+          "j": 3
+        },
+        "line": 7,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              3,
+              4
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "for j in range(end):",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            2,
+            4,
+            1,
+            3,
+            5
+          ]
+        },
+        "variables": {
+          "end": 4,
+          "swapped": true,
+          "j": 3
+        },
+        "pointers": {
+          "end": 4,
+          "j": 3
+        },
+        "line": 4,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              3,
+              4
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "if not swapped: ",
+        "explanation": "A pass without swaps proves the array is sorted.",
+        "state": {
+          "array": [
+            2,
+            4,
+            1,
+            3,
+            5
+          ]
+        },
+        "variables": {
+          "end": 4,
+          "swapped": true,
+          "j": 3
+        },
+        "pointers": {
+          "end": 4,
+          "j": 3
+        },
+        "line": 8,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              3,
+              4
+            ],
+            "style": "COMPARE"
+          }
+        ]
+      },
+      {
+        "title": "for end in range(len(a) - 1, 0, -1):",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            2,
+            4,
+            1,
+            3,
+            5
+          ]
+        },
+        "variables": {
+          "end": 4,
+          "swapped": true,
+          "j": 3
+        },
+        "pointers": {
+          "end": 4,
+          "j": 3
+        },
+        "line": 2,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              3,
+              4
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "swapped = False ",
+        "explanation": "Begin a pass over the unsorted prefix.",
+        "state": {
+          "array": [
+            2,
+            4,
+            1,
+            3,
+            5
+          ]
+        },
+        "variables": {
+          "end": 3,
+          "swapped": true,
+          "j": 3
+        },
+        "pointers": {
+          "end": 3,
+          "j": 3
+        },
+        "line": 3,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              3
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "for j in range(end):",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            2,
+            4,
+            1,
+            3,
+            5
+          ]
+        },
+        "variables": {
+          "end": 3,
+          "swapped": false,
+          "j": 3
+        },
+        "pointers": {
+          "end": 3,
+          "j": 3
+        },
+        "line": 4,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              3
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "if a[j] > a[j + 1]: ",
+        "explanation": "Compare adjacent values.",
+        "state": {
+          "array": [
+            2,
+            4,
+            1,
+            3,
+            5
+          ]
+        },
+        "variables": {
+          "end": 3,
+          "swapped": false,
+          "j": 0
+        },
+        "pointers": {
+          "end": 3,
+          "j": 0
+        },
+        "line": 5,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              3
+            ],
+            "style": "COMPARE"
+          }
+        ]
+      },
+      {
+        "title": "for j in range(end):",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            2,
+            4,
+            1,
+            3,
+            5
+          ]
+        },
+        "variables": {
+          "end": 3,
+          "swapped": false,
+          "j": 0
+        },
+        "pointers": {
+          "end": 3,
+          "j": 0
+        },
+        "line": 4,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              3
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "if a[j] > a[j + 1]: ",
+        "explanation": "Compare adjacent values.",
+        "state": {
+          "array": [
+            2,
+            4,
+            1,
+            3,
+            5
+          ]
+        },
+        "variables": {
+          "end": 3,
+          "swapped": false,
+          "j": 1
+        },
+        "pointers": {
+          "end": 3,
+          "j": 1
+        },
+        "line": 5,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              1,
+              3
+            ],
+            "style": "COMPARE"
+          }
+        ]
+      },
+      {
+        "title": "a[j], a[j + 1] = a[j + 1], a[j] ",
+        "explanation": "Swap out-of-order neighbours.",
+        "state": {
+          "array": [
+            2,
+            4,
+            1,
+            3,
+            5
+          ]
+        },
+        "variables": {
+          "end": 3,
+          "swapped": false,
+          "j": 1
+        },
+        "pointers": {
+          "end": 3,
+          "j": 1
+        },
+        "line": 6,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              1,
+              3
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "swapped = True",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            2,
+            1,
+            4,
+            3,
+            5
+          ]
+        },
+        "variables": {
+          "end": 3,
+          "swapped": false,
+          "j": 1
+        },
+        "pointers": {
+          "end": 3,
+          "j": 1
+        },
+        "line": 7,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              1,
+              3
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "for j in range(end):",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            2,
+            1,
+            4,
+            3,
+            5
+          ]
+        },
+        "variables": {
+          "end": 3,
+          "swapped": true,
+          "j": 1
+        },
+        "pointers": {
+          "end": 3,
+          "j": 1
+        },
+        "line": 4,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              1,
+              3
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "if a[j] > a[j + 1]: ",
+        "explanation": "Compare adjacent values.",
+        "state": {
+          "array": [
+            2,
+            1,
+            4,
+            3,
+            5
+          ]
+        },
+        "variables": {
+          "end": 3,
+          "swapped": true,
+          "j": 2
+        },
+        "pointers": {
+          "end": 3,
+          "j": 2
+        },
+        "line": 5,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              2,
+              3
+            ],
+            "style": "COMPARE"
+          }
+        ]
+      },
+      {
+        "title": "a[j], a[j + 1] = a[j + 1], a[j] ",
+        "explanation": "Swap out-of-order neighbours.",
+        "state": {
+          "array": [
+            2,
+            1,
+            4,
+            3,
+            5
+          ]
+        },
+        "variables": {
+          "end": 3,
+          "swapped": true,
+          "j": 2
+        },
+        "pointers": {
+          "end": 3,
+          "j": 2
+        },
+        "line": 6,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              2,
+              3
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "swapped = True",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            2,
+            1,
+            3,
+            4,
+            5
+          ]
+        },
+        "variables": {
+          "end": 3,
+          "swapped": true,
+          "j": 2
+        },
+        "pointers": {
+          "end": 3,
+          "j": 2
+        },
+        "line": 7,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              2,
+              3
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "for j in range(end):",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            2,
+            1,
+            3,
+            4,
+            5
+          ]
+        },
+        "variables": {
+          "end": 3,
+          "swapped": true,
+          "j": 2
+        },
+        "pointers": {
+          "end": 3,
+          "j": 2
+        },
+        "line": 4,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              2,
+              3
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "if not swapped: ",
+        "explanation": "A pass without swaps proves the array is sorted.",
+        "state": {
+          "array": [
+            2,
+            1,
+            3,
+            4,
+            5
+          ]
+        },
+        "variables": {
+          "end": 3,
+          "swapped": true,
+          "j": 2
+        },
+        "pointers": {
+          "end": 3,
+          "j": 2
+        },
+        "line": 8,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              2,
+              3
+            ],
+            "style": "COMPARE"
+          }
+        ]
+      },
+      {
+        "title": "for end in range(len(a) - 1, 0, -1):",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            2,
+            1,
+            3,
+            4,
+            5
+          ]
+        },
+        "variables": {
+          "end": 3,
+          "swapped": true,
+          "j": 2
+        },
+        "pointers": {
+          "end": 3,
+          "j": 2
+        },
+        "line": 2,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              2,
+              3
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "swapped = False ",
+        "explanation": "Begin a pass over the unsorted prefix.",
+        "state": {
+          "array": [
+            2,
+            1,
+            3,
+            4,
+            5
+          ]
+        },
+        "variables": {
+          "end": 2,
+          "swapped": true,
+          "j": 2
+        },
+        "pointers": {
+          "end": 2,
+          "j": 2
+        },
+        "line": 3,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              2
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "for j in range(end):",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            2,
+            1,
+            3,
+            4,
+            5
+          ]
+        },
+        "variables": {
+          "end": 2,
+          "swapped": false,
+          "j": 2
+        },
+        "pointers": {
+          "end": 2,
+          "j": 2
+        },
+        "line": 4,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              2
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "if a[j] > a[j + 1]: ",
+        "explanation": "Compare adjacent values.",
+        "state": {
+          "array": [
+            2,
+            1,
+            3,
+            4,
+            5
+          ]
+        },
+        "variables": {
+          "end": 2,
+          "swapped": false,
+          "j": 0
+        },
+        "pointers": {
+          "end": 2,
+          "j": 0
+        },
+        "line": 5,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              2
+            ],
+            "style": "COMPARE"
+          }
+        ]
+      },
+      {
+        "title": "a[j], a[j + 1] = a[j + 1], a[j] ",
+        "explanation": "Swap out-of-order neighbours.",
+        "state": {
+          "array": [
+            2,
+            1,
+            3,
+            4,
+            5
+          ]
+        },
+        "variables": {
+          "end": 2,
+          "swapped": false,
+          "j": 0
+        },
+        "pointers": {
+          "end": 2,
+          "j": 0
+        },
+        "line": 6,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              2
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "swapped = True",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ]
+        },
+        "variables": {
+          "end": 2,
+          "swapped": false,
+          "j": 0
+        },
+        "pointers": {
+          "end": 2,
+          "j": 0
+        },
+        "line": 7,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              2
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "for j in range(end):",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ]
+        },
+        "variables": {
+          "end": 2,
+          "swapped": true,
+          "j": 0
+        },
+        "pointers": {
+          "end": 2,
+          "j": 0
+        },
+        "line": 4,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              2
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "if a[j] > a[j + 1]: ",
+        "explanation": "Compare adjacent values.",
+        "state": {
+          "array": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ]
+        },
+        "variables": {
+          "end": 2,
+          "swapped": true,
+          "j": 1
+        },
+        "pointers": {
+          "end": 2,
+          "j": 1
+        },
+        "line": 5,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              1,
+              2
+            ],
+            "style": "COMPARE"
+          }
+        ]
+      },
+      {
+        "title": "for j in range(end):",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ]
+        },
+        "variables": {
+          "end": 2,
+          "swapped": true,
+          "j": 1
+        },
+        "pointers": {
+          "end": 2,
+          "j": 1
+        },
+        "line": 4,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              1,
+              2
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "if not swapped: ",
+        "explanation": "A pass without swaps proves the array is sorted.",
+        "state": {
+          "array": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ]
+        },
+        "variables": {
+          "end": 2,
+          "swapped": true,
+          "j": 1
+        },
+        "pointers": {
+          "end": 2,
+          "j": 1
+        },
+        "line": 8,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              1,
+              2
+            ],
+            "style": "COMPARE"
+          }
+        ]
+      },
+      {
+        "title": "for end in range(len(a) - 1, 0, -1):",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ]
+        },
+        "variables": {
+          "end": 2,
+          "swapped": true,
+          "j": 1
+        },
+        "pointers": {
+          "end": 2,
+          "j": 1
+        },
+        "line": 2,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              1,
+              2
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "swapped = False ",
+        "explanation": "Begin a pass over the unsorted prefix.",
+        "state": {
+          "array": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ]
+        },
+        "variables": {
+          "end": 1,
+          "swapped": true,
+          "j": 1
+        },
+        "pointers": {
+          "end": 1,
+          "j": 1
+        },
+        "line": 3,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              1
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "for j in range(end):",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ]
+        },
+        "variables": {
+          "end": 1,
+          "swapped": false,
+          "j": 1
+        },
+        "pointers": {
+          "end": 1,
+          "j": 1
+        },
+        "line": 4,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              1
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "if a[j] > a[j + 1]: ",
+        "explanation": "Compare adjacent values.",
+        "state": {
+          "array": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ]
+        },
+        "variables": {
+          "end": 1,
+          "swapped": false,
+          "j": 0
+        },
+        "pointers": {
+          "end": 1,
+          "j": 0
+        },
+        "line": 5,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              1
+            ],
+            "style": "COMPARE"
+          }
+        ]
+      },
+      {
+        "title": "for j in range(end):",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ]
+        },
+        "variables": {
+          "end": 1,
+          "swapped": false,
+          "j": 0
+        },
+        "pointers": {
+          "end": 1,
+          "j": 0
+        },
+        "line": 4,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              1
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "if not swapped: ",
+        "explanation": "A pass without swaps proves the array is sorted.",
+        "state": {
+          "array": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ]
+        },
+        "variables": {
+          "end": 1,
+          "swapped": false,
+          "j": 0
+        },
+        "pointers": {
+          "end": 1,
+          "j": 0
+        },
+        "line": 8,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              1
+            ],
+            "style": "COMPARE"
+          }
+        ]
+      },
+      {
+        "title": "break",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ]
+        },
+        "variables": {
+          "end": 1,
+          "swapped": false,
+          "j": 0
+        },
+        "pointers": {
+          "end": 1,
+          "j": 0
+        },
+        "line": 9,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              1
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "return a",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ]
+        },
+        "variables": {
+          "end": 1,
+          "swapped": false,
+          "j": 0
+        },
+        "pointers": {
+          "end": 1,
+          "j": 0
+        },
+        "line": 10,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              1
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "Fully sorted",
+        "explanation": "All values are now in ascending order. Every input value is preserved.",
+        "state": {
+          "array": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ]
+        },
+        "variables": {},
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              1,
+              2,
+              3,
+              4
+            ],
+            "style": "DONE"
+          }
+        ]
+      }
+    ]
+  }
+}

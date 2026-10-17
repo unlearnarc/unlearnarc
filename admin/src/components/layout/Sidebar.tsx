@@ -1,14 +1,16 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Globe, Layers, BookOpen, LogOut, ClipboardList, Workflow, MessageSquareText, Trophy, Briefcase, Clapperboard } from 'lucide-react';
+import { LayoutDashboard, Globe, Layers, BookOpen, LogOut, ClipboardList, Workflow, MessageSquareText, Trophy, Briefcase, Clapperboard, NotebookPen, Sparkles } from 'lucide-react';
 import clsx from 'clsx';
 import { useAuth } from '../../context/AuthContext';
 
 const NAV = [
   { to: '/', icon: LayoutDashboard, label: 'Dashboard' },
+  { to: '/ai-authoring', icon: Sparkles, label: 'AI Content Assistant' },
   { to: '/domains', icon: Globe, label: 'Domains & Skills' },
-  { to: '/courses', icon: BookOpen, label: 'Courses' },
   { to: '/skills', icon: Layers, label: 'Skills Library' },
+  { to: '/courses', icon: BookOpen, label: 'Courses' },
+  { to: '/notes', icon: NotebookPen, label: 'Course Notes' },
   { to: '/roles', icon: Briefcase, label: 'Roles & Roadmaps' },
   { to: '/question-pools', icon: ClipboardList, label: 'Question Pools' },
   { to: '/contests', icon: Trophy, label: 'Contests' },

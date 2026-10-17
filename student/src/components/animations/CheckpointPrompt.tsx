@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { HelpCircle, CheckCircle2, XCircle, ArrowRight } from 'lucide-react';
 import type { Checkpoint } from '../../types/animation';
 import type { PlaybackControls } from './usePlaybackController';
+import { QuestionModal } from '../ui/QuestionModal';
 
 /* =============================================================================
    CheckpointPrompt — the mid-animation question overlay.
@@ -80,17 +81,8 @@ export const CheckpointPrompt: React.FC<CheckpointPromptProps> = ({
       : checkpoint.options ?? [];
 
   return (
-    <div
-      className="absolute inset-0 z-10 flex items-center justify-center p-4"
-      style={{ background: 'rgba(10,16,26,0.78)', backdropFilter: 'blur(2px)' }}
-      role="dialog"
-      aria-modal="true"
-      aria-label="Animation checkpoint question"
-    >
-      <div
-        className="w-full max-w-md rounded-2xl border border-border p-4 md:p-5 space-y-4 animate-fade-in"
-        style={{ background: '#16232E' }}
-      >
+    <QuestionModal label="Animation checkpoint question">
+      <div className="space-y-4">
         <header className="flex items-start gap-2.5">
           <span className="mt-0.5 text-primary-500 shrink-0">
             <HelpCircle size={18} />
@@ -177,6 +169,6 @@ export const CheckpointPrompt: React.FC<CheckpointPromptProps> = ({
           </button>
         </div>
       </div>
-    </div>
+    </QuestionModal>
   );
 };

@@ -1,5 +1,7 @@
 package com.unlearnarc.quspool.service;
 
+import com.unlearnarc.mapping.repository.DomainSkillMappingRepository;
+import com.unlearnarc.mapping.repository.SkillCourseMappingRepository;
 import com.unlearnarc.quspool.dto.*;
 import com.unlearnarc.quspool.dto.TestQuestionResponse.TestAnswerOption;
 import com.unlearnarc.quspool.dto.TestResultResponse.*;
@@ -7,6 +9,8 @@ import com.unlearnarc.quspool.entity.*;
 import com.unlearnarc.quspool.entity.Question.Difficulty;
 import com.unlearnarc.quspool.entity.QuestionPool.ScopeType;
 import com.unlearnarc.quspool.repository.*;
+import com.unlearnarc.quspool.repository.TestAnalyticsRepository.ScopeHistoryProjection;
+import com.unlearnarc.topic.repository.TopicRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -37,39 +41,74 @@ public class TestEngineService {
     private final DomainPoolMappingRepository domainPoolRepo;
     private final CoursePoolMappingRepository coursePoolRepo;
     private final TopicPoolMappingRepository  topicPoolRepo;
+    private final SkillCourseMappingRepository skillCourseRepo;
+    private final DomainSkillMappingRepository domainSkillRepo;
+    private final TopicRepository            topicRepo;
+    private final TestAnalyticsRepository    analyticsRepo;
     private final QuestionService            questionService;
     private final TestHistoryService         testHistoryService;
 
+    /** Adaptive tuning knobs — kept here so product can tune the policy in one place. */
+    private static final double MASTERY_SCORE   = 90.0; // ≥ this avg → shift weight to harder, broaden scope
+    private static final double ADVANCING_SCORE = 75.0; // ≥ this avg → add more hard questions
+
     // ── Generate a test session ────────────────────────────────────────────────
 
+    /**
+     * Two flows share this entry point:
+     *
+     *  1. DIRECT (topic / course / domain quiz)  — {@code adaptive=false}.
+     *     Draws the pool's fixed easy/medium/hard mix from the UNION of all pools
+     *     under the entity (a course quiz pulls from every topic pool beneath it;
+     *     a domain quiz pulls from every course + topic pool beneath it).
+     *
+     *  2. ADAPTIVE (Tests-page "Generate")        — {@code adaptive=true}, needs userId.
+     *     Starts from the same union of pools, then RESHAPES the easy/medium/hard
+     *     counts based on the learner's past attempts on this scope:
+     *       • avg ≥ 90%  → mastery: skew hard, pull a few questions from a broader
+     *                       pool set (course→its domain) so they see fresh material.
+     *       • avg ≥ 75%  → advancing: add more HARD, trim EASY.
+     *       • otherwise  → reinforce: keep/strengthen EASY+MEDIUM.
+     *     Falls back to the plain mix when the learner has no history yet.
+     */
     public TestSessionResponse generate(TestGenerationRequest req) {
-        QuestionPool pool = resolvePool(req);
+        return generate(req, null);
+    }
 
-        int easy   = pool.getEasyCount();
-        int medium = pool.getMediumCount();
-        int hard   = pool.getHardCount();
+    public TestSessionResponse generate(TestGenerationRequest req, String userId) {
+        // The set of pools we may draw from (union across the scope's children).
+        List<QuestionPool> pools = resolvePools(req);
+        // The "primary" pool supplies the session metadata (name, time limit, pass %).
+        QuestionPool primary = pools.get(0);
 
-        // Pull random questions per difficulty
-        List<Question> easyQs   = questionRepo.findRandomByPoolAndDifficulty(pool.getId(), Difficulty.EASY.name(),   easy);
-        List<Question> mediumQs = questionRepo.findRandomByPoolAndDifficulty(pool.getId(), Difficulty.MEDIUM.name(), medium);
-        List<Question> hardQs   = questionRepo.findRandomByPoolAndDifficulty(pool.getId(), Difficulty.HARD.name(),   hard);
+        // Decide the difficulty mix: adaptive (history-driven) or the pool's default.
+        DifficultyMix mix = req.isAdaptive() && userId != null
+                ? adaptiveMix(req, primary, userId)
+                : new DifficultyMix(primary.getEasyCount(), primary.getMediumCount(), primary.getHardCount(),
+                        poolIds(pools), "DEFAULT");
+
+        List<String> drawFrom = mix.poolIds();
+
+        List<Question> easyQs   = drawRandom(drawFrom, Difficulty.EASY,   mix.easy());
+        List<Question> mediumQs = drawRandom(drawFrom, Difficulty.MEDIUM, mix.medium());
+        List<Question> hardQs   = drawRandom(drawFrom, Difficulty.HARD,   mix.hard());
 
         // Validate availability — collect ALL shortfalls so the caller can fix the
-        // pool in one pass instead of discovering them one difficulty at a time.
+        // pools in one pass instead of discovering them one difficulty at a time.
         List<String> shortfalls = new ArrayList<>();
-        if (easyQs.size() < easy) {
-            shortfalls.add("EASY (required %d, available %d)".formatted(easy, easyQs.size()));
+        if (easyQs.size() < mix.easy()) {
+            shortfalls.add("EASY (required %d, available %d)".formatted(mix.easy(), easyQs.size()));
         }
-        if (mediumQs.size() < medium) {
-            shortfalls.add("MEDIUM (required %d, available %d)".formatted(medium, mediumQs.size()));
+        if (mediumQs.size() < mix.medium()) {
+            shortfalls.add("MEDIUM (required %d, available %d)".formatted(mix.medium(), mediumQs.size()));
         }
-        if (hardQs.size() < hard) {
-            shortfalls.add("HARD (required %d, available %d)".formatted(hard, hardQs.size()));
+        if (hardQs.size() < mix.hard()) {
+            shortfalls.add("HARD (required %d, available %d)".formatted(mix.hard(), hardQs.size()));
         }
         if (!shortfalls.isEmpty()) {
             throw new IllegalStateException(
-                    "Pool \"%s\" does not have enough active questions to generate a test: %s. Add more questions or lower the per-difficulty counts."
-                            .formatted(pool.getName(), String.join(", ", shortfalls)));
+                    "Not enough active questions in the pools for %s \"%s\" to generate a test: %s. Add more questions or lower the per-difficulty counts."
+                            .formatted(req.getScopeType(), primary.getName(), String.join(", ", shortfalls)));
         }
 
         // Merge and shuffle
@@ -86,19 +125,88 @@ public class TestEngineService {
                 .toList();
 
         return TestSessionResponse.builder()
-                .poolId(pool.getId())
-                .poolName(pool.getName())
-                .scopeType(pool.getScopeType())
+                .poolId(primary.getId())
+                .poolName(primary.getName())
+                .scopeType(req.getScopeType())
                 .entityId(req.getEntityId())
-                .totalQuestions(pool.getTotalQuestions())
-                .easyCount(easy)
-                .mediumCount(medium)
-                .hardCount(hard)
-                .timeLimitMinutes(pool.getTimeLimitMinutes())
-                .passPercentage(pool.getPassPercentage())
+                .totalQuestions(mix.easy() + mix.medium() + mix.hard())
+                .easyCount(mix.easy())
+                .mediumCount(mix.medium())
+                .hardCount(mix.hard())
+                .timeLimitMinutes(primary.getTimeLimitMinutes())
+                .passPercentage(primary.getPassPercentage())
                 .totalPoints(totalPoints)
+                .strategy(mix.strategy())
                 .questions(questions)
                 .build();
+    }
+
+    /**
+     * ADAPTIVE flow: reshape the primary pool's mix from the learner's history on
+     * this exact scope. Total question count is preserved so the test length is
+     * stable; only the easy/medium/hard split (and, at mastery, the draw scope)
+     * changes. Falls back to the default mix when the learner has no history yet.
+     */
+    private DifficultyMix adaptiveMix(TestGenerationRequest req, QuestionPool primary, String userId) {
+        int total = primary.getTotalQuestions();
+        List<String> basePools = poolIds(resolvePools(req));
+
+        ScopeHistoryProjection h = analyticsRepo.scopeHistory(
+                userId, req.getScopeType(), req.getEntityId());
+
+        long attempts = h == null || h.getAttempts() == null ? 0 : h.getAttempts();
+        if (attempts == 0) {
+            // No history → behave like the default flow.
+            return new DifficultyMix(primary.getEasyCount(), primary.getMediumCount(),
+                    primary.getHardCount(), basePools, "DEFAULT_NO_HISTORY");
+        }
+
+        double avg = h.getAvgScore() == null ? 0 : h.getAvgScore();
+
+        if (avg >= MASTERY_SCORE) {
+            // Mastery: hard-heavy, and broaden the draw scope so they get fresh
+            // material (a mastered course also pulls from its sibling courses in
+            // the same domain / its own domain pool).
+            int hard   = Math.max(1, Math.round(total * 0.6f));
+            int medium = Math.max(0, Math.round(total * 0.3f));
+            int easy   = Math.max(0, total - hard - medium);
+            return new DifficultyMix(easy, medium, hard, broadenScope(req, basePools), "MASTERY");
+        }
+        if (avg >= ADVANCING_SCORE) {
+            // Advancing: more hard, fewer easy.
+            int hard   = Math.max(1, Math.round(total * 0.45f));
+            int medium = Math.max(1, Math.round(total * 0.35f));
+            int easy   = Math.max(0, total - hard - medium);
+            return new DifficultyMix(easy, medium, hard, basePools, "ADVANCING");
+        }
+        // Reinforce: keep it approachable — strengthen easy/medium foundations.
+        int easy   = Math.max(1, Math.round(total * 0.5f));
+        int medium = Math.max(1, Math.round(total * 0.35f));
+        int hard   = Math.max(0, total - easy - medium);
+        return new DifficultyMix(easy, medium, hard, basePools, "REINFORCE");
+    }
+
+    /**
+     * At mastery, widen the pool set so the learner sees fresh questions beyond the
+     * exact entity: TOPIC → its course's pools; COURSE → its domain's pools;
+     * DOMAIN → stays as-is (already the widest scope). Falls back to the base pools
+     * if no broader mapping exists. De-duplicated.
+     */
+    private List<String> broadenScope(TestGenerationRequest req, List<String> basePools) {
+        Set<String> widened = new LinkedHashSet<>(basePools);
+        switch (req.getScopeType()) {
+            case TOPIC -> topicRepo.findById(req.getEntityId()).ifPresent(t ->
+                    widened.addAll(poolIdsForCourse(t.getCourseId())));
+            case COURSE -> {
+                // Find domains this course rolls up to (course → skill → domain) and
+                // add every course+topic pool under those domains.
+                skillCourseRepo.findByCourseId(req.getEntityId()).forEach(sc ->
+                        domainSkillRepo.findBySkillId(sc.getSkillId()).forEach(ds ->
+                                widened.addAll(poolIdsForDomain(ds.getDomainId()))));
+            }
+            case DOMAIN -> { /* already widest */ }
+        }
+        return new ArrayList<>(widened);
     }
 
     // ── Grade a submitted test ─────────────────────────────────────────────────
@@ -178,11 +286,19 @@ public class TestEngineService {
         double pct  = total > 0 ? (earned * 100.0 / total) : 0.0;
         boolean passed = pct >= pool.getPassPercentage();
 
+        // Persist the scope the LEARNER tested against (req), NOT the resolved pool's
+        // own scope. With union resolution a COURSE/DOMAIN test can draw from a child
+        // (e.g. TOPIC) pool, so pool.getScopeType() would mislabel the attempt and
+        // later make entity-name resolution fail (showing a raw UUID). Fall back to
+        // the pool's scope only when the request carries none (e.g. pinned poolId).
+        ScopeType resultScope = req.getScopeType() != null ? req.getScopeType() : pool.getScopeType();
+        String    resultEntityId = req.getEntityId() != null ? req.getEntityId() : pool.getId();
+
         TestResultResponse response = TestResultResponse.builder()
                 .poolId(pool.getId())
                 .poolName(pool.getName())
-                .scopeType(pool.getScopeType())
-                .entityId(req.getEntityId())
+                .scopeType(resultScope)
+                .entityId(resultEntityId)
                 .totalQuestions(totalQs)
                 .correctAnswers(correct)
                 .wrongAnswers(wrong)
@@ -209,24 +325,44 @@ public class TestEngineService {
 
     // ── Internals ──────────────────────────────────────────────────────────────
 
-    private QuestionPool resolvePool(TestGenerationRequest req) {
+    /**
+     * Resolve the UNION of active pools to draw from for a scope.
+     *
+     * Key behaviour (fixes "every level must have its own questions"):
+     *   • TOPIC  → the topic's own pools.
+     *   • COURSE → the course's own pools PLUS every pool under each of its topics.
+     *   • DOMAIN → the domain's own pools PLUS every course+topic pool beneath it
+     *              (resolved via domain→skill→course mappings).
+     *
+     * So a course quiz reuses its topics' question pools, and a domain quiz reuses
+     * its courses' (and their topics') pools — no need to duplicate questions at
+     * every level. An explicit {@code poolId} still pins to a single pool.
+     *
+     * The "primary" pool (index 0) is the entity's OWN pool when present (so session
+     * metadata like time limit / pass% comes from the most specific config), else
+     * the first child pool found.
+     */
+    private List<QuestionPool> resolvePools(TestGenerationRequest req) {
         if (req.getPoolId() != null) {
-            return poolService.getPoolOrThrow(req.getPoolId());
-        }
-        List<String> poolIds = switch (req.getScopeType()) {
-            case DOMAIN -> domainPoolRepo.findByDomainId(req.getEntityId())
-                    .stream().map(DomainPoolMapping::getPoolId).toList();
-            case COURSE -> coursePoolRepo.findByCourseId(req.getEntityId())
-                    .stream().map(CoursePoolMapping::getPoolId).toList();
-            case TOPIC  -> topicPoolRepo.findByTopicId(req.getEntityId())
-                    .stream().map(TopicPoolMapping::getPoolId).toList();
-        };
-        if (poolIds.isEmpty()) {
-            throw new EntityNotFoundException(
-                    "No question pool found for %s: %s".formatted(req.getScopeType(), req.getEntityId()));
+            QuestionPool pinned = poolService.getPoolOrThrow(req.getPoolId());
+            return List.of(pinned);
         }
 
-        List<QuestionPool> activePools = poolIds.stream()
+        // LinkedHashSet preserves "own pools first", de-dupes across the hierarchy.
+        LinkedHashSet<String> ids = new LinkedHashSet<>();
+        switch (req.getScopeType()) {
+            case TOPIC  -> ids.addAll(poolIdsForTopic(req.getEntityId()));
+            case COURSE -> ids.addAll(poolIdsForCourse(req.getEntityId()));
+            case DOMAIN -> ids.addAll(poolIdsForDomain(req.getEntityId()));
+        }
+
+        if (ids.isEmpty()) {
+            throw new EntityNotFoundException(
+                    "No question pool found for %s: %s (nor any of its child pools)"
+                            .formatted(req.getScopeType(), req.getEntityId()));
+        }
+
+        List<QuestionPool> activePools = ids.stream()
                 .map(poolService::getPoolOrThrow)
                 .filter(QuestionPool::getIsActive)
                 .toList();
@@ -235,26 +371,48 @@ public class TestEngineService {
             throw new EntityNotFoundException(
                     "No active pool found for %s: %s".formatted(req.getScopeType(), req.getEntityId()));
         }
-
-        // The learner never picks a pool — the engine picks the best one for them.
-        // Prefer a pool that can actually satisfy its difficulty quota so an empty
-        // or under-populated pool never shadows a ready one (better UX, no 422 when
-        // a usable pool exists on the same entity).
-        return activePools.stream()
-                .filter(this::canSatisfyQuota)
-                .findFirst()
-                // Fall back to the first active pool so the shortfall validation in
-                // generate() still produces a clear, actionable error when NO pool
-                // on the entity is ready yet.
-                .orElse(activePools.get(0));
+        return activePools;
     }
 
-    /** True if the pool has enough active questions in every difficulty bucket. */
-    private boolean canSatisfyQuota(QuestionPool pool) {
-        return questionRepo.countByPoolIdAndDifficultyAndIsActiveTrue(pool.getId(), Difficulty.EASY)   >= pool.getEasyCount()
-            && questionRepo.countByPoolIdAndDifficultyAndIsActiveTrue(pool.getId(), Difficulty.MEDIUM) >= pool.getMediumCount()
-            && questionRepo.countByPoolIdAndDifficultyAndIsActiveTrue(pool.getId(), Difficulty.HARD)   >= pool.getHardCount();
+    /** All pool ids directly mapped to a topic. */
+    private List<String> poolIdsForTopic(String topicId) {
+        return topicPoolRepo.findByTopicId(topicId).stream()
+                .map(TopicPoolMapping::getPoolId).toList();
     }
+
+    /** Course's own pools + every pool under each of its topics (de-duped, own-first). */
+    private List<String> poolIdsForCourse(String courseId) {
+        LinkedHashSet<String> ids = new LinkedHashSet<>();
+        coursePoolRepo.findByCourseId(courseId).forEach(m -> ids.add(m.getPoolId()));
+        topicRepo.findByCourseIdOrderByTopicOrder(courseId)
+                .forEach(t -> ids.addAll(poolIdsForTopic(t.getId())));
+        return new ArrayList<>(ids);
+    }
+
+    /** Domain's own pools + every course (and their topics') pools beneath it. */
+    private List<String> poolIdsForDomain(String domainId) {
+        LinkedHashSet<String> ids = new LinkedHashSet<>();
+        domainPoolRepo.findByDomainId(domainId).forEach(m -> ids.add(m.getPoolId()));
+        // domain → skills → courses → (course + its topic) pools
+        domainSkillRepo.findByDomainId(domainId).forEach(ds ->
+                skillCourseRepo.findBySkillId(ds.getSkillId()).forEach(sc ->
+                        ids.addAll(poolIdsForCourse(sc.getCourseId()))));
+        return new ArrayList<>(ids);
+    }
+
+    private List<String> poolIds(List<QuestionPool> pools) {
+        return pools.stream().map(QuestionPool::getId).toList();
+    }
+
+    /** Draw {@code count} random active questions of a difficulty across many pools. */
+    private List<Question> drawRandom(List<String> poolIds, Difficulty difficulty, int count) {
+        if (count <= 0 || poolIds.isEmpty()) return List.of();
+        return questionRepo.findRandomByPoolsAndDifficulty(poolIds, difficulty.name(), count);
+    }
+
+    /** Immutable carrier for a resolved difficulty mix + the pools it draws from. */
+    private record DifficultyMix(int easy, int medium, int hard,
+                                 List<String> poolIds, String strategy) {}
 
     private TestQuestionResponse toTestQuestion(Question q, List<Answer> answers) {
         // Shuffle answer options so position doesn't leak the correct answer

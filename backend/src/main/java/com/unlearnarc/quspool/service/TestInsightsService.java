@@ -195,11 +195,14 @@ public class TestInsightsService {
 
     private WeakAreaHighlight topWeakArea(String userId, Instant since) {
         return analyticsRepo.aggregateByEntity(userId, since).stream()
+                // Only surface an area that genuinely needs work; a fully-mastered
+                // (ON_TRACK, e.g. 100%) scope is never the "weakest area".
+                .filter(p -> !"ON_TRACK".equals(severity(round1(nzd(p.getAvgScore())))))
                 .min(Comparator.comparingDouble(p -> nzd(p.getAvgScore())))
                 .map(p -> WeakAreaHighlight.builder()
                         .entityType(p.getEntityType() == null ? null : p.getEntityType().name())
                         .entityId(p.getEntityId())
-                        .entityName(resolveEntityName(p.getEntityType(), p.getEntityId()))
+                        .entityName(displayName(p.getEntityType(), p.getEntityId(), p.getPoolName()))
                         .poolName(p.getPoolName())
                         .averageScore(round1(nzd(p.getAvgScore())))
                         .attempts(nz(p.getAttempts()))
@@ -217,10 +220,16 @@ public class TestInsightsService {
             double accuracy = round1(pct(nz(p.getTotalCorrect()), nz(p.getTotalQuestions())));
             double passRate = round1(pct(nz(p.getPassedCount()), nz(p.getAttempts())));
             String severity = severity(avg);
+            // A "weak area" must actually need work. Anything ON_TRACK (>= attention
+            // threshold, incl. a perfect 100%) is mastered and must NOT be listed here.
+            if ("ON_TRACK".equals(severity)) {
+                continue;
+            }
+            String name = displayName(p.getEntityType(), p.getEntityId(), p.getPoolName());
             areas.add(WeakArea.builder()
                     .entityType(p.getEntityType())
                     .entityId(p.getEntityId())
-                    .entityName(resolveEntityName(p.getEntityType(), p.getEntityId()))
+                    .entityName(name)
                     .poolName(p.getPoolName())
                     .attempts(nz(p.getAttempts()))
                     .averageScore(avg)
@@ -228,8 +237,7 @@ public class TestInsightsService {
                     .accuracy(accuracy)
                     .passRate(passRate)
                     .severity(severity)
-                    .recommendation(areaRecommendation(p.getEntityType(),
-                            resolveEntityName(p.getEntityType(), p.getEntityId()), severity, avg))
+                    .recommendation(areaRecommendation(p.getEntityType(), name, severity, avg))
                     .build());
         }
         // Worst-first, cap the list.
@@ -316,7 +324,13 @@ public class TestInsightsService {
 
     private String summarise(List<WeakArea> weakAreas, List<DifficultyGap> gaps, int attempts) {
         if (weakAreas.isEmpty()) {
-            return "Analysed " + attempts + " attempt(s). Not enough scoped data yet to rank weak areas.";
+            // No area below the attention threshold — the learner is on track everywhere.
+            boolean anyGap = gaps.stream().anyMatch(g -> !"ON_TRACK".equals(g.getSeverity()));
+            return anyGap
+                    ? "Analysed " + attempts + " attempt(s). No weak areas — you're on track across every"
+                      + " topic, course and domain. Keep sharpening the difficulty tiers below."
+                    : "Analysed " + attempts + " attempt(s). No weak areas detected — you're on track"
+                      + " everywhere. Great work! 🎉";
         }
         WeakArea worst = weakAreas.get(0);
         StringBuilder sb = new StringBuilder();
@@ -362,18 +376,36 @@ public class TestInsightsService {
 
     // ── Entity name resolution (best-effort; id-only fallback) ──────────────────
 
+    /**
+     * Best-effort human-readable name for a scoped entity. Returns {@code null}
+     * (NOT the raw UUID) when the entity can't be resolved, so callers can fall
+     * back to the pool name instead of showing an opaque id in the UI.
+     */
     private String resolveEntityName(ScopeType type, String entityId) {
         if (type == null || entityId == null) return null;
         try {
             return switch (type) {
-                case DOMAIN -> domainRepo.findById(entityId).map(d -> d.getName()).orElse(entityId);
-                case COURSE -> courseRepo.findById(entityId).map(c -> c.getName()).orElse(entityId);
-                case TOPIC  -> topicRepo.findById(entityId).map(t -> t.getName()).orElse(entityId);
+                case DOMAIN -> domainRepo.findById(entityId).map(d -> d.getName()).orElse(null);
+                case COURSE -> courseRepo.findById(entityId).map(c -> c.getName()).orElse(null);
+                case TOPIC  -> topicRepo.findById(entityId).map(t -> t.getName()).orElse(null);
             };
         } catch (Exception ex) {
             log.debug("[INSIGHTS] Could not resolve {} name for {}: {}", type, entityId, ex.getMessage());
-            return entityId;
+            return null;
         }
+    }
+
+    /**
+     * Display label for a scoped entity: the resolved entity name when available,
+     * otherwise the pool name, and only as a last resort a short id fragment —
+     * never the full raw UUID that confused the UI before.
+     */
+    private String displayName(ScopeType type, String entityId, String poolName) {
+        String name = resolveEntityName(type, entityId);
+        if (name != null && !name.isBlank()) return name;
+        if (poolName != null && !poolName.isBlank()) return poolName;
+        if (entityId != null && entityId.length() > 8) return entityId.substring(0, 8) + "…";
+        return entityId;
     }
 
     // ── Low-level utils ────────────────────────────────────────────────────────

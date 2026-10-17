@@ -25,7 +25,13 @@ export default defineConfig({
     // and got swallowed by the corporate HTTP proxy (127.0.0.1:3128 → 503).
     // 127.0.0.1 IS in the system no_proxy list, so reaching the app via
     // http://127.0.0.1:3002 bypasses the proxy entirely.
-    host: '0.0.0.0',
+    // Standardized on localhost:3002 — this MUST match OAUTH2_REDIRECT_URI in
+    // backend/.env (http://localhost:3002/auth/callback). The OAuth JWT is
+    // written to localStorage, which is origin-scoped, so the host you browse
+    // with has to be the SAME host the backend redirects the token to. Opening
+    // the app on 127.0.0.1 while the token is minted for `localhost` loses the
+    // session and bounces you back to the landing page.
+    host: 'localhost',
     // COOP/COEP make the page cross-origin isolated, which unlocks
     // SharedArrayBuffer — required for Pyodide's threaded WASM runtime.
     //

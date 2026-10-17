@@ -7,7 +7,7 @@ import { EmptyState, Spinner } from '../components/ui';
 import { ContestSolver } from '../components/contest/ContestSolver';
 import type { Contest, ContestProblem } from '../types';
 import {
-  Trophy, ArrowLeft, Users, ListChecks, ChevronRight, CheckCircle2,
+  Trophy, ArrowLeft, ListChecks, ChevronRight, CheckCircle2,
 } from 'lucide-react';
 import clsx from 'clsx';
 
@@ -64,12 +64,6 @@ export const ContestDetailPage: React.FC = () => {
     );
   }
 
-  const phaseLabel = contest.phase === 'RUNNING'
-    ? t('contests.phaseLive')
-    : contest.phase === 'UPCOMING'
-      ? t('contests.phaseUpcoming')
-      : t('contests.phaseEnded');
-
   const difficultyLabel = (d: string): string =>
     t(`contests.difficulty.${d}`, { defaultValue: d });
 
@@ -83,30 +77,12 @@ export const ContestDetailPage: React.FC = () => {
         <ArrowLeft size={15} className="ua-flip-rtl" /> {t('contests.allContests')}
       </button>
 
-      <header className="card p-6">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold text-text-primary tracking-tight">{contest.title}</h1>
-            {contest.description && (
-              <p className="text-sm text-text-muted mt-1.5 max-w-2xl">{contest.description}</p>
-            )}
-          </div>
-          <span className={clsx(
-            'shrink-0 text-xs font-medium px-2.5 py-1 rounded-full border',
-            contest.phase === 'RUNNING'
-              ? 'bg-success/10 text-success border-success/30'
-              : contest.phase === 'UPCOMING'
-                ? 'bg-amber-50 text-amber-600 border-amber-200'
-                : 'bg-surface-soft text-text-muted border-border',
-          )}>
-            {phaseLabel}
-          </span>
-        </div>
-
-        <div className="flex flex-wrap gap-x-5 gap-y-2 mt-4 text-sm text-text-secondary">
-          <span className="flex items-center gap-1.5"><ListChecks size={15} /> {t('contests.problemsCount', { count: problems.length })}</span>
-          <span className="flex items-center gap-1.5"><Users size={15} /> {t('contests.participants', { count: contest.participantCount })}</span>
-        </div>
+      <header className="card p-4 sm:p-6">
+        <h1 className="text-xl sm:text-2xl font-bold text-text-primary tracking-tight break-words">{contest.title}</h1>
+        <p className="mt-2 flex items-center gap-1.5 text-sm text-text-secondary">
+          <ListChecks size={15} className="shrink-0" aria-hidden="true" />
+          {t('contests.problemsCount', { count: problems.length })}
+        </p>
       </header>
 
       {problems.length === 0 ? (

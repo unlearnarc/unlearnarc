@@ -1,4 +1,25 @@
 {
+  "algoDetail": {
+    "notFound": "لم يتم العثور على الخوارزمية",
+    "notFoundDesc": "هذه الخوارزمية غير متاحة أو لم تُنشر بعد.",
+    "backToAlgorithms": "العودة إلى الخوارزميات",
+    "allAlgorithms": "جميع الخوارزميات",
+    "time": "الوقت",
+    "space": "المساحة",
+    "whenToUse": "متى تُستخدم",
+    "currentAction": "الإجراء الحالي",
+    "rowCol": "الصف / العمود",
+    "visitedCells": "الخلايا التي تمت زيارتها",
+    "step": "الخطوة",
+    "stepN": "الخطوة {{num}}",
+    "status": "الحالة",
+    "statusAwaiting": "بانتظار الإجابة",
+    "statusPlaying": "قيد التشغيل",
+    "statusComplete": "مكتمل",
+    "statusPaused": "متوقف مؤقتًا",
+    "true": "صحيح",
+    "false": "خطأ"
+  },
   "common": {
     "appName": "UnlearnArc",
     "viewAll": "عرض الكل",
@@ -59,6 +80,12 @@
     "autoDrawNote": "تُسحب الأسئلة تلقائيًا عبر المستويات السهلة والمتوسطة والصعبة.",
     "noTests": "لا توجد اختبارات متاحة لهذا النطاق بعد.",
     "startTest": "ابدأ الاختبار",
+    "adaptiveNote": "يتكيف هذا الاختبار مع أدائك السابق في هذا النطاق.",
+    "strategy": {
+      "MASTERY": "إتقان · مجموعة أصعب",
+      "ADVANCING": "تقدّم · أسئلة أصعب",
+      "REINFORCE": "تعزيز · الأساسيات"
+    },
     "questionOf": "السؤال {{current}} من {{total}}",
     "answeredCount": "{{count}} تمت الإجابة عليها",
     "percentComplete": "{{percent}}% مكتمل",
@@ -264,7 +291,6 @@
   },
   "algorithms": {
     "title": "مُصوّر الخوارزميات",
-    "subtitle": "Watch algorithms run step by step, control the pace, and learn how each one works.",
     "searchPlaceholder": "Search algorithms…",
     "empty": "No algorithms available",
     "emptyDesc": "Check back soon — new visualizations are added regularly.",
@@ -378,6 +404,18 @@
     "learn": "تعلّم",
     "projects": "المشاريع",
     "profile": "الملف"
+  },
+  "notes": {
+    "lessons": "الدروس",
+    "reading": "القراءة",
+    "minRead": "{{count}} دقيقة قراءة",
+    "minShort": "{{count}} د",
+    "noMaterials": "لا توجد مواد دراسية بعد.",
+    "loadError": "تعذّر تحميل هذه الملاحظة.",
+    "readAloud": "القراءة بصوت عالٍ",
+    "courseLessons": "دروس الدورة",
+    "lessonCount": "{{count}} دروس",
+    "read": "اقرأ"
   },
   "courseDetail": {
     "notFound": "لم يتم العثور على الدورة",

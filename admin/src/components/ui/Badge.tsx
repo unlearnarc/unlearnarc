@@ -3,10 +3,10 @@ import clsx from 'clsx';
 
 const levelColors: Record<string, string> = {
   // skill / course / topic levels
-  BEGINNER:     'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',
+  BEGINNER:     'bg-teal-500/15 text-teal-400 border-teal-500/30',
   INTERMEDIATE: 'bg-blue-500/15 text-blue-400 border-blue-500/30',
-  ADVANCED:     'bg-amber-500/15 text-amber-400 border-amber-500/30',
-  EXPERT:       'bg-rose-500/15 text-rose-400 border-rose-500/30',
+  ADVANCED:     'bg-indigo-500/15 text-indigo-400 border-indigo-500/30',
+  EXPERT:       'bg-purple-500/15 text-purple-400 border-purple-500/30',
   // study material types
   VIDEO:        'bg-sky-500/15 text-sky-400 border-sky-500/30',
   ARTICLE:      'bg-cyan-500/15 text-cyan-400 border-cyan-500/30',

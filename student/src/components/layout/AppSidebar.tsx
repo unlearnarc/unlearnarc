@@ -4,9 +4,10 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 import { Logo } from '../ui/Logo';
+import { ProfileAvatar } from '../ui/ProfileAvatar';
 import {
   BookOpen, LayoutDashboard, GraduationCap, Globe, LogOut,
-  User, Workflow, MessageSquareText, PanelLeftClose, PanelLeftOpen, X, Trophy,
+  Workflow, MessageSquareText, PanelLeftClose, PanelLeftOpen, X, Trophy,
   Medal, Map, Clapperboard,
   Moon, Sun,
 } from 'lucide-react';
@@ -184,17 +185,8 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
                   )
                 }
               >
-                {user?.profilePicture ? (
-                  <img
-                    src={user.profilePicture}
-                    alt={user.name}
-                    className="w-7 h-7 rounded-full object-cover ring-2 ring-border shrink-0"
-                  />
-                ) : (
-                  <div className="w-7 h-7 rounded-full bg-primary-500 flex items-center justify-center shrink-0">
-                    <User size={14} className="text-white" />
-                  </div>
-                )}
+                <ProfileAvatar src={user?.profilePicture} name={user?.name} iconSize={14}
+                  className="w-7 h-7 rounded-full object-cover ring-2 ring-border shrink-0" />
                 {!collapsed && (
                   <div className="min-w-0">
                     <p className="text-sm font-medium text-text-primary truncate">

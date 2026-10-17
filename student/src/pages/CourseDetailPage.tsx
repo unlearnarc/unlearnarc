@@ -6,7 +6,9 @@ import { courseAPI, topicAPI, poolAPI, enrollmentAPI } from '../api/endpoints';
 import { useMascot } from '../components/mascot';
 import { useAuth } from '../context/AuthContext';
 import { Badge, EmptyState, Spinner, TopicRow } from '../components/ui';
-import type { Topic } from '../types';
+import { CourseNotesSection } from '../components/notes';
+import type { CourseProgress, Topic } from '../types';
+import './course-detail.css';
 import {
   ArrowLeft, BookOpen, Clock, Layers, GraduationCap,
   Plus, Check, Loader2,
@@ -45,6 +47,13 @@ export const CourseDetailPage: React.FC = () => {
     enabled:  !!id && isAuthenticated,
   });
 
+  const progressQuery = useQuery({
+    queryKey: ['course-progress', id],
+    queryFn: () => enrollmentAPI.progress(id!),
+    enabled: !!id && isAuthenticated,
+  });
+  const progress: CourseProgress | undefined = progressQuery.data?.data?.data;
+
   const enrolled: boolean = statusRes?.data?.data?.enrolled ?? false;
   const { fire } = useMascot();
 
@@ -55,12 +64,16 @@ export const CourseDetailPage: React.FC = () => {
       // Reflect the new state everywhere it's shown.
       queryClient.invalidateQueries({ queryKey: ['enrollment-status', id] });
       queryClient.invalidateQueries({ queryKey: ['my-learnings'] });
+      queryClient.invalidateQueries({ queryKey: ['roadmap'] });
+      queryClient.invalidateQueries({ queryKey: ['course-progress', id] });
     },
   });
 
   const course = courseRes?.data?.data;
   const topics: Topic[] = topicsRes?.data?.data ?? [];
   const pools  = poolRes?.data?.data ?? [];
+  const progressPercent = typeof progress?.progressPercent === 'number' && Number.isFinite(progress.progressPercent)
+    ? Math.min(100, Math.max(0, progress.progressPercent)) : 0;
 
   if (courseLoading) return (
     <div className="flex justify-center py-24"><Spinner size="lg" /></div>
@@ -145,7 +158,9 @@ export const CourseDetailPage: React.FC = () => {
             {renderLearningButton()}
             {pools.length > 0 && (
               <Link
-                to={`/tests?scope=COURSE&entityId=${course.id}`}
+                /* Direct flow: fixed pool mix drawn from the union of this
+                   course's + its topics' pools (no ?adaptive=1). */
+                to={`/tests?scope=COURSE&entityId=${encodeURIComponent(course.id)}`}
                 className="inline-flex items-center gap-2 bg-white/15 text-white px-5 py-2.5 rounded-[10px] text-sm font-semibold hover:bg-white/25 transition border border-white/20"
               >
                 <GraduationCap size={16} aria-hidden="true" /> {t('courseDetail.takeCourseTest')}
@@ -156,6 +171,38 @@ export const CourseDetailPage: React.FC = () => {
         <div className="absolute -right-10 -top-10 w-52 h-52 rounded-full bg-white/10" />
         <div className="absolute right-10 bottom-4 w-20 h-20 rounded-full bg-white/5" />
       </div>
+
+      {isAuthenticated && (
+        <section className="card course-learning-progress" aria-label="Your learning progress" aria-busy={progressQuery.isLoading}>
+          <div className="course-learning-progress__summary">
+            <h2>{progress?.completed ? 'Course completed' : 'Learning progress'}</h2>
+            {!progressQuery.isLoading && !progressQuery.isError && progress && (
+              <p>{progress.completedTopics ?? 0}/{progress.totalTopics ?? topics.length} quizzes · <strong>{Math.round(progressPercent)}%</strong></p>
+            )}
+          </div>
+          {progressQuery.isLoading ? <Spinner size="sm" /> : progressQuery.isError ? (
+            <button className="btn-secondary" onClick={() => progressQuery.refetch()}>Retry loading progress</button>
+          ) : progress && <>
+            <div
+              className="course-liquid-progress"
+              role="progressbar"
+              aria-label="Course completion"
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuenow={progressPercent}
+              aria-valuetext={`${Math.round(progressPercent)}% complete; ${progress.completedTopics ?? 0} of ${progress.totalTopics ?? topics.length} topic quizzes completed`}
+            >
+              <div className="course-liquid-progress__fill" style={{ width: `${progressPercent}%`, minWidth: 0, display: progressPercent > 0 ? undefined : 'none' }}>
+                <span className="course-liquid-progress__wave" aria-hidden="true" />
+              </div>
+            </div>
+            {typeof progress.bestCourseScore === 'number' && Number.isFinite(progress.bestCourseScore) && <p className="course-learning-progress__score">Best course quiz: {progress.bestCourseScore.toFixed(2)}%</p>}
+          </>}
+        </section>
+      )}
+
+      {/* Course-level book lessons (published only). Renders nothing when empty. */}
+      {id && <CourseNotesSection courseId={id} />}
 
       {/* Topics */}
       <div>
@@ -176,9 +223,20 @@ export const CourseDetailPage: React.FC = () => {
           <div className="space-y-2">
             {[...topics]
               .sort((a, b) => a.topicOrder - b.topicOrder)
-              .map((topic, i) => (
-                <TopicRow key={topic.id} topic={topic} index={i} />
-              ))}
+              .map((topic, i) => {
+                const topicProgress = progress?.topics?.find(item => item.topicId === topic.id);
+                const bestScore = topicProgress?.bestScore;
+                return (
+                  <div key={topic.id}>
+                    {typeof bestScore === 'number' && Number.isFinite(bestScore) && (
+                      <p className="text-xs text-text-muted px-2 pb-1">
+                        {topicProgress?.completed ? 'Completed' : 'Keep practicing'} · Best quiz: {bestScore.toFixed(2)}%
+                      </p>
+                    )}
+                    <TopicRow topic={topic} index={i} />
+                  </div>
+                );
+              })}
           </div>
         )}
       </div>

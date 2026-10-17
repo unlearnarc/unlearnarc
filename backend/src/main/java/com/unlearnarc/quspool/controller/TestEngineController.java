@@ -28,9 +28,12 @@ public class TestEngineController {
     @PostMapping("/generate")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
     public ResponseEntity<ApiResponse<TestSessionResponse>> generate(
-            @Valid @RequestBody TestGenerationRequest req) {
+            @Valid @RequestBody TestGenerationRequest req,
+            Authentication auth) {
+        // Pass the resolved userId so the adaptive flow (req.adaptive=true) can read
+        // the learner's past attempts. Direct quiz flow ignores it.
         return ResponseEntity.ok(ApiResponse.ok(
-                testEngineService.generate(req), "Test session generated"));
+                testEngineService.generate(req, currentUserId(auth)), "Test session generated"));
     }
 
     @PostMapping("/grade")

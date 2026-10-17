@@ -1,4 +1,25 @@
 {
+  "algoDetail": {
+    "notFound": "एल्गोरिदम नहीं मिला",
+    "notFoundDesc": "यह एल्गोरिदम उपलब्ध नहीं है या अभी प्रकाशित नहीं हुआ है।",
+    "backToAlgorithms": "एल्गोरिदम पर वापस जाएँ",
+    "allAlgorithms": "सभी एल्गोरिदम",
+    "time": "समय",
+    "space": "स्थान",
+    "whenToUse": "कब उपयोग करें",
+    "currentAction": "वर्तमान क्रिया",
+    "rowCol": "पंक्ति / स्तंभ",
+    "visitedCells": "देखे गए सेल",
+    "step": "चरण",
+    "stepN": "चरण {{num}}",
+    "status": "स्थिति",
+    "statusAwaiting": "उत्तर की प्रतीक्षा",
+    "statusPlaying": "चल रहा है",
+    "statusComplete": "पूर्ण",
+    "statusPaused": "रुका हुआ",
+    "true": "सही",
+    "false": "गलत"
+  },
   "common": {
     "appName": "UnlearnArc",
     "viewAll": "सभी देखें",
@@ -56,6 +77,12 @@
     "autoDrawNote": "प्रश्न आसान, मध्यम और कठिन कठिनाई से स्वतः चुने जाते हैं।",
     "noTests": "इस स्कोप के लिए अभी कोई टेस्ट उपलब्ध नहीं है।",
     "startTest": "टेस्ट शुरू करें",
+    "adaptiveNote": "यह टेस्ट इस स्कोप में आपके पिछले प्रदर्शन के अनुसार ढलता है।",
+    "strategy": {
+      "MASTERY": "महारत · कठिन सेट",
+      "ADVANCING": "प्रगति · अधिक कठिन",
+      "REINFORCE": "सुदृढ़ीकरण · बुनियादी बातें"
+    },
     "questionOf": "प्रश्न {{current}} / {{total}}",
     "answeredCount": "{{count}} उत्तर दिए गए",
     "percentComplete": "{{percent}}% पूर्ण",
@@ -372,6 +399,18 @@
     "learn": "सीखें",
     "projects": "प्रोजेक्ट्स",
     "profile": "प्रोफ़ाइल"
+  },
+  "notes": {
+    "lessons": "पाठ",
+    "reading": "पढ़ रहे हैं",
+    "minRead": "{{count}} मिनट का पठन",
+    "minShort": "{{count}}मि",
+    "noMaterials": "अभी कोई अध्ययन सामग्री नहीं है।",
+    "loadError": "यह नोट लोड नहीं हो सका।",
+    "readAloud": "ज़ोर से पढ़ें",
+    "courseLessons": "कोर्स पाठ",
+    "lessonCount": "{{count}} पाठ",
+    "read": "पढ़ें"
   },
   "courseDetail": {
     "notFound": "कोर्स नहीं मिला",

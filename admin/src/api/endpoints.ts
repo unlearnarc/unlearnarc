@@ -28,8 +28,11 @@ export const skillAPI = {
 
 // ── Domain ↔ Skill Mappings ────────────────────────────────────────────────
 export const domainSkillAPI = {
+  getAll: () => api.get('/domain-skill-mappings'),
   getByDomain: (domainId: string) =>
     api.get(`/domain-skill-mappings/domain/${domainId}`),
+  getBySkill: (skillId: string) =>
+    api.get(`/domain-skill-mappings/skill/${skillId}`),
   create: (data: { domainId: string; skillId: string }) =>
     api.post('/domain-skill-mappings', data),
   delete: (id: string) => api.delete(`/domain-skill-mappings/${id}`),
@@ -99,6 +102,19 @@ export const studyMaterialAPI = {
   update: (id: string, data: Record<string, unknown>) =>
     api.put(`/study-materials/${id}`, data),
   delete: (id: string) => api.delete(`/study-materials/${id}`),
+};
+
+// ── Notes (book-style lessons) ───────────────────────────────────────────────
+export const noteAPI = {
+  // lists return lightweight summaries (no heavy content body)
+  getByTopic:  (topicId: string)  => api.get(`/notes/admin/topic/${topicId}`),
+  getByCourse: (courseId: string) => api.get(`/notes/admin/course/${courseId}`),
+  getById:     (id: string)       => api.get(`/notes/${id}`),
+  create:      (data: Record<string, unknown>) => api.post('/notes', data),
+  update:      (id: string, data: Record<string, unknown>) => api.put(`/notes/${id}`, data),
+  publish:     (id: string, value: boolean) =>
+    api.patch(`/notes/${id}/publish?value=${value}`),
+  delete:      (id: string)       => api.delete(`/notes/${id}`),
 };
 
 // ── Question Pools ─────────────────────────────────────────────────────────

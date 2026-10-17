@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { domainAPI, courseAPI } from '../api/endpoints';
+import { domainAPI, courseAPI, mappingAPI } from '../api/endpoints';
 import {
   CourseCard,
   EmptyState,
@@ -10,7 +10,7 @@ import {
   CourseCardSkeleton,
   SkeletonRepeat,
 } from '../components/ui';
-import type { Domain, Course } from '../types';
+import type { Domain, Course, DomainSkillMapping, SkillCourseMapping } from '../types';
 import { BookOpen, SlidersHorizontal, X, Search } from 'lucide-react';
 
 const LEVELS = ['BEGINNER', 'INTERMEDIATE', 'ADVANCED', 'EXPERT'];
@@ -32,8 +32,23 @@ export const ExplorePage: React.FC = () => {
   const { data: coursesRes, isLoading } =
     useQuery({ queryKey: ['courses'], queryFn: courseAPI.getAll });
 
+  /* Domain → Course is a two-hop relationship:
+       Domain ─(domain_skill_mapping)─► Skill ─(skill_course_mapping)─► Course
+     We load both join tables once and resolve the reachable course-id set for
+     the selected domain on the client. */
+  const { data: dsRes } = useQuery({
+    queryKey: ['domain-skill-mappings'],
+    queryFn: mappingAPI.domainSkill,
+  });
+  const { data: scRes } = useQuery({
+    queryKey: ['skill-course-mappings'],
+    queryFn: mappingAPI.skillCourse,
+  });
+
   const allDomains: Domain[] = domainsRes?.data?.data ?? [];
   const allCourses: Course[] = coursesRes?.data?.data ?? [];
+  const domainSkill: DomainSkillMapping[] = dsRes?.data?.data ?? [];
+  const skillCourse: SkillCourseMapping[] = scRes?.data?.data ?? [];
 
   const q = term.trim().toLowerCase();
 
@@ -43,13 +58,27 @@ export const ExplorePage: React.FC = () => {
     [allDomains, q],
   );
 
-  // Matching courses — level filter + search term, rendered in the course column.
+  /* Course ids reachable from the selected domain, via skills.
+     `null` means "no domain selected" → do not constrain by domain. */
+  const domainCourseIds = useMemo<Set<string> | null>(() => {
+    if (!selectedDomain) return null;
+    const skillIds = new Set(
+      domainSkill.filter(m => m.domainId === selectedDomain).map(m => m.skillId),
+    );
+    const courseIds = new Set(
+      skillCourse.filter(m => skillIds.has(m.skillId)).map(m => m.courseId),
+    );
+    return courseIds;
+  }, [selectedDomain, domainSkill, skillCourse]);
+
+  // Matching courses — domain filter → level filter → search term (order preserved).
   const filtered = useMemo(
     () => allCourses.filter(c =>
+      (!domainCourseIds || domainCourseIds.has(c.id)) &&
       (!level || c.level === level) &&
       (!q || c.name.toLowerCase().includes(q)),
     ),
-    [allCourses, level, q],
+    [allCourses, domainCourseIds, level, q],
   );
 
   const activeDomain = allDomains.find(d => d.id === selectedDomain);
@@ -162,7 +191,7 @@ export const ExplorePage: React.FC = () => {
       <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-4 ua-stagger">
         {filtered.map((course, i) => (
           <div key={course.id} style={{ '--i': i % 6 } as React.CSSProperties}>
-            <CourseCard course={course} />
+            <CourseCard course={course} actionLabel={t('explore.viewCourse')} />
           </div>
         ))}
       </div>

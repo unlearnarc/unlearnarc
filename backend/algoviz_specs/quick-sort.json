@@ -1,32 +1,1812 @@
 {
   "slug": "quick-sort",
   "title": "Quick Sort",
-  "summary": "Partition around a pivot so smaller elements go left, larger go right; recurse.",
-  "usage": "Fast in-place average O(n log n). Most-used general sort. Worst case O(n^2).",
+  "summary": "Partition around a pivot, fix its final position, then recursively sort both sides.",
+  "usage": "How it works\nThis example uses Lomuto partitioning with the last element as pivot. Values <= pivot are collected before index i; after scanning, the pivot is swapped into i. Useful for learning partitioning and generally fast in-memory sorting. Sorted, reversed, or all-equal inputs can cause quadratic work and deep recursion here; randomized or three-way partitioning improves practical robustness.\n\nProperties and prerequisites\nStable: no. In-place partitioning: yes, but recursion uses stack space. For very large adversarial inputs use an iterative or depth-limited implementation.\n\nComplexity\nTime: O(n log n) average; O(n\u00b2) worst. Space: O(log n) average stack; O(n) worst.\n\nExample\nInput: [5, 2, 4, 1, 3]. Output: [1, 2, 3, 4, 5].\n\nTry it\nUse Play/Pause, Previous/Next, the timeline, and playback speed. Answer the prediction checkpoints to continue; feedback reveals the expected answer. Python is the line-synchronized walkthrough; Java is an equivalent complete implementation. Sorting functions accept empty arrays, duplicates, negative values, and already sorted inputs. Java methods belong inside a class; Python functions can be called directly.",
   "category": "Sorting",
   "difficulty": "MEDIUM",
   "visualizer": "ARRAY",
-  "complexity": { "time": "O(n log n) avg", "space": "O(log n)" },
-  "javaSource": "void quickSort(int[] a,int lo,int hi){\n  if(lo>=hi) return;\n  int p=partition(a,lo,hi);\n  quickSort(a,lo,p-1); quickSort(a,p+1,hi);\n}",
-  "pythonSource": "def quick_sort(a, lo, hi):\n    if lo >= hi: return\n    p = partition(a, lo, hi)\n    quick_sort(a, lo, p-1); quick_sort(a, p+1, hi)",
+  "complexity": {
+    "time": "O(n log n) average; O(n\u00b2) worst",
+    "space": "O(log n) average stack; O(n) worst"
+  },
+  "pythonSource": "def quick_sort(a):\n    def sort(lo, hi):\n        if lo >= hi:\n            return\n        pivot = a[hi]  # Lomuto partition uses the last value as pivot.\n        i = lo\n        for j in range(lo, hi):\n            if a[j] <= pivot:\n                a[i], a[j] = a[j], a[i]  # Grow the partition of values <= pivot.\n                i += 1\n        a[i], a[hi] = a[hi], a[i]  # Put the pivot in its final position.\n        sort(lo, i - 1)\n        sort(i + 1, hi)\n    sort(0, len(a) - 1)\n    return a\n",
+  "javaSource": "static void quickSort(int[] a) {\n    quickRange(a, 0, a.length - 1);\n}\nstatic void quickRange(int[] a, int lo, int hi) {\n    if (lo >= hi) return;\n    int pivot = a[hi], i = lo;\n    for (int j = lo; j < hi; j++) {\n        if (a[j] <= pivot) {\n            int t = a[i]; a[i] = a[j]; a[j] = t;\n            i++;\n        }\n    }\n    int t = a[i]; a[i] = a[hi]; a[hi] = t;\n    quickRange(a, lo, i - 1);\n    quickRange(a, i + 1, hi);\n}",
   "spec": {
     "visualizer": "ARRAY",
-    "initialState": { "array": [5, 2, 4, 1] },
-    "variables": [{ "name": "pivot", "label": "pivot", "color": "#eab308" }],
+    "initialState": {
+      "array": [
+        5,
+        2,
+        4,
+        1,
+        3
+      ]
+    },
+    "variables": [
+      {
+        "name": "hi",
+        "label": "hi"
+      },
+      {
+        "name": "i",
+        "label": "i"
+      },
+      {
+        "name": "j",
+        "label": "j"
+      },
+      {
+        "name": "lo",
+        "label": "lo"
+      },
+      {
+        "name": "pivot",
+        "label": "pivot"
+      }
+    ],
     "steps": [
-      { "title": "Choose pivot", "explanation": "Pivot = last element (1).",
-        "state": { "array": [5, 2, 4, 1] }, "variables": { "pivot": 1 },
-        "highlights": [{ "target": "array", "indices": [3], "style": "PIVOT" }], "line": 3, "lang": "java" },
-      { "title": "Partition", "explanation": "All values > 1, so pivot moves to the front.",
-        "state": { "array": [1, 2, 4, 5] }, "variables": { "pivot": 1 },
-        "highlights": [{ "target": "array", "indices": [0], "style": "SWAP" }] },
-      { "title": "Recurse right", "explanation": "Sort [2,4,5]; pivot now 5.",
-        "state": { "array": [1, 2, 4, 5] }, "variables": { "pivot": 5 },
-        "highlights": [{ "target": "array", "indices": [3], "style": "PIVOT" }],
-        "input": { "key": "qsdone", "prompt": "Is the array already sorted at this point?", "type": "BOOLEAN", "expected": true } },
-      { "title": "Done", "explanation": "All partitions settled.",
-        "state": { "array": [1, 2, 4, 5] },
-        "highlights": [{ "target": "array", "indices": [0, 1, 2, 3], "style": "DONE" }] }
+      {
+        "title": "Start the walkthrough",
+        "explanation": "Sort ascending. Python steps show the state BEFORE each highlighted line executes.",
+        "state": {
+          "array": [
+            5,
+            2,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {},
+        "input": {
+          "key": "quick-sort-prediction",
+          "type": "NUMBER",
+          "prompt": "Which value will be at index 0 after sorting?",
+          "expected": 1
+        }
+      },
+      {
+        "title": "def sort(lo, hi):",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            5,
+            2,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {},
+        "pointers": {},
+        "line": 2,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "sort(0, len(a) - 1)",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            5,
+            2,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {},
+        "pointers": {},
+        "line": 14,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "if lo >= hi:",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            5,
+            2,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "lo": 0,
+          "hi": 4
+        },
+        "pointers": {
+          "lo": 0,
+          "hi": 4
+        },
+        "line": 3,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              4
+            ],
+            "style": "COMPARE"
+          }
+        ]
+      },
+      {
+        "title": "pivot = a[hi] ",
+        "explanation": "Lomuto partition uses the last value as pivot.",
+        "state": {
+          "array": [
+            5,
+            2,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "lo": 0,
+          "hi": 4
+        },
+        "pointers": {
+          "lo": 0,
+          "hi": 4
+        },
+        "line": 5,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              4
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "i = lo",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            5,
+            2,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "lo": 0,
+          "hi": 4,
+          "pivot": 3
+        },
+        "pointers": {
+          "lo": 0,
+          "hi": 4
+        },
+        "line": 6,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              4
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "for j in range(lo, hi):",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            5,
+            2,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "lo": 0,
+          "hi": 4,
+          "pivot": 3,
+          "i": 0
+        },
+        "pointers": {
+          "lo": 0,
+          "hi": 4,
+          "i": 0
+        },
+        "line": 7,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              4
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "if a[j] <= pivot:",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            5,
+            2,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "lo": 0,
+          "hi": 4,
+          "pivot": 3,
+          "i": 0,
+          "j": 0
+        },
+        "pointers": {
+          "lo": 0,
+          "hi": 4,
+          "i": 0,
+          "j": 0
+        },
+        "line": 8,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              4
+            ],
+            "style": "COMPARE"
+          }
+        ]
+      },
+      {
+        "title": "for j in range(lo, hi):",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            5,
+            2,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "lo": 0,
+          "hi": 4,
+          "pivot": 3,
+          "i": 0,
+          "j": 0
+        },
+        "pointers": {
+          "lo": 0,
+          "hi": 4,
+          "i": 0,
+          "j": 0
+        },
+        "line": 7,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              4
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "if a[j] <= pivot:",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            5,
+            2,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "lo": 0,
+          "hi": 4,
+          "pivot": 3,
+          "i": 0,
+          "j": 1
+        },
+        "pointers": {
+          "lo": 0,
+          "hi": 4,
+          "i": 0,
+          "j": 1
+        },
+        "line": 8,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              1,
+              4
+            ],
+            "style": "COMPARE"
+          }
+        ]
+      },
+      {
+        "title": "a[i], a[j] = a[j], a[i] ",
+        "explanation": "Grow the partition of values <= pivot.",
+        "state": {
+          "array": [
+            5,
+            2,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "lo": 0,
+          "hi": 4,
+          "pivot": 3,
+          "i": 0,
+          "j": 1
+        },
+        "pointers": {
+          "lo": 0,
+          "hi": 4,
+          "i": 0,
+          "j": 1
+        },
+        "line": 9,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              1,
+              4
+            ],
+            "style": "ACTIVE"
+          }
+        ],
+        "input": {
+          "key": "quick-sort-next",
+          "type": "NUMBER",
+          "prompt": "After the highlighted Python line executes, what value will be at index 0?",
+          "expected": 2
+        }
+      },
+      {
+        "title": "i += 1",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            2,
+            5,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "lo": 0,
+          "hi": 4,
+          "pivot": 3,
+          "i": 0,
+          "j": 1
+        },
+        "pointers": {
+          "lo": 0,
+          "hi": 4,
+          "i": 0,
+          "j": 1
+        },
+        "line": 10,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              1,
+              4
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "for j in range(lo, hi):",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            2,
+            5,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "lo": 0,
+          "hi": 4,
+          "pivot": 3,
+          "i": 1,
+          "j": 1
+        },
+        "pointers": {
+          "lo": 0,
+          "hi": 4,
+          "i": 1,
+          "j": 1
+        },
+        "line": 7,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              1,
+              4
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "if a[j] <= pivot:",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            2,
+            5,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "lo": 0,
+          "hi": 4,
+          "pivot": 3,
+          "i": 1,
+          "j": 2
+        },
+        "pointers": {
+          "lo": 0,
+          "hi": 4,
+          "i": 1,
+          "j": 2
+        },
+        "line": 8,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              1,
+              2,
+              4
+            ],
+            "style": "COMPARE"
+          }
+        ]
+      },
+      {
+        "title": "for j in range(lo, hi):",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            2,
+            5,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "lo": 0,
+          "hi": 4,
+          "pivot": 3,
+          "i": 1,
+          "j": 2
+        },
+        "pointers": {
+          "lo": 0,
+          "hi": 4,
+          "i": 1,
+          "j": 2
+        },
+        "line": 7,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              1,
+              2,
+              4
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "if a[j] <= pivot:",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            2,
+            5,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "lo": 0,
+          "hi": 4,
+          "pivot": 3,
+          "i": 1,
+          "j": 3
+        },
+        "pointers": {
+          "lo": 0,
+          "hi": 4,
+          "i": 1,
+          "j": 3
+        },
+        "line": 8,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              1,
+              3,
+              4
+            ],
+            "style": "COMPARE"
+          }
+        ]
+      },
+      {
+        "title": "a[i], a[j] = a[j], a[i] ",
+        "explanation": "Grow the partition of values <= pivot.",
+        "state": {
+          "array": [
+            2,
+            5,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "lo": 0,
+          "hi": 4,
+          "pivot": 3,
+          "i": 1,
+          "j": 3
+        },
+        "pointers": {
+          "lo": 0,
+          "hi": 4,
+          "i": 1,
+          "j": 3
+        },
+        "line": 9,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              1,
+              3,
+              4
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "i += 1",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            2,
+            1,
+            4,
+            5,
+            3
+          ]
+        },
+        "variables": {
+          "lo": 0,
+          "hi": 4,
+          "pivot": 3,
+          "i": 1,
+          "j": 3
+        },
+        "pointers": {
+          "lo": 0,
+          "hi": 4,
+          "i": 1,
+          "j": 3
+        },
+        "line": 10,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              1,
+              3,
+              4
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "for j in range(lo, hi):",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            2,
+            1,
+            4,
+            5,
+            3
+          ]
+        },
+        "variables": {
+          "lo": 0,
+          "hi": 4,
+          "pivot": 3,
+          "i": 2,
+          "j": 3
+        },
+        "pointers": {
+          "lo": 0,
+          "hi": 4,
+          "i": 2,
+          "j": 3
+        },
+        "line": 7,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              2,
+              3,
+              4
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "a[i], a[hi] = a[hi], a[i] ",
+        "explanation": "Put the pivot in its final position.",
+        "state": {
+          "array": [
+            2,
+            1,
+            4,
+            5,
+            3
+          ]
+        },
+        "variables": {
+          "lo": 0,
+          "hi": 4,
+          "pivot": 3,
+          "i": 2,
+          "j": 3
+        },
+        "pointers": {
+          "lo": 0,
+          "hi": 4,
+          "i": 2,
+          "j": 3
+        },
+        "line": 11,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              2,
+              3,
+              4
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "sort(lo, i - 1)",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            2,
+            1,
+            3,
+            5,
+            4
+          ]
+        },
+        "variables": {
+          "lo": 0,
+          "hi": 4,
+          "pivot": 3,
+          "i": 2,
+          "j": 3
+        },
+        "pointers": {
+          "lo": 0,
+          "hi": 4,
+          "i": 2,
+          "j": 3
+        },
+        "line": 12,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              2,
+              3,
+              4
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "if lo >= hi:",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            2,
+            1,
+            3,
+            5,
+            4
+          ]
+        },
+        "variables": {
+          "lo": 0,
+          "hi": 1
+        },
+        "pointers": {
+          "lo": 0,
+          "hi": 1
+        },
+        "line": 3,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              1
+            ],
+            "style": "COMPARE"
+          }
+        ]
+      },
+      {
+        "title": "pivot = a[hi] ",
+        "explanation": "Lomuto partition uses the last value as pivot.",
+        "state": {
+          "array": [
+            2,
+            1,
+            3,
+            5,
+            4
+          ]
+        },
+        "variables": {
+          "lo": 0,
+          "hi": 1
+        },
+        "pointers": {
+          "lo": 0,
+          "hi": 1
+        },
+        "line": 5,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              1
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "i = lo",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            2,
+            1,
+            3,
+            5,
+            4
+          ]
+        },
+        "variables": {
+          "lo": 0,
+          "hi": 1,
+          "pivot": 1
+        },
+        "pointers": {
+          "lo": 0,
+          "hi": 1
+        },
+        "line": 6,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              1
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "for j in range(lo, hi):",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            2,
+            1,
+            3,
+            5,
+            4
+          ]
+        },
+        "variables": {
+          "lo": 0,
+          "hi": 1,
+          "pivot": 1,
+          "i": 0
+        },
+        "pointers": {
+          "lo": 0,
+          "hi": 1,
+          "i": 0
+        },
+        "line": 7,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              1
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "if a[j] <= pivot:",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            2,
+            1,
+            3,
+            5,
+            4
+          ]
+        },
+        "variables": {
+          "lo": 0,
+          "hi": 1,
+          "pivot": 1,
+          "i": 0,
+          "j": 0
+        },
+        "pointers": {
+          "lo": 0,
+          "hi": 1,
+          "i": 0,
+          "j": 0
+        },
+        "line": 8,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              1
+            ],
+            "style": "COMPARE"
+          }
+        ]
+      },
+      {
+        "title": "for j in range(lo, hi):",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            2,
+            1,
+            3,
+            5,
+            4
+          ]
+        },
+        "variables": {
+          "lo": 0,
+          "hi": 1,
+          "pivot": 1,
+          "i": 0,
+          "j": 0
+        },
+        "pointers": {
+          "lo": 0,
+          "hi": 1,
+          "i": 0,
+          "j": 0
+        },
+        "line": 7,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              1
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "a[i], a[hi] = a[hi], a[i] ",
+        "explanation": "Put the pivot in its final position.",
+        "state": {
+          "array": [
+            2,
+            1,
+            3,
+            5,
+            4
+          ]
+        },
+        "variables": {
+          "lo": 0,
+          "hi": 1,
+          "pivot": 1,
+          "i": 0,
+          "j": 0
+        },
+        "pointers": {
+          "lo": 0,
+          "hi": 1,
+          "i": 0,
+          "j": 0
+        },
+        "line": 11,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              1
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "sort(lo, i - 1)",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            1,
+            2,
+            3,
+            5,
+            4
+          ]
+        },
+        "variables": {
+          "lo": 0,
+          "hi": 1,
+          "pivot": 1,
+          "i": 0,
+          "j": 0
+        },
+        "pointers": {
+          "lo": 0,
+          "hi": 1,
+          "i": 0,
+          "j": 0
+        },
+        "line": 12,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              1
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "if lo >= hi:",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            1,
+            2,
+            3,
+            5,
+            4
+          ]
+        },
+        "variables": {
+          "lo": 0,
+          "hi": -1
+        },
+        "pointers": {
+          "lo": 0
+        },
+        "line": 3,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0
+            ],
+            "style": "COMPARE"
+          }
+        ]
+      },
+      {
+        "title": "return",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            1,
+            2,
+            3,
+            5,
+            4
+          ]
+        },
+        "variables": {
+          "lo": 0,
+          "hi": -1
+        },
+        "pointers": {
+          "lo": 0
+        },
+        "line": 4,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "sort(i + 1, hi)",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            1,
+            2,
+            3,
+            5,
+            4
+          ]
+        },
+        "variables": {
+          "lo": 0,
+          "hi": 1,
+          "pivot": 1,
+          "i": 0,
+          "j": 0
+        },
+        "pointers": {
+          "lo": 0,
+          "hi": 1,
+          "i": 0,
+          "j": 0
+        },
+        "line": 13,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              1
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "if lo >= hi:",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            1,
+            2,
+            3,
+            5,
+            4
+          ]
+        },
+        "variables": {
+          "lo": 1,
+          "hi": 1
+        },
+        "pointers": {
+          "lo": 1,
+          "hi": 1
+        },
+        "line": 3,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              1
+            ],
+            "style": "COMPARE"
+          }
+        ]
+      },
+      {
+        "title": "return",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            1,
+            2,
+            3,
+            5,
+            4
+          ]
+        },
+        "variables": {
+          "lo": 1,
+          "hi": 1
+        },
+        "pointers": {
+          "lo": 1,
+          "hi": 1
+        },
+        "line": 4,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              1
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "sort(i + 1, hi)",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            1,
+            2,
+            3,
+            5,
+            4
+          ]
+        },
+        "variables": {
+          "lo": 0,
+          "hi": 4,
+          "pivot": 3,
+          "i": 2,
+          "j": 3
+        },
+        "pointers": {
+          "lo": 0,
+          "hi": 4,
+          "i": 2,
+          "j": 3
+        },
+        "line": 13,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              2,
+              3,
+              4
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "if lo >= hi:",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            1,
+            2,
+            3,
+            5,
+            4
+          ]
+        },
+        "variables": {
+          "lo": 3,
+          "hi": 4
+        },
+        "pointers": {
+          "lo": 3,
+          "hi": 4
+        },
+        "line": 3,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              3,
+              4
+            ],
+            "style": "COMPARE"
+          }
+        ]
+      },
+      {
+        "title": "pivot = a[hi] ",
+        "explanation": "Lomuto partition uses the last value as pivot.",
+        "state": {
+          "array": [
+            1,
+            2,
+            3,
+            5,
+            4
+          ]
+        },
+        "variables": {
+          "lo": 3,
+          "hi": 4
+        },
+        "pointers": {
+          "lo": 3,
+          "hi": 4
+        },
+        "line": 5,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              3,
+              4
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "i = lo",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            1,
+            2,
+            3,
+            5,
+            4
+          ]
+        },
+        "variables": {
+          "lo": 3,
+          "hi": 4,
+          "pivot": 4
+        },
+        "pointers": {
+          "lo": 3,
+          "hi": 4
+        },
+        "line": 6,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              3,
+              4
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "for j in range(lo, hi):",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            1,
+            2,
+            3,
+            5,
+            4
+          ]
+        },
+        "variables": {
+          "lo": 3,
+          "hi": 4,
+          "pivot": 4,
+          "i": 3
+        },
+        "pointers": {
+          "lo": 3,
+          "hi": 4,
+          "i": 3
+        },
+        "line": 7,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              3,
+              4
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "if a[j] <= pivot:",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            1,
+            2,
+            3,
+            5,
+            4
+          ]
+        },
+        "variables": {
+          "lo": 3,
+          "hi": 4,
+          "pivot": 4,
+          "i": 3,
+          "j": 3
+        },
+        "pointers": {
+          "lo": 3,
+          "hi": 4,
+          "i": 3,
+          "j": 3
+        },
+        "line": 8,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              3,
+              4
+            ],
+            "style": "COMPARE"
+          }
+        ]
+      },
+      {
+        "title": "for j in range(lo, hi):",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            1,
+            2,
+            3,
+            5,
+            4
+          ]
+        },
+        "variables": {
+          "lo": 3,
+          "hi": 4,
+          "pivot": 4,
+          "i": 3,
+          "j": 3
+        },
+        "pointers": {
+          "lo": 3,
+          "hi": 4,
+          "i": 3,
+          "j": 3
+        },
+        "line": 7,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              3,
+              4
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "a[i], a[hi] = a[hi], a[i] ",
+        "explanation": "Put the pivot in its final position.",
+        "state": {
+          "array": [
+            1,
+            2,
+            3,
+            5,
+            4
+          ]
+        },
+        "variables": {
+          "lo": 3,
+          "hi": 4,
+          "pivot": 4,
+          "i": 3,
+          "j": 3
+        },
+        "pointers": {
+          "lo": 3,
+          "hi": 4,
+          "i": 3,
+          "j": 3
+        },
+        "line": 11,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              3,
+              4
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "sort(lo, i - 1)",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ]
+        },
+        "variables": {
+          "lo": 3,
+          "hi": 4,
+          "pivot": 4,
+          "i": 3,
+          "j": 3
+        },
+        "pointers": {
+          "lo": 3,
+          "hi": 4,
+          "i": 3,
+          "j": 3
+        },
+        "line": 12,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              3,
+              4
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "if lo >= hi:",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ]
+        },
+        "variables": {
+          "lo": 3,
+          "hi": 2
+        },
+        "pointers": {
+          "lo": 3,
+          "hi": 2
+        },
+        "line": 3,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              2,
+              3
+            ],
+            "style": "COMPARE"
+          }
+        ]
+      },
+      {
+        "title": "return",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ]
+        },
+        "variables": {
+          "lo": 3,
+          "hi": 2
+        },
+        "pointers": {
+          "lo": 3,
+          "hi": 2
+        },
+        "line": 4,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              2,
+              3
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "sort(i + 1, hi)",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ]
+        },
+        "variables": {
+          "lo": 3,
+          "hi": 4,
+          "pivot": 4,
+          "i": 3,
+          "j": 3
+        },
+        "pointers": {
+          "lo": 3,
+          "hi": 4,
+          "i": 3,
+          "j": 3
+        },
+        "line": 13,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              3,
+              4
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "if lo >= hi:",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ]
+        },
+        "variables": {
+          "lo": 4,
+          "hi": 4
+        },
+        "pointers": {
+          "lo": 4,
+          "hi": 4
+        },
+        "line": 3,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              4
+            ],
+            "style": "COMPARE"
+          }
+        ]
+      },
+      {
+        "title": "return",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ]
+        },
+        "variables": {
+          "lo": 4,
+          "hi": 4
+        },
+        "pointers": {
+          "lo": 4,
+          "hi": 4
+        },
+        "line": 4,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              4
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "return a",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ]
+        },
+        "variables": {},
+        "pointers": {},
+        "line": 15,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "Fully sorted",
+        "explanation": "All values are now in ascending order. Every input value is preserved.",
+        "state": {
+          "array": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ]
+        },
+        "variables": {},
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              1,
+              2,
+              3,
+              4
+            ],
+            "style": "DONE"
+          }
+        ]
+      }
     ]
   }
 }

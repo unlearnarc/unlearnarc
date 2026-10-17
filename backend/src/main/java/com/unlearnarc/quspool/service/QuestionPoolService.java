@@ -30,6 +30,10 @@ public class QuestionPoolService {
     private final DomainRepository           domainRepo;
     private final CourseRepository           courseRepo;
     private final TopicRepository            topicRepo;
+    // Needed to walk the domain → skill → course hierarchy for the aggregated
+    // "pools available for this scope" readiness lookups.
+    private final com.unlearnarc.mapping.repository.DomainSkillMappingRepository domainSkillRepo;
+    private final com.unlearnarc.mapping.repository.SkillCourseMappingRepository skillCourseRepo;
 
     // ── CRUD ───────────────────────────────────────────────────────────────────
 
@@ -131,24 +135,67 @@ public class QuestionPoolService {
         }
     }
 
+    /**
+     * Pools available for a DOMAIN test — the domain's own pools PLUS every pool
+     * beneath it (each skill's courses, and those courses' topics). This mirrors
+     * the union the test engine actually draws from, so the "N tests available"
+     * readiness hint stays truthful even when questions live only at a lower level.
+     */
     @Transactional(readOnly = true)
     public List<QuestionPoolResponse> findPoolsByDomain(String domainId) {
-        return domainPoolRepo.findByDomainId(domainId).stream()
-                .map(m -> toResponse(getPoolOrThrow(m.getPoolId())))
-                .toList();
+        return toResponsesInOrder(poolIdsForDomain(domainId));
     }
 
+    /**
+     * Pools available for a COURSE test — the course's own pools PLUS every pool
+     * under each of its topics. Lets a course that only has topic-level questions
+     * still surface a "Take course test" button and generate a quiz.
+     */
     @Transactional(readOnly = true)
     public List<QuestionPoolResponse> findPoolsByCourse(String courseId) {
-        return coursePoolRepo.findByCourseId(courseId).stream()
-                .map(m -> toResponse(getPoolOrThrow(m.getPoolId())))
+        return toResponsesInOrder(poolIdsForCourse(courseId));
+    }
+
+    /** Pools available for a TOPIC test — the topic's own pools (leaf of the tree). */
+    @Transactional(readOnly = true)
+    public List<QuestionPoolResponse> findPoolsByTopic(String topicId) {
+        return toResponsesInOrder(poolIdsForTopic(topicId));
+    }
+
+    // ── Hierarchy-aware pool resolution (shared by the test engine's union) ──────
+
+    /** Pool ids directly mapped to a topic (leaf scope). */
+    private List<String> poolIdsForTopic(String topicId) {
+        return topicPoolRepo.findByTopicId(topicId).stream()
+                .map(TopicPoolMapping::getPoolId)
                 .toList();
     }
 
-    @Transactional(readOnly = true)
-    public List<QuestionPoolResponse> findPoolsByTopic(String topicId) {
-        return topicPoolRepo.findByTopicId(topicId).stream()
-                .map(m -> toResponse(getPoolOrThrow(m.getPoolId())))
+    /** Course's own pools + every pool under each of its topics (own-first, de-duped). */
+    private List<String> poolIdsForCourse(String courseId) {
+        java.util.LinkedHashSet<String> ids = new java.util.LinkedHashSet<>();
+        coursePoolRepo.findByCourseId(courseId).forEach(m -> ids.add(m.getPoolId()));
+        topicRepo.findByCourseIdOrderByTopicOrder(courseId)
+                .forEach(t -> ids.addAll(poolIdsForTopic(t.getId())));
+        return new java.util.ArrayList<>(ids);
+    }
+
+    /** Domain's own pools + every course (and their topics') pools beneath it. */
+    private List<String> poolIdsForDomain(String domainId) {
+        java.util.LinkedHashSet<String> ids = new java.util.LinkedHashSet<>();
+        domainPoolRepo.findByDomainId(domainId).forEach(m -> ids.add(m.getPoolId()));
+        domainSkillRepo.findByDomainId(domainId).forEach(ds ->
+                skillCourseRepo.findBySkillId(ds.getSkillId()).forEach(sc ->
+                        ids.addAll(poolIdsForCourse(sc.getCourseId()))));
+        return new java.util.ArrayList<>(ids);
+    }
+
+    /** Map pool ids → active pool responses, preserving order and dropping inactive. */
+    private List<QuestionPoolResponse> toResponsesInOrder(List<String> poolIds) {
+        return poolIds.stream()
+                .map(this::getPoolOrThrow)
+                .filter(QuestionPool::getIsActive)
+                .map(this::toResponse)
                 .toList();
     }
 

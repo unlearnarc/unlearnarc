@@ -1,40 +1,1521 @@
 {
   "slug": "insertion-sort",
   "title": "Insertion Sort",
-  "summary": "Builds the sorted array one element at a time by inserting each item into its correct position.",
-  "usage": "Efficient for small or nearly-sorted data; stable and in-place. O(n^2) worst case.",
+  "summary": "Grow a sorted prefix by shifting larger values and inserting the saved key.",
+  "usage": "How it works\nSave the next key, shift larger prefix elements one position right, then fill the gap. Temporary duplicate bars during shifts are expected: the key remains in a separate variable. Useful for small or nearly sorted inputs and as a base case in hybrid sorting.\n\nProperties and prerequisites\nStable: yes (shift only strictly greater values). In-place: yes.\n\nComplexity\nTime: O(n\u00b2) average/worst; O(n) best. Space: O(1).\n\nExample\nInput: [5, 2, 4, 1, 3]. Output: [1, 2, 3, 4, 5].\n\nTry it\nUse Play/Pause, Previous/Next, the timeline, and playback speed. Answer the prediction checkpoints to continue; feedback reveals the expected answer. Python is the line-synchronized walkthrough; Java is an equivalent complete implementation. Sorting functions accept empty arrays, duplicates, negative values, and already sorted inputs. Java methods belong inside a class; Python functions can be called directly.",
   "category": "Sorting",
   "difficulty": "EASY",
   "visualizer": "ARRAY",
-  "complexity": { "time": "O(n^2)", "space": "O(1)" },
-  "javaSource": "void insertionSort(int[] a){\n  for(int i=1;i<a.length;i++){\n    int key=a[i], j=i-1;\n    while(j>=0 && a[j]>key){ a[j+1]=a[j]; j--; }\n    a[j+1]=key;\n  }\n}",
-  "pythonSource": "def insertion_sort(a):\n    for i in range(1, len(a)):\n        key = a[i]; j = i - 1\n        while j >= 0 and a[j] > key:\n            a[j+1] = a[j]; j -= 1\n        a[j+1] = key",
+  "complexity": {
+    "time": "O(n\u00b2) average/worst; O(n) best",
+    "space": "O(1)"
+  },
+  "pythonSource": "def insertion_sort(a):\n    for i in range(1, len(a)):\n        key = a[i]  # Save the value to insert into the sorted prefix.\n        j = i - 1\n        while j >= 0 and a[j] > key:\n            a[j + 1] = a[j]  # Shift a larger value right; key is saved separately.\n            j -= 1\n        a[j + 1] = key  # Fill the gap with the saved key.\n    return a\n",
+  "javaSource": "static void insertionSort(int[] a) {\n    for (int i = 1; i < a.length; i++) {\n        int key = a[i], j = i - 1;\n        while (j >= 0 && a[j] > key) {\n            a[j + 1] = a[j];\n            j--;\n        }\n        a[j + 1] = key;\n    }\n}",
   "spec": {
     "visualizer": "ARRAY",
-    "initialState": { "array": [5, 2, 4, 1] },
+    "initialState": {
+      "array": [
+        5,
+        2,
+        4,
+        1,
+        3
+      ]
+    },
     "variables": [
-      { "name": "i", "label": "i", "color": "#f59e0b" },
-      { "name": "key", "label": "key", "color": "#3b82f6" }
+      {
+        "name": "i",
+        "label": "i"
+      },
+      {
+        "name": "j",
+        "label": "j"
+      },
+      {
+        "name": "key",
+        "label": "key"
+      }
     ],
     "steps": [
-      { "title": "Start", "explanation": "Element 0 is trivially sorted. We insert from index 1 onward.",
-        "state": { "array": [5, 2, 4, 1] }, "variables": { "i": 1, "key": 2 }, "line": 2, "lang": "java" },
-      { "title": "Insert 2", "explanation": "key=2 < 5, shift 5 right.",
-        "state": { "array": [5, 5, 4, 1] }, "variables": { "i": 1, "key": 2 },
-        "highlights": [{ "target": "array", "indices": [0, 1], "style": "COMPARE" }], "line": 4, "lang": "java" },
-      { "title": "Placed 2", "explanation": "Sorted region: [2, 5].",
-        "state": { "array": [2, 5, 4, 1] }, "variables": { "i": 2, "key": 4 },
-        "highlights": [{ "target": "array", "indices": [0], "style": "DONE" }] },
-      { "title": "Insert 4", "explanation": "key=4 < 5, shift 5; 4 > 2 so stop.",
-        "state": { "array": [2, 4, 5, 1] }, "variables": { "i": 3, "key": 1 },
-        "highlights": [{ "target": "array", "indices": [1], "style": "INSERT" }],
-        "input": { "key": "pred1", "prompt": "Does key=1 move to the very front?", "type": "BOOLEAN", "expected": true } },
-      { "title": "Insert 1", "explanation": "1 is smaller than all; it moves to the front.",
-        "state": { "array": [1, 2, 4, 5] }, "variables": { "i": 3, "key": 1 },
-        "highlights": [{ "target": "array", "indices": [0], "style": "INSERT" }] },
-      { "title": "Done", "explanation": "Array fully sorted.",
-        "state": { "array": [1, 2, 4, 5] },
-        "highlights": [{ "target": "array", "indices": [0, 1, 2, 3], "style": "DONE" }] }
+      {
+        "title": "Start the walkthrough",
+        "explanation": "Sort ascending. Python steps show the state BEFORE each highlighted line executes.",
+        "state": {
+          "array": [
+            5,
+            2,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {},
+        "input": {
+          "key": "insertion-sort-prediction",
+          "type": "NUMBER",
+          "prompt": "Which value will be at index 0 after sorting?",
+          "expected": 1
+        }
+      },
+      {
+        "title": "for i in range(1, len(a)):",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            5,
+            2,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {},
+        "pointers": {},
+        "line": 2,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "key = a[i] ",
+        "explanation": "Save the value to insert into the sorted prefix.",
+        "state": {
+          "array": [
+            5,
+            2,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "i": 1
+        },
+        "pointers": {
+          "i": 1
+        },
+        "line": 3,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              1
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "j = i - 1",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            5,
+            2,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "i": 1,
+          "key": 2
+        },
+        "pointers": {
+          "i": 1
+        },
+        "line": 4,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              1
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "while j >= 0 and a[j] > key:",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            5,
+            2,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "i": 1,
+          "key": 2,
+          "j": 0
+        },
+        "pointers": {
+          "i": 1,
+          "j": 0
+        },
+        "line": 5,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              1
+            ],
+            "style": "COMPARE"
+          }
+        ]
+      },
+      {
+        "title": "a[j + 1] = a[j] ",
+        "explanation": "Shift a larger value right; key is saved separately.",
+        "state": {
+          "array": [
+            5,
+            2,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "i": 1,
+          "key": 2,
+          "j": 0
+        },
+        "pointers": {
+          "i": 1,
+          "j": 0
+        },
+        "line": 6,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              1
+            ],
+            "style": "ACTIVE"
+          }
+        ],
+        "input": {
+          "key": "insertion-sort-next",
+          "type": "NUMBER",
+          "prompt": "After the highlighted Python line executes, what value will be at index 1?",
+          "expected": 5
+        }
+      },
+      {
+        "title": "j -= 1",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            5,
+            5,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "i": 1,
+          "key": 2,
+          "j": 0
+        },
+        "pointers": {
+          "i": 1,
+          "j": 0
+        },
+        "line": 7,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              1
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "while j >= 0 and a[j] > key:",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            5,
+            5,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "i": 1,
+          "key": 2,
+          "j": -1
+        },
+        "pointers": {
+          "i": 1
+        },
+        "line": 5,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              1
+            ],
+            "style": "COMPARE"
+          }
+        ]
+      },
+      {
+        "title": "a[j + 1] = key ",
+        "explanation": "Fill the gap with the saved key.",
+        "state": {
+          "array": [
+            5,
+            5,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "i": 1,
+          "key": 2,
+          "j": -1
+        },
+        "pointers": {
+          "i": 1
+        },
+        "line": 8,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              1
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "for i in range(1, len(a)):",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            2,
+            5,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "i": 1,
+          "key": 2,
+          "j": -1
+        },
+        "pointers": {
+          "i": 1
+        },
+        "line": 2,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              1
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "key = a[i] ",
+        "explanation": "Save the value to insert into the sorted prefix.",
+        "state": {
+          "array": [
+            2,
+            5,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "i": 2,
+          "key": 2,
+          "j": -1
+        },
+        "pointers": {
+          "i": 2
+        },
+        "line": 3,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              2
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "j = i - 1",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            2,
+            5,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "i": 2,
+          "key": 4,
+          "j": -1
+        },
+        "pointers": {
+          "i": 2
+        },
+        "line": 4,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              2
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "while j >= 0 and a[j] > key:",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            2,
+            5,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "i": 2,
+          "key": 4,
+          "j": 1
+        },
+        "pointers": {
+          "i": 2,
+          "j": 1
+        },
+        "line": 5,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              1,
+              2
+            ],
+            "style": "COMPARE"
+          }
+        ]
+      },
+      {
+        "title": "a[j + 1] = a[j] ",
+        "explanation": "Shift a larger value right; key is saved separately.",
+        "state": {
+          "array": [
+            2,
+            5,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "i": 2,
+          "key": 4,
+          "j": 1
+        },
+        "pointers": {
+          "i": 2,
+          "j": 1
+        },
+        "line": 6,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              1,
+              2
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "j -= 1",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            2,
+            5,
+            5,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "i": 2,
+          "key": 4,
+          "j": 1
+        },
+        "pointers": {
+          "i": 2,
+          "j": 1
+        },
+        "line": 7,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              1,
+              2
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "while j >= 0 and a[j] > key:",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            2,
+            5,
+            5,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "i": 2,
+          "key": 4,
+          "j": 0
+        },
+        "pointers": {
+          "i": 2,
+          "j": 0
+        },
+        "line": 5,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              2
+            ],
+            "style": "COMPARE"
+          }
+        ]
+      },
+      {
+        "title": "a[j + 1] = key ",
+        "explanation": "Fill the gap with the saved key.",
+        "state": {
+          "array": [
+            2,
+            5,
+            5,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "i": 2,
+          "key": 4,
+          "j": 0
+        },
+        "pointers": {
+          "i": 2,
+          "j": 0
+        },
+        "line": 8,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              2
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "for i in range(1, len(a)):",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            2,
+            4,
+            5,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "i": 2,
+          "key": 4,
+          "j": 0
+        },
+        "pointers": {
+          "i": 2,
+          "j": 0
+        },
+        "line": 2,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              2
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "key = a[i] ",
+        "explanation": "Save the value to insert into the sorted prefix.",
+        "state": {
+          "array": [
+            2,
+            4,
+            5,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "i": 3,
+          "key": 4,
+          "j": 0
+        },
+        "pointers": {
+          "i": 3,
+          "j": 0
+        },
+        "line": 3,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              3
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "j = i - 1",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            2,
+            4,
+            5,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "i": 3,
+          "key": 1,
+          "j": 0
+        },
+        "pointers": {
+          "i": 3,
+          "j": 0
+        },
+        "line": 4,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              3
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "while j >= 0 and a[j] > key:",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            2,
+            4,
+            5,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "i": 3,
+          "key": 1,
+          "j": 2
+        },
+        "pointers": {
+          "i": 3,
+          "j": 2
+        },
+        "line": 5,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              2,
+              3
+            ],
+            "style": "COMPARE"
+          }
+        ]
+      },
+      {
+        "title": "a[j + 1] = a[j] ",
+        "explanation": "Shift a larger value right; key is saved separately.",
+        "state": {
+          "array": [
+            2,
+            4,
+            5,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "i": 3,
+          "key": 1,
+          "j": 2
+        },
+        "pointers": {
+          "i": 3,
+          "j": 2
+        },
+        "line": 6,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              2,
+              3
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "j -= 1",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            2,
+            4,
+            5,
+            5,
+            3
+          ]
+        },
+        "variables": {
+          "i": 3,
+          "key": 1,
+          "j": 2
+        },
+        "pointers": {
+          "i": 3,
+          "j": 2
+        },
+        "line": 7,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              2,
+              3
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "while j >= 0 and a[j] > key:",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            2,
+            4,
+            5,
+            5,
+            3
+          ]
+        },
+        "variables": {
+          "i": 3,
+          "key": 1,
+          "j": 1
+        },
+        "pointers": {
+          "i": 3,
+          "j": 1
+        },
+        "line": 5,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              1,
+              3
+            ],
+            "style": "COMPARE"
+          }
+        ]
+      },
+      {
+        "title": "a[j + 1] = a[j] ",
+        "explanation": "Shift a larger value right; key is saved separately.",
+        "state": {
+          "array": [
+            2,
+            4,
+            5,
+            5,
+            3
+          ]
+        },
+        "variables": {
+          "i": 3,
+          "key": 1,
+          "j": 1
+        },
+        "pointers": {
+          "i": 3,
+          "j": 1
+        },
+        "line": 6,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              1,
+              3
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "j -= 1",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            2,
+            4,
+            4,
+            5,
+            3
+          ]
+        },
+        "variables": {
+          "i": 3,
+          "key": 1,
+          "j": 1
+        },
+        "pointers": {
+          "i": 3,
+          "j": 1
+        },
+        "line": 7,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              1,
+              3
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "while j >= 0 and a[j] > key:",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            2,
+            4,
+            4,
+            5,
+            3
+          ]
+        },
+        "variables": {
+          "i": 3,
+          "key": 1,
+          "j": 0
+        },
+        "pointers": {
+          "i": 3,
+          "j": 0
+        },
+        "line": 5,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              3
+            ],
+            "style": "COMPARE"
+          }
+        ]
+      },
+      {
+        "title": "a[j + 1] = a[j] ",
+        "explanation": "Shift a larger value right; key is saved separately.",
+        "state": {
+          "array": [
+            2,
+            4,
+            4,
+            5,
+            3
+          ]
+        },
+        "variables": {
+          "i": 3,
+          "key": 1,
+          "j": 0
+        },
+        "pointers": {
+          "i": 3,
+          "j": 0
+        },
+        "line": 6,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              3
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "j -= 1",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            2,
+            2,
+            4,
+            5,
+            3
+          ]
+        },
+        "variables": {
+          "i": 3,
+          "key": 1,
+          "j": 0
+        },
+        "pointers": {
+          "i": 3,
+          "j": 0
+        },
+        "line": 7,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              3
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "while j >= 0 and a[j] > key:",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            2,
+            2,
+            4,
+            5,
+            3
+          ]
+        },
+        "variables": {
+          "i": 3,
+          "key": 1,
+          "j": -1
+        },
+        "pointers": {
+          "i": 3
+        },
+        "line": 5,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              3
+            ],
+            "style": "COMPARE"
+          }
+        ]
+      },
+      {
+        "title": "a[j + 1] = key ",
+        "explanation": "Fill the gap with the saved key.",
+        "state": {
+          "array": [
+            2,
+            2,
+            4,
+            5,
+            3
+          ]
+        },
+        "variables": {
+          "i": 3,
+          "key": 1,
+          "j": -1
+        },
+        "pointers": {
+          "i": 3
+        },
+        "line": 8,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              3
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "for i in range(1, len(a)):",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            1,
+            2,
+            4,
+            5,
+            3
+          ]
+        },
+        "variables": {
+          "i": 3,
+          "key": 1,
+          "j": -1
+        },
+        "pointers": {
+          "i": 3
+        },
+        "line": 2,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              3
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "key = a[i] ",
+        "explanation": "Save the value to insert into the sorted prefix.",
+        "state": {
+          "array": [
+            1,
+            2,
+            4,
+            5,
+            3
+          ]
+        },
+        "variables": {
+          "i": 4,
+          "key": 1,
+          "j": -1
+        },
+        "pointers": {
+          "i": 4
+        },
+        "line": 3,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              4
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "j = i - 1",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            1,
+            2,
+            4,
+            5,
+            3
+          ]
+        },
+        "variables": {
+          "i": 4,
+          "key": 3,
+          "j": -1
+        },
+        "pointers": {
+          "i": 4
+        },
+        "line": 4,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              4
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "while j >= 0 and a[j] > key:",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            1,
+            2,
+            4,
+            5,
+            3
+          ]
+        },
+        "variables": {
+          "i": 4,
+          "key": 3,
+          "j": 3
+        },
+        "pointers": {
+          "i": 4,
+          "j": 3
+        },
+        "line": 5,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              3,
+              4
+            ],
+            "style": "COMPARE"
+          }
+        ]
+      },
+      {
+        "title": "a[j + 1] = a[j] ",
+        "explanation": "Shift a larger value right; key is saved separately.",
+        "state": {
+          "array": [
+            1,
+            2,
+            4,
+            5,
+            3
+          ]
+        },
+        "variables": {
+          "i": 4,
+          "key": 3,
+          "j": 3
+        },
+        "pointers": {
+          "i": 4,
+          "j": 3
+        },
+        "line": 6,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              3,
+              4
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "j -= 1",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            1,
+            2,
+            4,
+            5,
+            5
+          ]
+        },
+        "variables": {
+          "i": 4,
+          "key": 3,
+          "j": 3
+        },
+        "pointers": {
+          "i": 4,
+          "j": 3
+        },
+        "line": 7,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              3,
+              4
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "while j >= 0 and a[j] > key:",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            1,
+            2,
+            4,
+            5,
+            5
+          ]
+        },
+        "variables": {
+          "i": 4,
+          "key": 3,
+          "j": 2
+        },
+        "pointers": {
+          "i": 4,
+          "j": 2
+        },
+        "line": 5,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              2,
+              4
+            ],
+            "style": "COMPARE"
+          }
+        ]
+      },
+      {
+        "title": "a[j + 1] = a[j] ",
+        "explanation": "Shift a larger value right; key is saved separately.",
+        "state": {
+          "array": [
+            1,
+            2,
+            4,
+            5,
+            5
+          ]
+        },
+        "variables": {
+          "i": 4,
+          "key": 3,
+          "j": 2
+        },
+        "pointers": {
+          "i": 4,
+          "j": 2
+        },
+        "line": 6,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              2,
+              4
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "j -= 1",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            1,
+            2,
+            4,
+            4,
+            5
+          ]
+        },
+        "variables": {
+          "i": 4,
+          "key": 3,
+          "j": 2
+        },
+        "pointers": {
+          "i": 4,
+          "j": 2
+        },
+        "line": 7,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              2,
+              4
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "while j >= 0 and a[j] > key:",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            1,
+            2,
+            4,
+            4,
+            5
+          ]
+        },
+        "variables": {
+          "i": 4,
+          "key": 3,
+          "j": 1
+        },
+        "pointers": {
+          "i": 4,
+          "j": 1
+        },
+        "line": 5,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              1,
+              4
+            ],
+            "style": "COMPARE"
+          }
+        ]
+      },
+      {
+        "title": "a[j + 1] = key ",
+        "explanation": "Fill the gap with the saved key.",
+        "state": {
+          "array": [
+            1,
+            2,
+            4,
+            4,
+            5
+          ]
+        },
+        "variables": {
+          "i": 4,
+          "key": 3,
+          "j": 1
+        },
+        "pointers": {
+          "i": 4,
+          "j": 1
+        },
+        "line": 8,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              1,
+              4
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "for i in range(1, len(a)):",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ]
+        },
+        "variables": {
+          "i": 4,
+          "key": 3,
+          "j": 1
+        },
+        "pointers": {
+          "i": 4,
+          "j": 1
+        },
+        "line": 2,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              1,
+              4
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "return a",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ]
+        },
+        "variables": {
+          "i": 4,
+          "key": 3,
+          "j": 1
+        },
+        "pointers": {
+          "i": 4,
+          "j": 1
+        },
+        "line": 9,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              1,
+              4
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "Fully sorted",
+        "explanation": "All values are now in ascending order. Every input value is preserved.",
+        "state": {
+          "array": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ]
+        },
+        "variables": {},
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              1,
+              2,
+              3,
+              4
+            ],
+            "style": "DONE"
+          }
+        ]
+      }
     ]
   }
 }

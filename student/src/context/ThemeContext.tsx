@@ -4,7 +4,7 @@ import React, { createContext, useContext, useEffect, useState, useCallback } fr
    ThemeContext — light / dark theme controller.
 
    • Reads the saved preference from localStorage ('ua_theme'), falling back to
-     the OS `prefers-color-scheme` setting.
+     light theme (independent of the device theme).
    • Writes the active theme to <html data-theme="…">, which flips every
      semantic CSS variable defined in styles/theme.css.
    • Exposes `theme` and `toggleTheme` / `setTheme` via useTheme().
@@ -25,7 +25,7 @@ function getInitialTheme(): Theme {
   if (typeof window === 'undefined') return 'light';
   const saved = localStorage.getItem(STORAGE_KEY) as Theme | null;
   if (saved === 'light' || saved === 'dark') return saved;
-  return window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  return 'light';
 }
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {

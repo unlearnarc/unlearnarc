@@ -12,11 +12,11 @@ import type { MascotMood } from './messages';
 
    Behaviour:
    - Resolves the best Lottie file for (characterId, mood) via a HEAD probe.
-   - 'idle'/'love'/'thinking' loop; reaction moods play once then settle.
+   - Idle, walking, sleeping and thinking loop; other reactions play once.
    - The `nonce` prop forces a replay when the same mood re-fires.
    ============================================================================= */
 
-const LOOPING: MascotMood[] = ['idle', 'love', 'thinking'];
+const LOOPING: MascotMood[] = ['idle', 'walking', 'sleeping', 'thinking'];
 
 export const MascotLottie: React.FC<{
   mood: MascotMood;

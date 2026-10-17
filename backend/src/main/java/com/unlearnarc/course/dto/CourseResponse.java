@@ -11,7 +11,7 @@ import java.time.LocalTime;
 public class CourseResponse {
     private String id;
     private String name;
-    private Long imgUrl;
+    private String imgUrl;
     private LocalTime totalTime;
     private Integer topicsCount;
     private String qusPool;

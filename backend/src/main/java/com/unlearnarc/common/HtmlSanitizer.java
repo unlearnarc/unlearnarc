@@ -25,18 +25,30 @@ import java.util.regex.Pattern;
 @Component
 public class HtmlSanitizer {
 
-    /** Tags permitted in a story. Case-insensitive match. */
+    /** Tags permitted in a story / note. Case-insensitive match. */
     private static final Set<String> ALLOWED_TAGS = Set.of(
             "p", "br", "b", "strong", "i", "em", "u", "s", "strike",
             "ul", "ol", "li", "blockquote", "code", "pre",
-            "h1", "h2", "h3", "h4", "a", "span", "div");
+            "h1", "h2", "h3", "h4", "a", "span", "div",
+            // Media/structure for book-style notes (images, captions, dividers).
+            "img", "figure", "figcaption", "hr");
 
     /** Attributes permitted per tag. Anything else is removed. */
     private static final Map<String, Set<String>> ALLOWED_ATTRS = Map.of(
-            "a", Set.of("href", "title"));
+            "a", Set.of("href", "title"),
+            "img", Set.of("src", "alt", "title", "width", "height"));
 
+    /** Safe URLs for <a href>: http(s), mailto, root-relative, or anchors. */
     private static final Pattern SAFE_URL =
             Pattern.compile("^(https?:|mailto:|/|#).*", Pattern.CASE_INSENSITIVE);
+
+    /**
+     * Safe URLs for <img src>: http(s), root-relative, or an inline
+     * {@code data:image/...} URI (how the editor embeds pasted/dropped images).
+     * Notably this does NOT allow {@code javascript:} or non-image data URIs.
+     */
+    private static final Pattern SAFE_IMG_SRC =
+            Pattern.compile("^(https?:|/|data:image/)[^\\s]*", Pattern.CASE_INSENSITIVE);
 
     // Remove whole dangerous element blocks (open..close) including content.
     private static final Pattern DANGEROUS_BLOCKS = Pattern.compile(
@@ -93,11 +105,13 @@ public class HtmlSanitizer {
     private String scrubAttributes(String tag, String rawAttrs) {
         Set<String> allowed = ALLOWED_ATTRS.getOrDefault(tag, Set.of());
         if (allowed.isEmpty() || rawAttrs.isBlank()) {
-            return tag.equals("a") ? "" : "";
+            return "";
         }
 
+        boolean isImg = tag.equals("img");
         StringBuilder kept = new StringBuilder();
         boolean hasHref = false;
+        boolean imgHasValidSrc = false;
         Matcher am = ATTR.matcher(rawAttrs);
         while (am.find()) {
             String name = am.group(1).toLowerCase();
@@ -114,10 +128,31 @@ public class HtmlSanitizer {
                 }
                 hasHref = true;
             }
+            if (isImg && name.equals("src")) {
+                if (value == null || !SAFE_IMG_SRC.matcher(value.trim()).matches()) {
+                    // An <img> with an unsafe/missing src is useless and risky — drop it.
+                    continue;
+                }
+                imgHasValidSrc = true;
+            }
+            // width/height must be plain integers (strip px/units/expressions).
+            if (isImg && (name.equals("width") || name.equals("height"))) {
+                if (value == null || !value.trim().matches("\\d{1,5}")) {
+                    continue;
+                }
+            }
             kept.append(' ').append(name);
             if (value != null) {
                 kept.append("=\"").append(escapeAttr(value)).append('"');
             }
+        }
+
+        // An image without a valid src is dropped entirely (signal to caller via
+        // a sentinel the caller can't easily act on, so instead emit nothing here
+        // and let the empty <img> be harmless). Keep behaviour simple: if no
+        // valid src, return a marker attribute-free tag that renders nothing.
+        if (isImg && !imgHasValidSrc) {
+            return " data-dropped=\"1\"";
         }
 
         // Harden links against reverse-tabnabbing.

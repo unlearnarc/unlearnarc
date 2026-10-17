@@ -1,4 +1,25 @@
 {
+  "algoDetail": {
+    "notFound": "Algorithme introuvable",
+    "notFoundDesc": "Cet algorithme est indisponible ou pas encore publié.",
+    "backToAlgorithms": "Retour aux algorithmes",
+    "allAlgorithms": "Tous les algorithmes",
+    "time": "Temps",
+    "space": "Espace",
+    "whenToUse": "Quand l’utiliser",
+    "currentAction": "Action actuelle",
+    "rowCol": "Ligne / colonne",
+    "visitedCells": "Cellules visitées",
+    "step": "Étape",
+    "stepN": "Étape {{num}}",
+    "status": "État",
+    "statusAwaiting": "En attente de réponse",
+    "statusPlaying": "En cours",
+    "statusComplete": "Terminé",
+    "statusPaused": "En pause",
+    "true": "Vrai",
+    "false": "Faux"
+  },
   "common": {
     "appName": "UnlearnArc",
     "viewAll": "Voir tout",
@@ -56,6 +77,12 @@
     "autoDrawNote": "Les questions sont tirées automatiquement parmi les niveaux facile, moyen et difficile.",
     "noTests": "Aucun test disponible pour cette portée pour l'instant.",
     "startTest": "Démarrer le test",
+    "adaptiveNote": "Ce test s'adapte à vos performances passées sur ce périmètre.",
+    "strategy": {
+      "MASTERY": "Maîtrise · série plus difficile",
+      "ADVANCING": "Progression · plus de difficiles",
+      "REINFORCE": "Renforcement · les bases"
+    },
     "questionOf": "Question {{current}} sur {{total}}",
     "answeredCount": "{{count}} répondues",
     "percentComplete": "{{percent}}% terminé",
@@ -258,7 +285,6 @@
   },
   "algorithms": {
     "title": "Visualiseur d’algorithmes",
-    "subtitle": "Watch algorithms run step by step, control the pace, and learn how each one works.",
     "searchPlaceholder": "Search algorithms…",
     "empty": "No algorithms available",
     "emptyDesc": "Check back soon — new visualizations are added regularly.",
@@ -372,6 +398,18 @@
     "learn": "Apprendre",
     "projects": "Projets",
     "profile": "Profil"
+  },
+  "notes": {
+    "lessons": "Leçons",
+    "reading": "Lecture",
+    "minRead": "{{count}} min de lecture",
+    "minShort": "{{count}}m",
+    "noMaterials": "Aucun support de cours pour le moment.",
+    "loadError": "Impossible de charger cette note.",
+    "readAloud": "Lire à voix haute",
+    "courseLessons": "Leçons du cours",
+    "lessonCount": "{{count}} leçons",
+    "read": "Lire"
   },
   "courseDetail": {
     "notFound": "Cours introuvable",

@@ -18,7 +18,11 @@ import { algorithmAPI } from '../api/endpoints';
 import { Badge } from '../components/ui/Badge';
 import { EmptyState } from '../components/ui/EmptyState';
 import { Spinner } from '../components/ui/Spinner';
-import { SpeakButton } from '../components/ui/SpeakButton';
+import { QuestionModal } from '../components/ui/QuestionModal';
+import { AnimationFocus } from '../components/ui/AnimationFocus';
+import './visualizer.css';
+// Temporarily disabled: read-aloud UI.
+// import { SpeakButton } from '../components/ui/SpeakButton';
 import {
   ArrowLeft,
   Workflow,
@@ -56,13 +60,6 @@ const SPEED_OPTIONS = [
 const CODE_COLLAPSE_KEY = 'ua_algo_code_collapsed';
 const USAGE_COLLAPSE_KEY = 'ua_algo_usage_open';
 
-function prefersReducedMotion(): boolean {
-  return (
-    typeof window !== 'undefined' &&
-    window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
-  );
-}
-
 export const AlgorithmDetailPage: React.FC = () => {
   const { t } = useTranslation();
   const { slug } = useParams<{ slug: string }>();
@@ -98,7 +95,7 @@ export const AlgorithmDetailPage: React.FC = () => {
     );
   }
 
-  return <AlgorithmWorkspace algo={algo} />;
+  return <AlgorithmWorkspace key={algo.slug} algo={algo} />;
 };
 
 /* ========================================================================== */
@@ -113,10 +110,10 @@ const AlgorithmWorkspace: React.FC<{ algo: Algorithm }> = ({ algo }) => {
 
   // ── collapsible panels (persisted) ──────────────────────────────────────
   const [codeCollapsed, setCodeCollapsed] = useState<boolean>(() => {
-    return localStorage.getItem(CODE_COLLAPSE_KEY) === '1';
+    return localStorage.getItem(CODE_COLLAPSE_KEY) !== '0';
   });
   const [usageOpen, setUsageOpen] = useState<boolean>(() => {
-    return localStorage.getItem(USAGE_COLLAPSE_KEY) !== '0';
+    return localStorage.getItem(USAGE_COLLAPSE_KEY) === '1';
   });
   useEffect(() => {
     localStorage.setItem(CODE_COLLAPSE_KEY, codeCollapsed ? '1' : '0');
@@ -127,7 +124,8 @@ const AlgorithmWorkspace: React.FC<{ algo: Algorithm }> = ({ algo }) => {
 
   // ── language + speed ────────────────────────────────────────────────────
   const [lang, setLang] = useState<'java' | 'python'>(
-    algo.javaSource ? 'java' : 'python'
+    algo.spec.steps.find((entry) => entry.line)?.lang ??
+      (algo.javaSource ? 'java' : 'python')
   );
   const [speed, setSpeed] = useState<number>(900);
   useEffect(() => {
@@ -135,8 +133,17 @@ const AlgorithmWorkspace: React.FC<{ algo: Algorithm }> = ({ algo }) => {
   }, [speed, controls]);
 
   const [inputValue, setInputValue] = useState<string>('');
+  const [feedback, setFeedback] = useState<{ index: number; message: string } | null>(null);
   const submit = (raw: unknown) => {
-    controls.submitInput(raw);
+    const result = controls.submitInput(raw);
+    setFeedback({
+      index: state.index,
+      message: result.correct === true
+        ? 'Correct! Continue to see the next step.'
+        : result.correct === false
+        ? `Not quite. Expected answer: ${String(pending?.expected)}. Continue to see why.`
+        : 'Answer recorded. Continue to the next step.',
+    });
     setInputValue('');
   };
 
@@ -144,7 +151,7 @@ const AlgorithmWorkspace: React.FC<{ algo: Algorithm }> = ({ algo }) => {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const tag = (e.target as HTMLElement | null)?.tagName;
-      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+      if (pending || tag === 'BUTTON' || tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
       if (e.key === 'ArrowRight') {
         e.preventDefault();
         if (!state.isFinished && !pending) controls.next();
@@ -189,7 +196,7 @@ const AlgorithmWorkspace: React.FC<{ algo: Algorithm }> = ({ algo }) => {
   ).split('\n');
 
   return (
-    <div className="space-y-5 animate-fade-in">
+    <div className="ua-visualizer space-y-4 animate-fade-in">
       {/* ── Breadcrumb ────────────────────────────────────────────────── */}
       <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-[13px]">
         <Link
@@ -220,10 +227,11 @@ const AlgorithmWorkspace: React.FC<{ algo: Algorithm }> = ({ algo }) => {
               <p className="text-sm text-text-secondary leading-relaxed">
                 {algo.summary}
               </p>
-              {/* Read-aloud for the dynamic algorithm summary. */}
+              {/* Temporarily disabled: read-aloud for the algorithm summary.
               <div className="mt-2">
                 <SpeakButton text={algo.summary} id={`algo-${algo.id ?? algo.slug ?? 'summary'}`} />
               </div>
+              */}
             </div>
           )}
         </div>
@@ -288,12 +296,18 @@ const AlgorithmWorkspace: React.FC<{ algo: Algorithm }> = ({ algo }) => {
       )}
 
       {/* ══ Visualization workspace: two-column on desktop ══════════════ */}
-      <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1.6fr)_minmax(280px,1fr)] gap-4 lg:gap-5 items-stretch">
-        {/* LEFT — grid */}
-        <GridPanel algo={algo} step={step} />
+      <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,2fr)_minmax(260px,1fr)] gap-3 items-start">
+        <AnimationFocus title={algo.title}>
+          <div className="min-w-0 space-y-3">
+            <GridPanel algo={algo} step={step} />
+            <PlaybackToolbar state={state} controls={controls} pending={!!pending}
+              speed={speed} setSpeed={setSpeed} />
+          </div>
+        </AnimationFocus>
 
         {/* RIGHT — step inspector */}
         <StepInspector
+          feedback={feedback?.index === state.index && !pending ? feedback.message : undefined}
           step={step}
           index={state.index}
           total={state.total}
@@ -307,15 +321,6 @@ const AlgorithmWorkspace: React.FC<{ algo: Algorithm }> = ({ algo }) => {
           onSubmit={submit}
         />
       </div>
-
-      {/* ══ Playback toolbar ══════════════════════════════════════════ */}
-      <PlaybackToolbar
-        state={state}
-        controls={controls}
-        pending={!!pending}
-        speed={speed}
-        setSpeed={setSpeed}
-      />
 
       {/* ══ Code panel ════════════════════════════════════════════════ */}
       {(algo.javaSource || algo.pythonSource) && (
@@ -363,8 +368,10 @@ const GridPanel: React.FC<{
     const el = wrapRef.current;
     if (!el) return;
     const ro = new ResizeObserver(() => {
-      const w = Math.max(240, Math.floor(el.clientWidth));
-      const h = Math.max(260, Math.min(w * 0.92, 520));
+      const w = Math.max(1, Math.floor(el.clientWidth) - 24);
+      const h = el.closest('.is-expanded')
+        ? Math.max(80, el.clientHeight - 24)
+        : Math.max(180, Math.min(w * 0.7, 420));
       setSize({ w, h });
     });
     ro.observe(el);
@@ -411,7 +418,7 @@ const GridPanel: React.FC<{
     >
       <div
         ref={wrapRef}
-        className="flex-1 flex items-center justify-center p-4 md:p-6 min-h-[280px]"
+        className="ua-animation-canvas flex-1 flex items-center justify-center p-3 min-h-[180px]"
       >
         <canvas
           ref={canvasRef}
@@ -420,7 +427,7 @@ const GridPanel: React.FC<{
           aria-label={step?.title ?? 'Algorithm state'}
         />
       </div>
-      <Legend />
+      <Legend isArray={algo.spec.visualizer === 'ARRAY'} />
     </section>
   );
 };
@@ -432,12 +439,19 @@ const LEGEND_ITEMS = [
   { label: 'Active', color: '#22C55E' },
 ];
 
-const Legend: React.FC = () => (
+const ARRAY_LEGEND_ITEMS = [
+  { label: 'Compare', color: '#f59e0b' },
+  { label: 'Active', color: '#22C55E' },
+  { label: 'Swap', color: '#ef4444' },
+  { label: 'Final', color: '#64748b' },
+];
+
+const Legend: React.FC<{ isArray: boolean }> = ({ isArray }) => (
   <div
     className="flex flex-wrap items-center gap-x-4 gap-y-2 px-4 md:px-6 py-3 border-t border-border"
     style={{ background: 'rgba(255,255,255,0.02)' }}
   >
-    {LEGEND_ITEMS.map((item) => (
+    {(isArray ? ARRAY_LEGEND_ITEMS : LEGEND_ITEMS).map((item: { label: string; color: string; border?: string }) => (
       <span key={item.label} className="inline-flex items-center gap-1.5 text-[11.5px]">
         <span
           className="w-3 h-3 rounded-[4px] shrink-0"
@@ -457,6 +471,7 @@ const Legend: React.FC = () => (
 /* ========================================================================== */
 
 const StepInspector: React.FC<{
+  feedback?: string;
   step: ReturnType<typeof useVisualization>['state']['step'];
   index: number;
   total: number;
@@ -469,6 +484,7 @@ const StepInspector: React.FC<{
   setInputValue: (v: string) => void;
   onSubmit: (raw: unknown) => void;
 }> = ({
+  feedback,
   step,
   index,
   total,
@@ -484,8 +500,8 @@ const StepInspector: React.FC<{
   const { t } = useTranslation();
   return (
     <aside
-      className="rounded-2xl border border-border p-4 md:p-5 flex flex-col gap-4"
-      style={{ background: '#16232E' }}
+      className="ua-step-inspector rounded-2xl border border-border p-3 sm:p-4 flex flex-col gap-3 max-h-[300px] xl:max-h-[520px] overflow-y-auto overscroll-contain [overflow-anchor:none]"
+      style={{ background: 'var(--ua-surface)' }}
       aria-label="Step inspector"
       aria-live="polite"
     >
@@ -509,16 +525,12 @@ const StepInspector: React.FC<{
 
       {/* live state grid */}
       <div className="grid grid-cols-2 gap-2.5">
-        <StatCard
-          icon={<MapPin size={13} />}
-          label={t('algoDetail.rowCol')}
-          value={cursor ? `(${cursor[0]}, ${cursor[1]})` : '—'}
-        />
-        <StatCard
-          icon={<CheckCircle2 size={13} />}
-          label={t('algoDetail.visitedCells')}
-          value={String(visitedCount)}
-        />
+        {cursor && <>
+          <StatCard icon={<MapPin size={13} />} label={t('algoDetail.rowCol')}
+            value={`(${cursor[0]}, ${cursor[1]})`} />
+          <StatCard icon={<CheckCircle2 size={13} />} label={t('algoDetail.visitedCells')}
+            value={String(visitedCount)} />
+        </>}
         <StatCard
           icon={<Hash size={13} />}
           label={t('algoDetail.step')}
@@ -554,16 +566,17 @@ const StepInspector: React.FC<{
         </div>
       )}
 
+      {feedback && (
+        <p role="status" className="text-sm text-text-primary rounded-xl border border-border p-3">
+          {feedback}
+        </p>
+      )}
+
       {/* input prompt — tied to the real engine pending input */}
       {pending && (
-        <div
-          className="rounded-xl p-3.5"
-          style={{
-            border: '1px solid var(--ua-primary-500)',
-            background: 'var(--ua-primary-soft)',
-          }}
-        >
-          <div className="text-[13px] font-semibold text-text-primary mb-2.5">
+        <QuestionModal label="Animation checkpoint question">
+        <div className="space-y-4">
+          <div className="text-base font-semibold text-text-primary leading-relaxed">
             {pending.prompt}
           </div>
           {pending.type === 'CHOICE' ? (
@@ -621,6 +634,7 @@ const StepInspector: React.FC<{
             </div>
           )}
         </div>
+        </QuestionModal>
       )}
     </aside>
   );
@@ -667,7 +681,7 @@ const PlaybackToolbar: React.FC<{
   return (
     <div
       className="rounded-2xl border border-border p-2.5 md:p-3 flex flex-wrap items-center gap-2 md:gap-3"
-      style={{ background: '#16232E' }}
+      style={{ background: 'var(--ua-surface)' }}
       role="group"
       aria-label="Playback controls"
     >
@@ -721,8 +735,8 @@ const PlaybackToolbar: React.FC<{
         )}
 
         <IconBtn
-          onClick={controls.next}
-          disabled={state.isFinished || pending}
+          onClick={() => { if (!pending) controls.next(); }}
+          disabled={state.isFinished}
           title={pending ? 'Answer the question to continue' : 'Next step (→)'}
           label="Next step"
         >
@@ -818,15 +832,25 @@ const CodePanel: React.FC<{
   setCollapsed: (v: boolean) => void;
 }> = ({ algo, lang, setLang, sourceLines, activeLine, collapsed, setCollapsed }) => {
   const activeRef = useRef<HTMLDivElement | null>(null);
+  const codeRef = useRef<HTMLPreElement | null>(null);
 
-  // Keep the highlighted line in view as playback advances.
-  useEffect(() => {
+  // Follow execution inside the code viewport only. scrollIntoView also
+  // scrolls ancestors, stealing the learner's position on the page.
+  useLayoutEffect(() => {
     if (collapsed || activeLine == null) return;
-    activeRef.current?.scrollIntoView({
-      block: 'nearest',
-      behavior: prefersReducedMotion() ? 'auto' : 'smooth',
-    });
-  }, [activeLine, collapsed]);
+    const viewport = codeRef.current;
+    const line = activeRef.current;
+    if (!viewport || !line) return;
+    const bounds = viewport.getBoundingClientRect();
+    const lineBounds = line.getBoundingClientRect();
+    const top = bounds.top + viewport.clientTop;
+    const bottom = top + viewport.clientHeight;
+    if (lineBounds.top < top) {
+      viewport.scrollTop += lineBounds.top - top;
+    } else if (lineBounds.bottom > bottom) {
+      viewport.scrollTop += lineBounds.bottom - bottom;
+    }
+  }, [activeLine, collapsed, lang]);
 
   return (
     <section
@@ -872,8 +896,11 @@ const CodePanel: React.FC<{
 
       {!collapsed && (
         <pre
-          className="m-0 py-2 overflow-auto font-mono text-[12.5px] leading-[1.75]"
-          style={{ maxHeight: 320 }}
+          ref={codeRef}
+          tabIndex={0}
+          aria-label="Source code listing"
+          className="m-0 py-2 overflow-auto overscroll-contain font-mono text-[12.5px] leading-[1.75]"
+          style={{ height: 320, overflowAnchor: 'none' }}
         >
           {sourceLines.map((ln, i) => {
             const active = activeLine === i + 1;

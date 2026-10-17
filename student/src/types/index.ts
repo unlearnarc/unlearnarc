@@ -12,6 +12,19 @@ export interface Skill {
 
 export type SkillLevel = 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED' | 'EXPERT';
 
+// ── Mapping join rows (Domain→Skill→Course) ──────────────────────────────────
+export interface DomainSkillMapping {
+  id: string;
+  domainId: string;
+  skillId: string;
+}
+
+export interface SkillCourseMapping {
+  id: string;
+  skillId: string;
+  courseId: string;
+}
+
 // ── Course ──────────────────────────────────────────────────────────────────
 export interface Course {
   id: string;
@@ -24,6 +37,17 @@ export interface Course {
 }
 
 export type CourseLevel = 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED' | 'EXPERT';
+
+export interface CourseProgress {
+  courseId: string;
+  enrolled: boolean;
+  completed: boolean;
+  progressPercent: number;
+  totalTopics: number;
+  completedTopics: number;
+  bestCourseScore: number | null;
+  topics: { topicId: string; topicName: string; completed: boolean; bestScore: number | null }[];
+}
 
 // ── Topic ───────────────────────────────────────────────────────────────────
 export interface Topic {
@@ -44,6 +68,26 @@ export interface StudyMaterial {
 }
 
 export type StudyMaterialType = 'VIDEO' | 'ARTICLE' | 'PDF' | 'QUIZ' | 'EXERCISE' | 'SLIDES';
+
+// ── Note (book-style, admin-authored lesson rendered in-app) ──────────────────
+export interface NoteSummary {
+  id: string;
+  title: string;
+  summary?: string;
+  coverImageUrl?: string;
+  topicId?: string;
+  courseId?: string;
+  noteOrder: number;
+  readMinutes?: number;
+  isPublished: boolean;
+  updatedAt: string;
+}
+
+export interface Note extends NoteSummary {
+  contentHtml: string;
+  blocksJson?: string;
+  createdAt: string;
+}
 
 // ── Question Pool ───────────────────────────────────────────────────────────
 export interface QuestionPool {
@@ -88,6 +132,12 @@ export interface TestGenerationRequest {
   scopeType: 'DOMAIN' | 'COURSE' | 'TOPIC';
   entityId: string;
   poolId?: string;
+  /**
+   * When true the backend personalises the difficulty mix from the learner's
+   * past attempts on this scope (Tests-page "Generate" flow). Omit/false for the
+   * plain topic/course/domain quiz flow (fixed pool mix, union of child pools).
+   */
+  adaptive?: boolean;
 }
 
 export interface TestQuestion {
@@ -111,12 +161,24 @@ export interface TestSession {
   timeLimitMinutes?: number;
   passPercentage: number;
   totalPoints: number;
+  /**
+   * How this session was selected, for UI messaging:
+   *  - DEFAULT / DEFAULT_NO_HISTORY → fixed pool mix (direct quiz, or adaptive
+   *    with no prior attempts yet)
+   *  - MASTERY   → learner is acing this scope → harder, broadened set
+   *  - ADVANCING → doing well → more hard questions
+   *  - REINFORCE → still building up → easier/medium-weighted set
+   */
+  strategy?: 'DEFAULT' | 'DEFAULT_NO_HISTORY' | 'MASTERY' | 'ADVANCING' | 'REINFORCE';
   questions: TestQuestion[];
 }
 
 export interface TestSubmission {
   poolId: string;
   entityId: string;
+  /** The scope the learner tested against — recorded so history shows the real
+   *  entity (topic/course/domain) name, not the resolved child pool's scope. */
+  scopeType?: 'DOMAIN' | 'COURSE' | 'TOPIC';
   answers: { questionId: string; selectedAnswerIds: string[] }[];
 }
 

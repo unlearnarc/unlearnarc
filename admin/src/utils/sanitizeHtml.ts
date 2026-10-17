@@ -10,13 +10,18 @@ const ALLOWED_TAGS = new Set([
   'P', 'BR', 'B', 'STRONG', 'I', 'EM', 'U', 'S', 'STRIKE',
   'UL', 'OL', 'LI', 'BLOCKQUOTE', 'CODE', 'PRE',
   'H1', 'H2', 'H3', 'H4', 'A', 'SPAN', 'DIV',
+  // Notes authoring adds inline media + figures on top of the story subset.
+  'IMG', 'FIGURE', 'FIGCAPTION', 'HR',
 ]);
 
 const ALLOWED_ATTRS: Record<string, Set<string>> = {
   A: new Set(['href', 'title']),
+  IMG: new Set(['src', 'alt', 'title', 'width', 'height']),
 };
 
 const SAFE_URL = /^(https?:|mailto:|\/|#)/i;
+/** `src` may additionally be a data: image URI (inline-pasted images). */
+const SAFE_IMG_SRC = /^(https?:|\/|data:image\/)/i;
 
 const DANGEROUS_TAGS = new Set([
   'SCRIPT', 'STYLE', 'IFRAME', 'OBJECT', 'EMBED', 'LINK', 'META',
@@ -64,10 +69,17 @@ function scrubAttributes(el: Element, tag: string): void {
     if (name === 'href' && !SAFE_URL.test(attr.value.trim())) {
       el.removeAttribute(attr.name);
     }
+    if (name === 'src' && !SAFE_IMG_SRC.test(attr.value.trim())) {
+      el.removeAttribute(attr.name);
+    }
   }
   if (tag === 'A' && el.getAttribute('href')) {
     el.setAttribute('rel', 'noopener noreferrer nofollow');
     el.setAttribute('target', '_blank');
+  }
+  // Drop an <img> whose src was stripped as unsafe — avoids a broken placeholder.
+  if (tag === 'IMG' && !el.getAttribute('src')) {
+    el.remove();
   }
 }
 

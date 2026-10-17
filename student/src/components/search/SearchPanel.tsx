@@ -134,8 +134,14 @@ export const SearchPanel: React.FC<SearchPanelProps> = ({
   const groupCount = (t: SearchTypeKey) =>
     data?.groups.find(g => g.type === t)?.totalHits ?? 0;
 
+  // Whether there is an active query to show results for. When `hideWhenEmpty`
+  // is set, the resting empty state is suppressed entirely — chips and the
+  // "type to search" placeholder only appear once the user has typed.
+  const hasQuery = term.trim().length > 0;
+  const suppressResting = hideWhenEmpty && !hasQuery;
+
   // Whether the floating results overlay should be shown right now.
-  const showFloating = floating && open && active;
+  const showFloating = floating && open && active && (!hideWhenEmpty || hasQuery);
 
   return (
     <div
@@ -231,6 +237,7 @@ export const SearchPanel: React.FC<SearchPanelProps> = ({
           </div>
         )
       ) : (
+        suppressResting ? null : (
         <>
           {/* OVERLAY variant — chips + results in normal document flow. */}
           {chipTypes.length > 1 && (
@@ -279,6 +286,7 @@ export const SearchPanel: React.FC<SearchPanelProps> = ({
             </p>
           )}
         </>
+        )
       )}
     </div>
   );

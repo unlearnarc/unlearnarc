@@ -1,4 +1,25 @@
 {
+  "algoDetail": {
+    "notFound": "అల్గోరిథమ్ కనుగొనబడలేదు",
+    "notFoundDesc": "ఈ అల్గోరిథమ్ అందుబాటులో లేదు లేదా ఇంకా ప్రచురించబడలేదు.",
+    "backToAlgorithms": "అల్గోరిథమ్‌లకు తిరిగి వెళ్ళండి",
+    "allAlgorithms": "అన్ని అల్గోరిథమ్‌లు",
+    "time": "సమయం",
+    "space": "స్థలం",
+    "whenToUse": "ఎప్పుడు ఉపయోగించాలి",
+    "currentAction": "ప్రస్తుత చర్య",
+    "rowCol": "అడ్డు వరుస / నిలువు వరుస",
+    "visitedCells": "సందర్శించిన సెల్‌లు",
+    "step": "దశ",
+    "stepN": "దశ {{num}}",
+    "status": "స్థితి",
+    "statusAwaiting": "సమాధానం కోసం వేచి ఉంది",
+    "statusPlaying": "నడుస్తోంది",
+    "statusComplete": "పూర్తయింది",
+    "statusPaused": "పాజ్ చేయబడింది",
+    "true": "నిజం",
+    "false": "అబద్ధం"
+  },
   "common": {
     "appName": "UnlearnArc",
     "viewAll": "అన్నీ చూడండి",
@@ -56,6 +77,12 @@
     "autoDrawNote": "సులభ, మధ్యస్థ మరియు కఠిన స్థాయిల నుండి ప్రశ్నలు స్వయంచాలకంగా ఎంచుకోబడతాయి.",
     "noTests": "ఈ పరిధికి ఇంకా పరీక్షలు అందుబాటులో లేవు.",
     "startTest": "పరీక్ష ప్రారంభించండి",
+    "adaptiveNote": "ఈ పరీక్ష ఈ స్కోప్‌లో మీ గత పనితీరుకు అనుగుణంగా మారుతుంది.",
+    "strategy": {
+      "MASTERY": "నైపుణ్యం · కఠినమైన సెట్",
+      "ADVANCING": "పురోగతి · మరిన్ని కఠినమైనవి",
+      "REINFORCE": "పునాది · ప్రాథమికాలు"
+    },
     "questionOf": "ప్రశ్న {{current}} / {{total}}",
     "answeredCount": "{{count}} సమాధానం ఇవ్వబడింది",
     "percentComplete": "{{percent}}% పూర్తయింది",
@@ -258,7 +285,6 @@
   },
   "algorithms": {
     "title": "అల్గోరిథం విజువలైజర్",
-    "subtitle": "Watch algorithms run step by step, control the pace, and learn how each one works.",
     "searchPlaceholder": "Search algorithms…",
     "empty": "No algorithms available",
     "emptyDesc": "Check back soon — new visualizations are added regularly.",
@@ -372,6 +398,18 @@
     "learn": "నేర్చుకో",
     "projects": "ప్రాజెక్టులు",
     "profile": "ప్రొఫైల్"
+  },
+  "notes": {
+    "lessons": "పాఠాలు",
+    "reading": "చదువుతున్నారు",
+    "minRead": "{{count}} నిమి చదవడం",
+    "minShort": "{{count}}ని",
+    "noMaterials": "ఇంకా అధ్యయన సామగ్రి లేదు.",
+    "loadError": "ఈ నోట్‌ను లోడ్ చేయలేకపోయాం.",
+    "readAloud": "గట్టిగా చదవండి",
+    "courseLessons": "కోర్సు పాఠాలు",
+    "lessonCount": "{{count}} పాఠాలు",
+    "read": "చదవండి"
   },
   "courseDetail": {
     "notFound": "కోర్సు కనబడలేదు",

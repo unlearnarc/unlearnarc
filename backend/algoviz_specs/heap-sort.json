@@ -1,0 +1,1923 @@
+{
+  "slug": "heap-sort",
+  "title": "Heap Sort",
+  "summary": "Build a max heap, then repeatedly move its maximum into a growing sorted suffix.",
+  "usage": "How it works\nA max heap stores each parent >= its children. In a zero-based array, children are 2*r+1 and 2*r+2. Build the heap bottom-up in O(n), swap its root with the last heap value, shrink the heap, and sift down. Useful when worst-case bounds and constant auxiliary memory matter. The visualization shows the heap in array form, not as a tree.\n\nProperties and prerequisites\nStable: no. In-place: yes; sift-down is iterative.\n\nComplexity\nTime: O(n log n) worst/average; O(n) best with all equal values. Space: O(1).\n\nExample\nInput: [5, 2, 4, 1, 3]. Output: [1, 2, 3, 4, 5].\n\nTry it\nUse Play/Pause, Previous/Next, the timeline, and playback speed. Answer the prediction checkpoints to continue; feedback reveals the expected answer. Python is the line-synchronized walkthrough; Java is an equivalent complete implementation. Sorting functions accept empty arrays, duplicates, negative values, and already sorted inputs. Java methods belong inside a class; Python functions can be called directly.",
+  "category": "Sorting",
+  "difficulty": "MEDIUM",
+  "visualizer": "ARRAY",
+  "complexity": {
+    "time": "O(n log n) worst/average; O(n) best with all equal values",
+    "space": "O(1)"
+  },
+  "pythonSource": "def heap_sort(a):\n    def sift(root, end):\n        while 2 * root + 1 < end:\n            child = 2 * root + 1  # Left child in the array-backed max heap.\n            if child + 1 < end and a[child + 1] > a[child]:\n                child += 1\n            if a[root] >= a[child]:  # The heap property is already satisfied.\n                break\n            a[root], a[child] = a[child], a[root]  # Move the larger child upward.\n            root = child\n    for start in range(len(a) // 2 - 1, -1, -1):\n        sift(start, len(a))  # Build the max heap bottom-up.\n    for end in range(len(a) - 1, 0, -1):\n        a[0], a[end] = a[end], a[0]  # Extract the maximum into the sorted suffix.\n        sift(0, end)\n    return a\n",
+  "javaSource": "static void heapSort(int[] a) {\n    for (int start = a.length / 2 - 1; start >= 0; start--)\n        sift(a, start, a.length);\n    for (int end = a.length - 1; end > 0; end--) {\n        int t = a[0]; a[0] = a[end]; a[end] = t;\n        sift(a, 0, end);\n    }\n}\nstatic void sift(int[] a, int root, int end) {\n    while (2 * root + 1 < end) {\n        int child = 2 * root + 1;\n        if (child + 1 < end && a[child + 1] > a[child]) child++;\n        if (a[root] >= a[child]) break;\n        int t = a[root]; a[root] = a[child]; a[child] = t;\n        root = child;\n    }\n}",
+  "spec": {
+    "visualizer": "ARRAY",
+    "initialState": {
+      "array": [
+        5,
+        2,
+        4,
+        1,
+        3
+      ]
+    },
+    "variables": [
+      {
+        "name": "child",
+        "label": "child"
+      },
+      {
+        "name": "end",
+        "label": "end"
+      },
+      {
+        "name": "root",
+        "label": "root"
+      },
+      {
+        "name": "start",
+        "label": "start"
+      }
+    ],
+    "steps": [
+      {
+        "title": "Start the walkthrough",
+        "explanation": "Sort ascending. Python steps show the state BEFORE each highlighted line executes.",
+        "state": {
+          "array": [
+            5,
+            2,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {},
+        "input": {
+          "key": "heap-sort-prediction",
+          "type": "NUMBER",
+          "prompt": "Which value will be at index 0 after sorting?",
+          "expected": 1
+        }
+      },
+      {
+        "title": "def sift(root, end):",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            5,
+            2,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {},
+        "pointers": {},
+        "line": 2,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "for start in range(len(a) // 2 - 1, -1, -1):",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            5,
+            2,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {},
+        "pointers": {},
+        "line": 11,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "sift(start, len(a)) ",
+        "explanation": "Build the max heap bottom-up.",
+        "state": {
+          "array": [
+            5,
+            2,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "start": 1
+        },
+        "pointers": {
+          "start": 1
+        },
+        "line": 12,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              1
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "while 2 * root + 1 < end:",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            5,
+            2,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "root": 1,
+          "end": 5
+        },
+        "pointers": {
+          "root": 1
+        },
+        "line": 3,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              1
+            ],
+            "style": "COMPARE"
+          }
+        ]
+      },
+      {
+        "title": "child = 2 * root + 1 ",
+        "explanation": "Left child in the array-backed max heap.",
+        "state": {
+          "array": [
+            5,
+            2,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "root": 1,
+          "end": 5
+        },
+        "pointers": {
+          "root": 1
+        },
+        "line": 4,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              1
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "if child + 1 < end and a[child + 1] > a[child]:",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            5,
+            2,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "root": 1,
+          "end": 5,
+          "child": 3
+        },
+        "pointers": {
+          "root": 1,
+          "child": 3
+        },
+        "line": 5,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              1,
+              3
+            ],
+            "style": "COMPARE"
+          }
+        ]
+      },
+      {
+        "title": "child += 1",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            5,
+            2,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "root": 1,
+          "end": 5,
+          "child": 3
+        },
+        "pointers": {
+          "root": 1,
+          "child": 3
+        },
+        "line": 6,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              1,
+              3
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "if a[root] >= a[child]: ",
+        "explanation": "The heap property is already satisfied.",
+        "state": {
+          "array": [
+            5,
+            2,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "root": 1,
+          "end": 5,
+          "child": 4
+        },
+        "pointers": {
+          "root": 1,
+          "child": 4
+        },
+        "line": 7,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              1,
+              4
+            ],
+            "style": "COMPARE"
+          }
+        ]
+      },
+      {
+        "title": "a[root], a[child] = a[child], a[root] ",
+        "explanation": "Move the larger child upward.",
+        "state": {
+          "array": [
+            5,
+            2,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "root": 1,
+          "end": 5,
+          "child": 4
+        },
+        "pointers": {
+          "root": 1,
+          "child": 4
+        },
+        "line": 9,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              1,
+              4
+            ],
+            "style": "ACTIVE"
+          }
+        ],
+        "input": {
+          "key": "heap-sort-next",
+          "type": "NUMBER",
+          "prompt": "After the highlighted Python line executes, what value will be at index 1?",
+          "expected": 3
+        }
+      },
+      {
+        "title": "root = child",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            5,
+            3,
+            4,
+            1,
+            2
+          ]
+        },
+        "variables": {
+          "root": 1,
+          "end": 5,
+          "child": 4
+        },
+        "pointers": {
+          "root": 1,
+          "child": 4
+        },
+        "line": 10,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              1,
+              4
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "while 2 * root + 1 < end:",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            5,
+            3,
+            4,
+            1,
+            2
+          ]
+        },
+        "variables": {
+          "root": 4,
+          "end": 5,
+          "child": 4
+        },
+        "pointers": {
+          "root": 4,
+          "child": 4
+        },
+        "line": 3,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              4
+            ],
+            "style": "COMPARE"
+          }
+        ]
+      },
+      {
+        "title": "for start in range(len(a) // 2 - 1, -1, -1):",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            5,
+            3,
+            4,
+            1,
+            2
+          ]
+        },
+        "variables": {
+          "start": 1
+        },
+        "pointers": {
+          "start": 1
+        },
+        "line": 11,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              1
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "sift(start, len(a)) ",
+        "explanation": "Build the max heap bottom-up.",
+        "state": {
+          "array": [
+            5,
+            3,
+            4,
+            1,
+            2
+          ]
+        },
+        "variables": {
+          "start": 0
+        },
+        "pointers": {
+          "start": 0
+        },
+        "line": 12,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "while 2 * root + 1 < end:",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            5,
+            3,
+            4,
+            1,
+            2
+          ]
+        },
+        "variables": {
+          "root": 0,
+          "end": 5
+        },
+        "pointers": {
+          "root": 0
+        },
+        "line": 3,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0
+            ],
+            "style": "COMPARE"
+          }
+        ]
+      },
+      {
+        "title": "child = 2 * root + 1 ",
+        "explanation": "Left child in the array-backed max heap.",
+        "state": {
+          "array": [
+            5,
+            3,
+            4,
+            1,
+            2
+          ]
+        },
+        "variables": {
+          "root": 0,
+          "end": 5
+        },
+        "pointers": {
+          "root": 0
+        },
+        "line": 4,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "if child + 1 < end and a[child + 1] > a[child]:",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            5,
+            3,
+            4,
+            1,
+            2
+          ]
+        },
+        "variables": {
+          "root": 0,
+          "end": 5,
+          "child": 1
+        },
+        "pointers": {
+          "root": 0,
+          "child": 1
+        },
+        "line": 5,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              1
+            ],
+            "style": "COMPARE"
+          }
+        ]
+      },
+      {
+        "title": "child += 1",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            5,
+            3,
+            4,
+            1,
+            2
+          ]
+        },
+        "variables": {
+          "root": 0,
+          "end": 5,
+          "child": 1
+        },
+        "pointers": {
+          "root": 0,
+          "child": 1
+        },
+        "line": 6,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              1
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "if a[root] >= a[child]: ",
+        "explanation": "The heap property is already satisfied.",
+        "state": {
+          "array": [
+            5,
+            3,
+            4,
+            1,
+            2
+          ]
+        },
+        "variables": {
+          "root": 0,
+          "end": 5,
+          "child": 2
+        },
+        "pointers": {
+          "root": 0,
+          "child": 2
+        },
+        "line": 7,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              2
+            ],
+            "style": "COMPARE"
+          }
+        ]
+      },
+      {
+        "title": "break",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            5,
+            3,
+            4,
+            1,
+            2
+          ]
+        },
+        "variables": {
+          "root": 0,
+          "end": 5,
+          "child": 2
+        },
+        "pointers": {
+          "root": 0,
+          "child": 2
+        },
+        "line": 8,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              2
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "for start in range(len(a) // 2 - 1, -1, -1):",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            5,
+            3,
+            4,
+            1,
+            2
+          ]
+        },
+        "variables": {
+          "start": 0
+        },
+        "pointers": {
+          "start": 0
+        },
+        "line": 11,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "for end in range(len(a) - 1, 0, -1):",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            5,
+            3,
+            4,
+            1,
+            2
+          ]
+        },
+        "variables": {
+          "start": 0
+        },
+        "pointers": {
+          "start": 0
+        },
+        "line": 13,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "a[0], a[end] = a[end], a[0] ",
+        "explanation": "Extract the maximum into the sorted suffix.",
+        "state": {
+          "array": [
+            5,
+            3,
+            4,
+            1,
+            2
+          ]
+        },
+        "variables": {
+          "start": 0,
+          "end": 4
+        },
+        "pointers": {
+          "start": 0,
+          "end": 4
+        },
+        "line": 14,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              4
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "sift(0, end)",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            2,
+            3,
+            4,
+            1,
+            5
+          ]
+        },
+        "variables": {
+          "start": 0,
+          "end": 4
+        },
+        "pointers": {
+          "start": 0,
+          "end": 4
+        },
+        "line": 15,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              4
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "while 2 * root + 1 < end:",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            2,
+            3,
+            4,
+            1,
+            5
+          ]
+        },
+        "variables": {
+          "root": 0,
+          "end": 4
+        },
+        "pointers": {
+          "root": 0,
+          "end": 4
+        },
+        "line": 3,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              4
+            ],
+            "style": "COMPARE"
+          }
+        ]
+      },
+      {
+        "title": "child = 2 * root + 1 ",
+        "explanation": "Left child in the array-backed max heap.",
+        "state": {
+          "array": [
+            2,
+            3,
+            4,
+            1,
+            5
+          ]
+        },
+        "variables": {
+          "root": 0,
+          "end": 4
+        },
+        "pointers": {
+          "root": 0,
+          "end": 4
+        },
+        "line": 4,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              4
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "if child + 1 < end and a[child + 1] > a[child]:",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            2,
+            3,
+            4,
+            1,
+            5
+          ]
+        },
+        "variables": {
+          "root": 0,
+          "end": 4,
+          "child": 1
+        },
+        "pointers": {
+          "root": 0,
+          "end": 4,
+          "child": 1
+        },
+        "line": 5,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              1,
+              4
+            ],
+            "style": "COMPARE"
+          }
+        ]
+      },
+      {
+        "title": "child += 1",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            2,
+            3,
+            4,
+            1,
+            5
+          ]
+        },
+        "variables": {
+          "root": 0,
+          "end": 4,
+          "child": 1
+        },
+        "pointers": {
+          "root": 0,
+          "end": 4,
+          "child": 1
+        },
+        "line": 6,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              1,
+              4
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "if a[root] >= a[child]: ",
+        "explanation": "The heap property is already satisfied.",
+        "state": {
+          "array": [
+            2,
+            3,
+            4,
+            1,
+            5
+          ]
+        },
+        "variables": {
+          "root": 0,
+          "end": 4,
+          "child": 2
+        },
+        "pointers": {
+          "root": 0,
+          "end": 4,
+          "child": 2
+        },
+        "line": 7,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              2,
+              4
+            ],
+            "style": "COMPARE"
+          }
+        ]
+      },
+      {
+        "title": "a[root], a[child] = a[child], a[root] ",
+        "explanation": "Move the larger child upward.",
+        "state": {
+          "array": [
+            2,
+            3,
+            4,
+            1,
+            5
+          ]
+        },
+        "variables": {
+          "root": 0,
+          "end": 4,
+          "child": 2
+        },
+        "pointers": {
+          "root": 0,
+          "end": 4,
+          "child": 2
+        },
+        "line": 9,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              2,
+              4
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "root = child",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            4,
+            3,
+            2,
+            1,
+            5
+          ]
+        },
+        "variables": {
+          "root": 0,
+          "end": 4,
+          "child": 2
+        },
+        "pointers": {
+          "root": 0,
+          "end": 4,
+          "child": 2
+        },
+        "line": 10,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              2,
+              4
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "while 2 * root + 1 < end:",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            4,
+            3,
+            2,
+            1,
+            5
+          ]
+        },
+        "variables": {
+          "root": 2,
+          "end": 4,
+          "child": 2
+        },
+        "pointers": {
+          "root": 2,
+          "end": 4,
+          "child": 2
+        },
+        "line": 3,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              2,
+              4
+            ],
+            "style": "COMPARE"
+          }
+        ]
+      },
+      {
+        "title": "for end in range(len(a) - 1, 0, -1):",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            4,
+            3,
+            2,
+            1,
+            5
+          ]
+        },
+        "variables": {
+          "start": 0,
+          "end": 4
+        },
+        "pointers": {
+          "start": 0,
+          "end": 4
+        },
+        "line": 13,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              4
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "a[0], a[end] = a[end], a[0] ",
+        "explanation": "Extract the maximum into the sorted suffix.",
+        "state": {
+          "array": [
+            4,
+            3,
+            2,
+            1,
+            5
+          ]
+        },
+        "variables": {
+          "start": 0,
+          "end": 3
+        },
+        "pointers": {
+          "start": 0,
+          "end": 3
+        },
+        "line": 14,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              3
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "sift(0, end)",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            1,
+            3,
+            2,
+            4,
+            5
+          ]
+        },
+        "variables": {
+          "start": 0,
+          "end": 3
+        },
+        "pointers": {
+          "start": 0,
+          "end": 3
+        },
+        "line": 15,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              3
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "while 2 * root + 1 < end:",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            1,
+            3,
+            2,
+            4,
+            5
+          ]
+        },
+        "variables": {
+          "root": 0,
+          "end": 3
+        },
+        "pointers": {
+          "root": 0,
+          "end": 3
+        },
+        "line": 3,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              3
+            ],
+            "style": "COMPARE"
+          }
+        ]
+      },
+      {
+        "title": "child = 2 * root + 1 ",
+        "explanation": "Left child in the array-backed max heap.",
+        "state": {
+          "array": [
+            1,
+            3,
+            2,
+            4,
+            5
+          ]
+        },
+        "variables": {
+          "root": 0,
+          "end": 3
+        },
+        "pointers": {
+          "root": 0,
+          "end": 3
+        },
+        "line": 4,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              3
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "if child + 1 < end and a[child + 1] > a[child]:",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            1,
+            3,
+            2,
+            4,
+            5
+          ]
+        },
+        "variables": {
+          "root": 0,
+          "end": 3,
+          "child": 1
+        },
+        "pointers": {
+          "root": 0,
+          "end": 3,
+          "child": 1
+        },
+        "line": 5,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              1,
+              3
+            ],
+            "style": "COMPARE"
+          }
+        ]
+      },
+      {
+        "title": "if a[root] >= a[child]: ",
+        "explanation": "The heap property is already satisfied.",
+        "state": {
+          "array": [
+            1,
+            3,
+            2,
+            4,
+            5
+          ]
+        },
+        "variables": {
+          "root": 0,
+          "end": 3,
+          "child": 1
+        },
+        "pointers": {
+          "root": 0,
+          "end": 3,
+          "child": 1
+        },
+        "line": 7,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              1,
+              3
+            ],
+            "style": "COMPARE"
+          }
+        ]
+      },
+      {
+        "title": "a[root], a[child] = a[child], a[root] ",
+        "explanation": "Move the larger child upward.",
+        "state": {
+          "array": [
+            1,
+            3,
+            2,
+            4,
+            5
+          ]
+        },
+        "variables": {
+          "root": 0,
+          "end": 3,
+          "child": 1
+        },
+        "pointers": {
+          "root": 0,
+          "end": 3,
+          "child": 1
+        },
+        "line": 9,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              1,
+              3
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "root = child",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            3,
+            1,
+            2,
+            4,
+            5
+          ]
+        },
+        "variables": {
+          "root": 0,
+          "end": 3,
+          "child": 1
+        },
+        "pointers": {
+          "root": 0,
+          "end": 3,
+          "child": 1
+        },
+        "line": 10,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              1,
+              3
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "while 2 * root + 1 < end:",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            3,
+            1,
+            2,
+            4,
+            5
+          ]
+        },
+        "variables": {
+          "root": 1,
+          "end": 3,
+          "child": 1
+        },
+        "pointers": {
+          "root": 1,
+          "end": 3,
+          "child": 1
+        },
+        "line": 3,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              1,
+              3
+            ],
+            "style": "COMPARE"
+          }
+        ]
+      },
+      {
+        "title": "for end in range(len(a) - 1, 0, -1):",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            3,
+            1,
+            2,
+            4,
+            5
+          ]
+        },
+        "variables": {
+          "start": 0,
+          "end": 3
+        },
+        "pointers": {
+          "start": 0,
+          "end": 3
+        },
+        "line": 13,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              3
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "a[0], a[end] = a[end], a[0] ",
+        "explanation": "Extract the maximum into the sorted suffix.",
+        "state": {
+          "array": [
+            3,
+            1,
+            2,
+            4,
+            5
+          ]
+        },
+        "variables": {
+          "start": 0,
+          "end": 2
+        },
+        "pointers": {
+          "start": 0,
+          "end": 2
+        },
+        "line": 14,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              2
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "sift(0, end)",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            2,
+            1,
+            3,
+            4,
+            5
+          ]
+        },
+        "variables": {
+          "start": 0,
+          "end": 2
+        },
+        "pointers": {
+          "start": 0,
+          "end": 2
+        },
+        "line": 15,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              2
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "while 2 * root + 1 < end:",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            2,
+            1,
+            3,
+            4,
+            5
+          ]
+        },
+        "variables": {
+          "root": 0,
+          "end": 2
+        },
+        "pointers": {
+          "root": 0,
+          "end": 2
+        },
+        "line": 3,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              2
+            ],
+            "style": "COMPARE"
+          }
+        ]
+      },
+      {
+        "title": "child = 2 * root + 1 ",
+        "explanation": "Left child in the array-backed max heap.",
+        "state": {
+          "array": [
+            2,
+            1,
+            3,
+            4,
+            5
+          ]
+        },
+        "variables": {
+          "root": 0,
+          "end": 2
+        },
+        "pointers": {
+          "root": 0,
+          "end": 2
+        },
+        "line": 4,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              2
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "if child + 1 < end and a[child + 1] > a[child]:",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            2,
+            1,
+            3,
+            4,
+            5
+          ]
+        },
+        "variables": {
+          "root": 0,
+          "end": 2,
+          "child": 1
+        },
+        "pointers": {
+          "root": 0,
+          "end": 2,
+          "child": 1
+        },
+        "line": 5,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              1,
+              2
+            ],
+            "style": "COMPARE"
+          }
+        ]
+      },
+      {
+        "title": "if a[root] >= a[child]: ",
+        "explanation": "The heap property is already satisfied.",
+        "state": {
+          "array": [
+            2,
+            1,
+            3,
+            4,
+            5
+          ]
+        },
+        "variables": {
+          "root": 0,
+          "end": 2,
+          "child": 1
+        },
+        "pointers": {
+          "root": 0,
+          "end": 2,
+          "child": 1
+        },
+        "line": 7,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              1,
+              2
+            ],
+            "style": "COMPARE"
+          }
+        ]
+      },
+      {
+        "title": "break",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            2,
+            1,
+            3,
+            4,
+            5
+          ]
+        },
+        "variables": {
+          "root": 0,
+          "end": 2,
+          "child": 1
+        },
+        "pointers": {
+          "root": 0,
+          "end": 2,
+          "child": 1
+        },
+        "line": 8,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              1,
+              2
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "for end in range(len(a) - 1, 0, -1):",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            2,
+            1,
+            3,
+            4,
+            5
+          ]
+        },
+        "variables": {
+          "start": 0,
+          "end": 2
+        },
+        "pointers": {
+          "start": 0,
+          "end": 2
+        },
+        "line": 13,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              2
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "a[0], a[end] = a[end], a[0] ",
+        "explanation": "Extract the maximum into the sorted suffix.",
+        "state": {
+          "array": [
+            2,
+            1,
+            3,
+            4,
+            5
+          ]
+        },
+        "variables": {
+          "start": 0,
+          "end": 1
+        },
+        "pointers": {
+          "start": 0,
+          "end": 1
+        },
+        "line": 14,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              1
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "sift(0, end)",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ]
+        },
+        "variables": {
+          "start": 0,
+          "end": 1
+        },
+        "pointers": {
+          "start": 0,
+          "end": 1
+        },
+        "line": 15,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              1
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "while 2 * root + 1 < end:",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ]
+        },
+        "variables": {
+          "root": 0,
+          "end": 1
+        },
+        "pointers": {
+          "root": 0,
+          "end": 1
+        },
+        "line": 3,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              1
+            ],
+            "style": "COMPARE"
+          }
+        ]
+      },
+      {
+        "title": "for end in range(len(a) - 1, 0, -1):",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ]
+        },
+        "variables": {
+          "start": 0,
+          "end": 1
+        },
+        "pointers": {
+          "start": 0,
+          "end": 1
+        },
+        "line": 13,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              1
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "return a",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ]
+        },
+        "variables": {
+          "start": 0,
+          "end": 1
+        },
+        "pointers": {
+          "start": 0,
+          "end": 1
+        },
+        "line": 16,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              1
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "Fully sorted",
+        "explanation": "All values are now in ascending order. Every input value is preserved.",
+        "state": {
+          "array": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ]
+        },
+        "variables": {},
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              1,
+              2,
+              3,
+              4
+            ],
+            "style": "DONE"
+          }
+        ]
+      }
+    ]
+  }
+}

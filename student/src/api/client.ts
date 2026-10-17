@@ -1,12 +1,14 @@
 import axios from 'axios';
 
 // Base URL resolution:
-//  • Local dev  → defaults to http://127.0.0.1:8085/api/v1 (bypasses the corp
-//    HTTP proxy that 503s `localhost`; must match the UI origin 127.0.0.1:3002).
+//  • Local dev  → defaults to a RELATIVE "/api/v1". The app is served on
+//    http://localhost:3002 and Vite proxies /api + /oauth2 to the backend
+//    (127.0.0.1:8085). Using a relative base keeps every request same-origin
+//    with the page, so there is no CORS surface and the OAuth-minted JWT in
+//    localStorage (origin-scoped) is always sent back to the right host.
 //  • Cloud/Vercel → set VITE_API_URL to the Render backend origin, e.g.
-//    VITE_API_URL=https://unlearnarc-backend.onrender.com
-// We append /api/v1 ourselves so the env var stays a clean origin.
-const API_ORIGIN = import.meta.env.VITE_API_URL ?? 'http://127.0.0.1:8085';
+//    VITE_API_URL=https://unlearnarc-backend.onrender.com (we append /api/v1).
+const API_ORIGIN = import.meta.env.VITE_API_URL ?? '';
 const BASE_URL = `${API_ORIGIN.replace(/\/$/, '')}/api/v1`;
 
 const api = axios.create({

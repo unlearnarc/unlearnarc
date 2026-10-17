@@ -20,7 +20,9 @@ import org.springframework.security.oauth2.core.user.OAuth2UserAuthority;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashMap;
 import java.util.Map;
+import org.springframework.security.oauth2.core.oidc.OidcUserInfo;
 import java.util.Set;
 
 /**
@@ -57,14 +59,16 @@ public class GoogleOAuth2UserService extends DefaultOAuth2UserService {
 
                 OAuthUserInfo userInfo = self.extractUserInfo(attributes);
                 self.validate(userInfo);
-                User user = self.upsertUser(userInfo);
-                log.info("[OAUTH2] User authenticated via Google (OIDC): {}", user.getEmail());
+                UpsertResult result = self.upsertUser(userInfo);
+                Map<String, Object> claims = new HashMap<>(attributes);
+                claims.put("ua_new_user", result.isNewUser());
+                log.info("[OAUTH2] User authenticated via Google (OIDC): {}", result.user().getEmail());
 
                 // Return an OidcUser carrying ROLE_USER + the original id-token/userinfo.
                 return new DefaultOidcUser(
                         Set.of(new OAuth2UserAuthority("ROLE_USER", attributes)),
                         oidcUser.getIdToken(),
-                        oidcUser.getUserInfo(),
+                        new OidcUserInfo(claims),
                         "email"            // nameAttributeKey
                 );
             }
@@ -86,8 +90,10 @@ public class GoogleOAuth2UserService extends DefaultOAuth2UserService {
         validate(userInfo);
 
         // 4. Upsert user in DB
-        User user = upsertUser(userInfo);
-        log.info("[OAUTH2] User authenticated via Google: {}", user.getEmail());
+        UpsertResult result = upsertUser(userInfo);
+        attributes = new HashMap<>(attributes);
+        attributes.put("ua_new_user", result.isNewUser());
+        log.info("[OAUTH2] User authenticated via Google: {}", result.user().getEmail());
 
         // 5. Return a DefaultOAuth2User the security context can work with
         return new DefaultOAuth2User(
@@ -123,10 +129,12 @@ public class GoogleOAuth2UserService extends DefaultOAuth2UserService {
     }
 
     // ── helper: find-or-create user record ────────────────────────────────────
-    private User upsertUser(OAuthUserInfo info) {
+    private record UpsertResult(User user, boolean isNewUser) {}
+
+    private UpsertResult upsertUser(OAuthUserInfo info) {
         return userRepository.findByEmail(info.getEmail())
-                .map(existing -> updateExistingUser(existing, info))
-                .orElseGet(() -> createNewUser(info));
+                .map(existing -> new UpsertResult(updateExistingUser(existing, info), false))
+                .orElseGet(() -> new UpsertResult(createNewUser(info), true));
     }
 
     private User updateExistingUser(User user, OAuthUserInfo info) {

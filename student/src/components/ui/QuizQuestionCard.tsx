@@ -24,7 +24,7 @@ export const QuizQuestionCard: React.FC<QuizQuestionCardProps> = ({
   onToggleAnswer,
   className,
 }) => (
-  <div className={`glass-card rounded-[18px] p-6 sm:p-8 animate-scale-in ${className ?? ''}`}>
+  <div className={`quiz-question-card rounded-[18px] p-5 sm:p-8 animate-scale-in ${className ?? ''}`}>
     <div className="flex items-center gap-2 mb-4">
       <Badge label={question.difficulty} />
       <Badge label={question.questionType} />
@@ -33,7 +33,7 @@ export const QuizQuestionCard: React.FC<QuizQuestionCardProps> = ({
       </span>
     </div>
 
-    <p className="text-white text-base sm:text-lg font-medium leading-relaxed mb-6">
+    <p className="text-text-primary text-base sm:text-lg font-medium leading-relaxed mb-6 break-words">
       {question.questionText}
     </p>
 

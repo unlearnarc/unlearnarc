@@ -24,7 +24,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const stored = localStorage.getItem('ua_user');
     return stored ? JSON.parse(stored) : null;
   });
-  const [isLoading, setIsLoading] = useState(false);
+  // Resolve an existing session before mounting protected pages. Otherwise
+  // the profile refresh unmounts them after their startup requests have fired.
+  const [isLoading, setIsLoading] = useState(() => !!token);
 
   const persist = useCallback((next: UserProfile | null) => {
     if (next) localStorage.setItem('ua_user', JSON.stringify(next));
@@ -86,11 +88,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [token]);
 
   const loginWithGoogle = useCallback(() => {
-    // Redirect to backend Spring Security OAuth2 initiation endpoint.
+    // Redirect to the backend Spring Security OAuth2 initiation endpoint.
     // Spring forwards the browser to Google with the registered redirect_uri
-    // (<backend>/oauth2/callback/google). The backend origin MUST match the API
-    // origin, so we reuse VITE_API_URL (falls back to local backend in dev).
-    const apiOrigin = (import.meta.env.VITE_API_URL ?? 'http://127.0.0.1:8085').replace(/\/$/, '');
+    // (<backend>/oauth2/callback/google) and, on success, redirects back to
+    // OAUTH2_REDIRECT_URI (http://localhost:3002/auth/callback).
+    //
+    // Local dev: VITE_API_URL is empty, so we hit the RELATIVE "/oauth2/..."
+    // path which Vite proxies to the backend — keeping the whole flow on the
+    // localhost:3002 origin so the JWT lands on the same origin the app reads.
+    // Cloud: VITE_API_URL points at the Render backend origin directly.
+    const apiOrigin = (import.meta.env.VITE_API_URL ?? '').replace(/\/$/, '');
     window.location.href = `${apiOrigin}/oauth2/authorization/google`;
   }, []);
 

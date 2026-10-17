@@ -2,25 +2,29 @@ import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Plus, Pencil, Trash2, ChevronDown, ChevronRight,
-  BookOpen, FileText, Film, Search, Link2, X,
+  BookOpen, FileText, Film, Search, Link2, X, Globe,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import {
   courseAPI, topicAPI, studyMaterialAPI,
   skillAPI, skillCourseAPI,
+  domainAPI, domainSkillAPI,
 } from '../api/endpoints';
 import { Modal } from '../components/ui/Modal';
 import { ConfirmDialog } from '../components/ui/ConfirmDialog';
 import { FormField, Input, Select } from '../components/ui/FormField';
 import { Badge } from '../components/ui/Badge';
 import { EmptyState } from '../components/ui/EmptyState';
+import { TopicNotesPanel } from './notes/TopicNotesPanel';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
-interface Course { id: string; name: string; level: string; totalTime: string; topicsCount: number; }
+interface Course { id: string; name: string; level: string; totalTime: string; topicsCount: number; imgUrl?: string; }
 interface Topic  { id: string; name: string; level: string; topicOrder: number; time: string; courseId: string; }
 interface Material { id: string; type: string; url: string; topicId: string; }
 interface Skill  { id: string; name: string; level: string; }
 interface SCMapping { id: string; skillId: string; courseId: string; }
+interface Domain { id: string; name: string; }
+interface DSMapping { id: string; domainId: string; skillId: string; }
 
 const LEVELS = ['BEGINNER', 'INTERMEDIATE', 'ADVANCED', 'EXPERT'].map((v) => ({ label: v, value: v }));
 const MAT_TYPES = ['VIDEO', 'ARTICLE', 'PDF', 'QUIZ', 'EXERCISE', 'SLIDES'].map((v) => ({ label: v, value: v }));
@@ -183,6 +187,11 @@ const TopicRow: React.FC<{
                 <Plus size={12} /> Add study material
               </button>
             )}
+
+            {/* Book-style notes (rich, in-app lessons) for this topic */}
+            <div className="mt-4 pt-3 border-t border-white/5">
+              <TopicNotesPanel parent={{ topicId: topic.id }} />
+            </div>
           </div>
         )}
       </div>
@@ -286,9 +295,148 @@ const CourseSkillPanel: React.FC<{ course: Course; allSkills: Skill[] }> = ({
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Domain mapper for course (Domain → Skill → Course, two-hop)
+// ─────────────────────────────────────────────────────────────────────────────
+const CourseDomainPanel: React.FC<{ course: Course; allSkills: Skill[] }> = ({
+  course, allSkills,
+}) => {
+  const qc = useQueryClient();
+  const [search, setSearch] = useState('');
+  const [bridgeSkillId, setBridgeSkillId] = useState('');
+
+  // course → skills (hop 2 reversed)
+  const { data: scData } = useQuery({
+    queryKey: ['course-skills', course.id],
+    queryFn: () => skillCourseAPI.getByCourse(course.id),
+  });
+  const courseSkillIds: string[] = (scData?.data?.data ?? []).map((m: SCMapping) => m.skillId);
+
+  // all domains
+  const { data: domainsData } = useQuery({
+    queryKey: ['domains'],
+    queryFn: domainAPI.getAll,
+  });
+  const allDomains: Domain[] = domainsData?.data?.data ?? [];
+
+  // all domain-skill mappings (to resolve which domains already reach this course)
+  const { data: dsAllData } = useQuery({
+    queryKey: ['domain-skill-all'],
+    queryFn: () => domainSkillAPI.getAll(),
+  });
+  const dsAll: DSMapping[] = dsAllData?.data?.data ?? [];
+
+  // Domains already reachable from this course = those sharing a skill with the course
+  const courseSkillSet = new Set(courseSkillIds);
+  const mappedDomainIds = new Set(
+    dsAll.filter((m) => courseSkillSet.has(m.skillId)).map((m) => m.domainId),
+  );
+  const mappedDomains = allDomains.filter((d) => mappedDomainIds.has(d.id));
+  const availableDomains = allDomains.filter(
+    (d) => !mappedDomainIds.has(d.id) && d.name.toLowerCase().includes(search.toLowerCase()),
+  );
+
+  // Attaching a domain needs a bridge skill that is already linked to the course.
+  const effectiveBridge = bridgeSkillId || courseSkillIds[0] || '';
+  const bridgeSkill = allSkills.find((s) => s.id === effectiveBridge);
+
+  const attachMut = useMutation({
+    mutationFn: (domainId: string) =>
+      domainSkillAPI.create({ domainId, skillId: effectiveBridge }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['domain-skill-all'] });
+      toast.success('Course mapped to domain');
+    },
+    onError: () => toast.error('Failed to map domain'),
+  });
+
+  const noSkills = courseSkillIds.length === 0;
+
+  return (
+    <div className="space-y-3">
+      {mappedDomains.length > 0 && (
+        <div>
+          <p className="text-[11px] text-slate-500 mb-1.5">Mapped domains (via linked skills)</p>
+          <div className="flex flex-wrap gap-1.5">
+            {mappedDomains.map((d) => (
+              <span
+                key={d.id}
+                className="flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-violet-500/15 text-violet-300 text-xs border border-violet-500/25"
+              >
+                <Globe size={11} /> {d.name}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {noSkills ? (
+        <p className="text-xs text-amber-400/90 italic">
+          Link at least one skill to this course first (use the "Skills" panel) — domains map
+          through a shared skill.
+        </p>
+      ) : (
+        <>
+          {/* bridge skill selector — which of the course's skills carries the mapping */}
+          {courseSkillIds.length > 1 && (
+            <div>
+              <p className="text-[11px] text-slate-500 mb-1">Map through skill</p>
+              <select
+                value={effectiveBridge}
+                onChange={(e) => setBridgeSkillId(e.target.value)}
+                className="w-full px-2.5 py-1.5 rounded-lg bg-white/5 border border-white/10 text-white text-xs focus:outline-none focus:ring-1 focus:ring-violet-500/40"
+              >
+                {courseSkillIds.map((id) => (
+                  <option key={id} value={id} className="bg-slate-800">
+                    {allSkills.find((s) => s.id === id)?.name ?? id}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          <div className="relative">
+            <Search size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-500" />
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Map to a domain…"
+              className="w-full pl-7 pr-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-white placeholder-slate-600 text-xs focus:outline-none focus:ring-1 focus:ring-violet-500/40 transition"
+            />
+          </div>
+          <div className="max-h-32 overflow-y-auto space-y-0.5">
+            {availableDomains.length === 0 ? (
+              <p className="text-xs text-slate-600 text-center py-2">
+                {allDomains.length === 0 ? 'No domains exist yet.' : 'All domains already mapped or none match.'}
+              </p>
+            ) : (
+              availableDomains.map((d) => (
+                <button
+                  key={d.id}
+                  onClick={() => attachMut.mutate(d.id)}
+                  disabled={attachMut.isPending || !effectiveBridge}
+                  className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg hover:bg-white/5 text-left transition disabled:opacity-50"
+                >
+                  <Globe size={12} className="text-violet-400" />
+                  <span className="text-xs text-slate-300">{d.name}</span>
+                </button>
+              ))
+            )}
+          </div>
+          {bridgeSkill && (
+            <p className="text-[10px] text-slate-600">
+              New mappings attach via skill <span className="text-slate-400">{bridgeSkill.name}</span>.
+            </p>
+          )}
+        </>
+      )}
+    </div>
+  );
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Course row (expandable with topics + skill panel)
 // ─────────────────────────────────────────────────────────────────────────────
-const emptyCourseForm = { name: '', level: 'BEGINNER', totalTime: '01:00:00', topicsCount: 1, imgUrl: 0 };
+const emptyCourseForm = { name: '', level: 'BEGINNER', totalTime: '01:00:00', topicsCount: 1, imgUrl: '' };
 const emptyTopicForm  = { name: '', level: 'BEGINNER', topicOrder: 1, time: '00:30:00' };
 
 const CourseRow: React.FC<{
@@ -300,6 +448,7 @@ const CourseRow: React.FC<{
   const qc = useQueryClient();
   const [expanded, setExpanded] = useState(false);
   const [skillPanelOpen, setSkillPanelOpen] = useState(false);
+  const [domainPanelOpen, setDomainPanelOpen] = useState(false);
   const [addTopicOpen, setAddTopicOpen] = useState(false);
   const [topicForm, setTopicForm] = useState(emptyTopicForm);
   const [editingTopic, setEditingTopic] = useState<Topic | null>(null);
@@ -378,6 +527,12 @@ const CourseRow: React.FC<{
               <Link2 size={12} /> Skills
             </button>
             <button
+              onClick={() => { setExpanded(true); setDomainPanelOpen(!domainPanelOpen); }}
+              className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs text-violet-400 hover:bg-violet-500/15 border border-violet-500/20 transition"
+            >
+              <Globe size={12} /> Domains
+            </button>
+            <button
               onClick={() => { setExpanded(true); setAddTopicOpen(true); }}
               className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs text-amber-400 hover:bg-amber-500/15 border border-amber-500/20 transition"
             >
@@ -405,6 +560,19 @@ const CourseRow: React.FC<{
                   </button>
                 </div>
                 <CourseSkillPanel course={course} allSkills={allSkills} />
+              </div>
+            )}
+
+            {/* Domain mapping panel */}
+            {domainPanelOpen && (
+              <div className="p-3 rounded-xl bg-surface-soft border border-violet-500/20">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-xs font-semibold text-violet-300">Mapped Domains</p>
+                  <button onClick={() => setDomainPanelOpen(false)} className="text-slate-500 hover:text-white">
+                    <X size={13} />
+                  </button>
+                </div>
+                <CourseDomainPanel course={course} allSkills={allSkills} />
               </div>
             )}
 
@@ -575,7 +743,7 @@ export const CoursesPage: React.FC = () => {
       level: c.level,
       totalTime: c.totalTime ?? '01:00:00',
       topicsCount: c.topicsCount ?? 0,
-      imgUrl: 0,
+      imgUrl: c.imgUrl ?? '',
     });
     setModalOpen(true);
   };
@@ -688,10 +856,10 @@ export const CoursesPage: React.FC = () => {
             </FormField>
             <FormField label="Image URL">
               <Input
-                type="number"
+                type="url"
                 value={form.imgUrl}
-                onChange={(e) => setForm({ ...form, imgUrl: parseInt(e.target.value) })}
-                placeholder="Image ID"
+                onChange={(e) => setForm({ ...form, imgUrl: e.target.value })}
+                placeholder="https://…/cover.png"
               />
             </FormField>
           </div>

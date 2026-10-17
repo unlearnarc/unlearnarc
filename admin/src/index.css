@@ -79,4 +79,10 @@
   .ua-rte-admin pre  { margin: 0 0 0.75rem; padding: 0.75rem 0.9rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; overflow-x: auto; font-family: ui-monospace, monospace; font-size: 0.82rem; }
   .ua-rte-admin pre code { background: none; padding: 0; }
   .ua-rte-admin strong { font-weight: 600; color: rgb(226 232 240); }
+  /* Notes authoring: inline images, figures, rules */
+  .ua-rte-admin img { max-width: 100%; height: auto; border-radius: 10px; margin: 0.75rem 0; border: 1px solid rgba(255,255,255,0.08); display: block; }
+  .ua-rte-admin figure { margin: 0.75rem 0; }
+  .ua-rte-admin figure img { margin: 0 0 0.35rem; }
+  .ua-rte-admin figcaption { font-size: 0.78rem; color: rgb(148 163 184); font-style: italic; text-align: center; }
+  .ua-rte-admin hr { border: none; border-top: 1px solid rgba(255,255,255,0.1); margin: 1.25rem 0; }
 }

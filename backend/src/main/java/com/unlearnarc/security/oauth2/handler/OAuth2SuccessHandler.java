@@ -84,6 +84,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
                 .queryParam("token",        accessToken)
                 .queryParam("refreshToken", refreshToken)
                 .queryParam("userId",       user.getId())
+                .queryParam("isNewUser",    Boolean.TRUE.equals(oAuth2User.getAttribute("ua_new_user")))
                 .queryParam("name",         user.getName() != null ? user.getName() : "")
                 .queryParam("email",        email)
                 .queryParam("picture",      user.getProfilePicture() != null

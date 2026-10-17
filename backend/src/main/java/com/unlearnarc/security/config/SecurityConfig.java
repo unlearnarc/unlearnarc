@@ -177,7 +177,12 @@ public class SecurityConfig {
                         "/api/v1/skills/*",
                         "/api/v1/search",
                         "/api/v1/animation-scenes/published",
-                        "/api/v1/animation-scenes/slug/*"
+                        "/api/v1/animation-scenes/slug/*",
+                        // Notes: published book-style lessons are public reads
+                        // (mirrors the catalog pattern). Admin CRUD paths below
+                        // are NOT here and stay JWT + @PreAuthorize('ADMIN').
+                        "/api/v1/notes/topic/*",
+                        "/api/v1/notes/course/*"
                 ).permitAll()
 
                 // ── TEST-ONLY: contest endpoints open for WASM/sandbox testing ──

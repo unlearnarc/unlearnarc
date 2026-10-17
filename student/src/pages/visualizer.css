@@ -1,0 +1,24 @@
+.ua-visualizer { min-width: 0; }
+.ua-visualizer > header h1 { font-size: clamp(1.05rem, 3vw, 1.5rem); }
+.ua-visualizer [aria-label="Playback controls"] { scroll-margin-block: 80px; }
+.ua-visualizer [aria-label="Playback controls"] button { min-height: 44px; }
+.ua-visualizer [aria-label="Playback controls"] input[type="range"] { min-width: 0; min-height: 32px; }
+.ua-step-inspector { scrollbar-width: thin; }
+@media (max-width: 640px) {
+  .ua-visualizer > nav { font-size: 11px; }
+  .ua-visualizer > nav > span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .ua-visualizer > header { gap: 10px; }
+  .ua-visualizer > header p { font-size: 12px; }
+  .ua-visualizer [aria-label="Playback controls"] { gap: 8px; }
+  .ua-visualizer [aria-label="Playback controls"] > div:nth-child(2) { order: 3; flex-basis: 100%; min-width: 0; }
+  .ua-visualizer [aria-label="Playback controls"] > label { margin-inline-start: auto; }
+  .ua-visualizer [aria-label="Playback controls"] > div:first-child { gap: 4px; }
+  .ua-visualizer [aria-label="Playback controls"] select { min-height: 44px; padding-inline: 4px; }
+  .ua-visualizer [aria-label="Playback controls"] > div:nth-child(2) input { width: 0; }
+  .ua-visualizer .ua-step-inspector h2 { font-size: 14px; }
+  .ua-visualizer .ua-step-inspector p { overflow-wrap: anywhere; }
+  .ua-visualizer [aria-label="Playback controls"] button { min-width: 36px; }
+  .ua-visualizer [aria-label="Playback controls"] button[aria-label="Play"],
+  .ua-visualizer [aria-label="Playback controls"] button[aria-label="Pause"] { min-width: 72px; padding-inline: 10px; }
+  .ua-visualizer [aria-label="Source code"] > div:first-child { flex-wrap: wrap; }
+}

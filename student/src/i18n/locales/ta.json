@@ -1,4 +1,25 @@
 {
+  "algoDetail": {
+    "notFound": "அல்காரிதம் கிடைக்கவில்லை",
+    "notFoundDesc": "இந்த அல்காரிதம் கிடைக்கவில்லை அல்லது இன்னும் வெளியிடப்படவில்லை.",
+    "backToAlgorithms": "அல்காரிதங்களுக்குத் திரும்பு",
+    "allAlgorithms": "அனைத்து அல்காரிதங்களும்",
+    "time": "நேரம்",
+    "space": "இடம்",
+    "whenToUse": "எப்போது பயன்படுத்துவது",
+    "currentAction": "தற்போதைய செயல்",
+    "rowCol": "வரிசை / நெடுவரிசை",
+    "visitedCells": "பார்வையிட்ட செல்கள்",
+    "step": "படி",
+    "stepN": "படி {{num}}",
+    "status": "நிலை",
+    "statusAwaiting": "பதிலுக்காகக் காத்திருக்கிறது",
+    "statusPlaying": "இயங்குகிறது",
+    "statusComplete": "முடிந்தது",
+    "statusPaused": "இடைநிறுத்தப்பட்டது",
+    "true": "சரி",
+    "false": "தவறு"
+  },
   "common": {
     "appName": "UnlearnArc",
     "viewAll": "அனைத்தையும் காண்க",
@@ -56,6 +77,12 @@
     "autoDrawNote": "கேள்விகள் எளிய, நடுத்தர மற்றும் கடினமான நிலைகளில் தானாகத் தேர்ந்தெடுக்கப்படுகின்றன.",
     "noTests": "இந்த நோக்கிற்கு இன்னும் தேர்வுகள் கிடைக்கவில்லை.",
     "startTest": "தேர்வைத் தொடங்கு",
+    "adaptiveNote": "இந்தத் தேர்வு இந்த வரம்பில் உங்கள் கடந்தகால செயல்திறனுக்கு ஏற்ப மாறுகிறது.",
+    "strategy": {
+      "MASTERY": "தேர்ச்சி · கடினமான தொகுப்பு",
+      "ADVANCING": "முன்னேற்றம் · அதிக கடினம்",
+      "REINFORCE": "வலுப்படுத்தல் · அடிப்படைகள்"
+    },
     "questionOf": "கேள்வி {{current}} / {{total}}",
     "answeredCount": "{{count}} பதிலளிக்கப்பட்டது",
     "percentComplete": "{{percent}}% முடிந்தது",
@@ -258,7 +285,6 @@
   },
   "algorithms": {
     "title": "அல்காரிதம் காட்சியாக்கி",
-    "subtitle": "Watch algorithms run step by step, control the pace, and learn how each one works.",
     "searchPlaceholder": "Search algorithms…",
     "empty": "No algorithms available",
     "emptyDesc": "Check back soon — new visualizations are added regularly.",
@@ -372,6 +398,18 @@
     "learn": "கற்க",
     "projects": "திட்டங்கள்",
     "profile": "சுயவிவரம்"
+  },
+  "notes": {
+    "lessons": "பாடங்கள்",
+    "reading": "படிக்கிறீர்கள்",
+    "minRead": "{{count}} நிமிட வாசிப்பு",
+    "minShort": "{{count}}நி",
+    "noMaterials": "இன்னும் படிப்புப் பொருட்கள் இல்லை.",
+    "loadError": "இந்தக் குறிப்பை ஏற்ற முடியவில்லை.",
+    "readAloud": "உரக்கப் படிக்க",
+    "courseLessons": "பாடநெறி பாடங்கள்",
+    "lessonCount": "{{count}} பாடங்கள்",
+    "read": "படிக்க"
   },
   "courseDetail": {
     "notFound": "பாடநெறி கிடைக்கவில்லை",

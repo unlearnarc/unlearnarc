@@ -36,21 +36,21 @@
 .ua-mascot__avatar {
   position: relative;
   border: none;
-  background: var(--surface, #fff);
-  border-radius: 50%;
+  background: transparent;
+  border-radius: 16px;
   padding: 2px;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18);
   cursor: pointer;
   line-height: 0;
-  transition: transform 0.2s ease;
-  animation: ua-mascot-float 4s ease-in-out infinite;
+  /* Aria owns upper-body motion; never transform the grounded button. */
 }
-.ua-mascot__avatar:hover { transform: scale(1.06); }
+.ua-mascot__avatar:focus-visible {
+  outline: 2px solid #14B8A6;
+  outline-offset: 4px;
+}
 
 .ua-mascot__avatar--react     { animation: ua-mascot-pop 0.5s ease; }
 .ua-mascot__avatar--celebrate { animation: ua-mascot-bounce 0.6s ease 2; }
 .ua-mascot__avatar--wave      { animation: ua-mascot-tilt 0.6s ease; }
-.ua-mascot__avatar--love      { animation: ua-mascot-heartbeat 1s ease infinite; }
 
 /* The waving SVG arm (inside MascotAvatar) swings on 'wave' mood. */
 .ua-mascot-arm { transition: transform 0.3s ease; }
@@ -177,16 +177,11 @@
 }
 
 /* ── Confetti burst ──────────────────────────────────────────────────────── */
-.ua-mascot__confetti, .ua-mascot__hearts { position: absolute; inset: 0; pointer-events: none; }
+.ua-mascot__confetti { position: absolute; inset: 0; pointer-events: none; }
 .ua-mascot__confetti span {
   position: absolute; left: 50%; top: 50%; font-size: 14px;
   animation: ua-confetti 0.9s ease-out forwards;
   animation-delay: calc(var(--i) * 60ms);
-}
-.ua-mascot__hearts span {
-  position: absolute; left: 50%; top: 40%; font-size: 13px;
-  animation: ua-float-heart 1.6s ease-out infinite;
-  animation-delay: calc(var(--i) * 300ms);
 }
 
 /* ── Keyframes ───────────────────────────────────────────────────────────── */
@@ -210,12 +205,6 @@
   25% { transform: rotate(-8deg); }
   75% { transform: rotate(8deg); }
 }
-@keyframes ua-mascot-heartbeat {
-  0%, 100% { transform: scale(1); }
-  25% { transform: scale(1.08); }
-  40% { transform: scale(1); }
-  60% { transform: scale(1.06); }
-}
 @keyframes ua-arm-wave {
   0%, 100% { transform: rotate(0deg); }
   50% { transform: rotate(-28deg); }
@@ -233,25 +222,14 @@
   100% { opacity: 0; transform:
           translate(calc(-50% + (var(--i) - 1.5) * 34px), -140%) scale(1.2); }
 }
-@keyframes ua-float-heart {
-  0%   { opacity: 0; transform: translate(-50%, 0) scale(0.6); }
-  25%  { opacity: 1; }
-  100% { opacity: 0; transform:
-          translate(calc(-50% + (var(--i) - 1) * 16px), -150%) scale(1.1); }
-}
 
 /* Respect reduced-motion users. */
 @media (prefers-reduced-motion: reduce) {
   .ua-mascot__avatar,
-  .ua-mascot__avatar--react,
-  .ua-mascot__avatar--celebrate,
-  .ua-mascot__avatar--wave,
-  .ua-mascot__avatar--love,
   .ua-mascot-arm--wave,
   .ua-mascot-antenna,
   .ua-mascot__bubble,
-  .ua-mascot__confetti span,
-  .ua-mascot__hearts span {
+  .ua-mascot__confetti span {
     animation: none !important;
   }
 }

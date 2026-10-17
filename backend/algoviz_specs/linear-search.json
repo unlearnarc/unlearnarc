@@ -1,0 +1,366 @@
+{
+  "slug": "linear-search",
+  "title": "Linear Search",
+  "summary": "Scan left to right and return the first index whose value equals the target.",
+  "usage": "How it works\nNo sorting is required. After checking index i without a match, all earlier indices are known not to contain the target. Useful for small or unsorted collections, and when you need the first occurrence. Returns a zero-based index or -1 if absent; an empty input returns -1.\n\nProperties and prerequisites\nPrecondition: none beyond a valid array. Does not modify input. Duplicates: returns first occurrence.\n\nComplexity\nTime: O(n) worst/average; O(1) best. Space: O(1).\n\nExample\nInput: [5, 2, 4, 1, 3]; target = 1. Output: index 3.\n\nTry it\nUse Play/Pause, Previous/Next, the timeline, and playback speed. Answer the prediction checkpoints to continue; feedback reveals the expected answer. Python is the line-synchronized walkthrough; Java is an equivalent complete implementation. Sorting functions accept empty arrays, duplicates, negative values, and already sorted inputs. Java methods belong inside a class; Python functions can be called directly.",
+  "category": "Searching",
+  "difficulty": "EASY",
+  "visualizer": "ARRAY",
+  "complexity": {
+    "time": "O(n) worst/average; O(1) best",
+    "space": "O(1)"
+  },
+  "pythonSource": "def linear_search(a, target):\n    for i in range(len(a)):\n        if a[i] == target:  # Check each value from left to right.\n            return i  # Return the first matching zero-based index.\n    return -1  # No value matched, including when the array is empty.\n",
+  "javaSource": "static int linearSearch(int[] a, int target) {\n    for (int i = 0; i < a.length; i++)\n        if (a[i] == target) return i;\n    return -1;\n}",
+  "spec": {
+    "visualizer": "ARRAY",
+    "initialState": {
+      "array": [
+        5,
+        2,
+        4,
+        1,
+        3
+      ]
+    },
+    "variables": [
+      {
+        "name": "i",
+        "label": "i"
+      },
+      {
+        "name": "target",
+        "label": "target"
+      }
+    ],
+    "steps": [
+      {
+        "title": "Start the walkthrough",
+        "explanation": "Find target 1. Indices are zero-based.",
+        "state": {
+          "array": [
+            5,
+            2,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "target": 1
+        },
+        "input": {
+          "key": "linear-search-prediction",
+          "type": "NUMBER",
+          "prompt": "Predict the returned index for target 1.",
+          "expected": 3
+        }
+      },
+      {
+        "title": "for i in range(len(a)):",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            5,
+            2,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "target": 1
+        },
+        "pointers": {},
+        "line": 2,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "if a[i] == target: ",
+        "explanation": "Check each value from left to right.",
+        "state": {
+          "array": [
+            5,
+            2,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "target": 1,
+          "i": 0
+        },
+        "pointers": {
+          "i": 0
+        },
+        "line": 3,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0
+            ],
+            "style": "COMPARE"
+          }
+        ]
+      },
+      {
+        "title": "for i in range(len(a)):",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            5,
+            2,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "target": 1,
+          "i": 0
+        },
+        "pointers": {
+          "i": 0
+        },
+        "line": 2,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "if a[i] == target: ",
+        "explanation": "Check each value from left to right.",
+        "state": {
+          "array": [
+            5,
+            2,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "target": 1,
+          "i": 1
+        },
+        "pointers": {
+          "i": 1
+        },
+        "line": 3,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              1
+            ],
+            "style": "COMPARE"
+          }
+        ]
+      },
+      {
+        "title": "for i in range(len(a)):",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            5,
+            2,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "target": 1,
+          "i": 1
+        },
+        "pointers": {
+          "i": 1
+        },
+        "line": 2,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              1
+            ],
+            "style": "ACTIVE"
+          }
+        ],
+        "input": {
+          "key": "linear-search-concept",
+          "type": "BOOLEAN",
+          "prompt": "Does this algorithm require the input to be sorted ascending?",
+          "expected": false
+        }
+      },
+      {
+        "title": "if a[i] == target: ",
+        "explanation": "Check each value from left to right.",
+        "state": {
+          "array": [
+            5,
+            2,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "target": 1,
+          "i": 2
+        },
+        "pointers": {
+          "i": 2
+        },
+        "line": 3,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              2
+            ],
+            "style": "COMPARE"
+          }
+        ]
+      },
+      {
+        "title": "for i in range(len(a)):",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            5,
+            2,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "target": 1,
+          "i": 2
+        },
+        "pointers": {
+          "i": 2
+        },
+        "line": 2,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              2
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "if a[i] == target: ",
+        "explanation": "Check each value from left to right.",
+        "state": {
+          "array": [
+            5,
+            2,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "target": 1,
+          "i": 3
+        },
+        "pointers": {
+          "i": 3
+        },
+        "line": 3,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              3
+            ],
+            "style": "COMPARE"
+          }
+        ]
+      },
+      {
+        "title": "return i ",
+        "explanation": "Return the first matching zero-based index.",
+        "state": {
+          "array": [
+            5,
+            2,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "target": 1,
+          "i": 3
+        },
+        "pointers": {
+          "i": 3
+        },
+        "line": 4,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              3
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "Found target",
+        "explanation": "Return 3: a[3] = 1.",
+        "state": {
+          "array": [
+            5,
+            2,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "result": 3
+        },
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              3
+            ],
+            "style": "DONE"
+          }
+        ]
+      }
+    ]
+  }
+}

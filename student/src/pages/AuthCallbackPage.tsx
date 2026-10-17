@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { PageLoader } from '../components/ui/Spinner';
+import { requestRegistrationTour } from '../components/onboarding/tourStorage';
 
 /**
  * Receives Google OAuth2 callback from backend:
@@ -33,6 +34,9 @@ export const AuthCallbackPage: React.FC = () => {
       profilePicture: params.get('picture') ?? undefined,
     };
 
+    if (params.get('isNewUser') === 'true' && userData.id) {
+      requestRegistrationTour(userData.id);
+    }
     setTokenFromCallback(token, refreshToken ?? '', userData);
     navigate('/dashboard', { replace: true });
   }, [params, setTokenFromCallback, navigate]);

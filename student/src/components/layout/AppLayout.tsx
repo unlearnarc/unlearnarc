@@ -1,14 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { Link, Outlet, useOutletContext } from 'react-router-dom';
-import { Menu, Search, User } from 'lucide-react';
+import { Menu, Search } from 'lucide-react';
+import { ProfileAvatar } from '../ui/ProfileAvatar';
 import clsx from 'clsx';
 import { AppSidebar } from './AppSidebar';
 import { BottomNav } from './BottomNav';
 import { TopBar } from './TopBar';
 import { Logo } from '../ui/Logo';
+import { LanguageSwitcher } from '../ui/LanguageSwitcher';
 import { GlobalSearchDialog } from '../search/GlobalSearchDialog';
 import { useAuth } from '../../context/AuthContext';
 import { ProductivityProvider } from '../productivity';
+import { FeatureTour } from '../onboarding/FeatureTour';
 
 /* =============================================================================
    AppLayout — the single shared shell for the student app.
@@ -94,23 +97,15 @@ export const AppLayout: React.FC = () => {
             >
               <Search size={20} />
             </button>
+            <LanguageSwitcher compact />
             {/* User profile / avatar */}
             <Link
               to={isAuthenticated ? '/profile' : '/login'}
               className="shrink-0 rounded-full"
               aria-label="Profile"
             >
-              {user?.profilePicture ? (
-                <img
-                  src={user.profilePicture}
-                  alt={user.name}
-                  className="w-8 h-8 rounded-full object-cover ring-2 ring-border"
-                />
-              ) : (
-                <span className="w-8 h-8 rounded-full bg-primary-500 flex items-center justify-center">
-                  <User size={16} className="text-white" />
-                </span>
-              )}
+              <ProfileAvatar src={user?.profilePicture} name={user?.name}
+                className="w-8 h-8 rounded-full object-cover ring-2 ring-border" />
             </Link>
           </header>
         )}
@@ -137,6 +132,7 @@ export const AppLayout: React.FC = () => {
       {/* Floating learning-utilities dock + reminder scheduler. Hidden on
           full-screen pages so an active quiz / contest owns the viewport. */}
       {!fullScreen && <ProductivityProvider />}
+      {!fullScreen && isAuthenticated && user?.id && <FeatureTour key={user.id} />}
     </div>
   );
 };

@@ -214,10 +214,11 @@ export const MascotProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   useEffect(() => {
     if (!user || hydratedRef.current) return;
     hydratedRef.current = true;
-    if (user.mascotCharacter && CHARACTERS.some(c => c.id === user.mascotCharacter)) {
-      setCharacterIdState(user.mascotCharacter);
-      localStorage.setItem(CHAR_KEY, user.mascotCharacter);
-    }
+    // Old server preferences (Luna/Max/Mochi/Byte) resolve to Aria without
+    // requiring a database migration or changing personality/mute choices.
+    const character = getCharacter(user.mascotCharacter ?? '').id;
+    setCharacterIdState(character);
+    localStorage.setItem(CHAR_KEY, character);
     if (user.mascotVibe === 'friend' || user.mascotVibe === 'companion') {
       setVibeState(user.mascotVibe);
       localStorage.setItem(VIBE_KEY, user.mascotVibe);
@@ -227,6 +228,9 @@ export const MascotProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       localStorage.setItem(MUTE_KEY, user.mascotMuted ? '1' : '0');
     }
   }, [user]);
+
+  // Normalize legacy offline preferences, including signed-out visitors.
+  useEffect(() => { localStorage.setItem(CHAR_KEY, characterId); }, [characterId]);
 
   // greet once on mount + start the idle timer
   useEffect(() => {

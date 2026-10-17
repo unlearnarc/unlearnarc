@@ -46,7 +46,6 @@ export const AlgorithmsPage: React.FC = () => {
           <Workflow size={22} className="text-primary-500" />
           {t('algorithms.title')}
         </h1>
-        <p className="text-sm text-text-secondary">{t('algorithms.subtitle')}</p>
       </div>
 
       {/* Filters */}

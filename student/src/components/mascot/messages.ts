@@ -17,7 +17,9 @@ export type MascotMood =
   | 'proud'
   | 'thinking'
   | 'wave'
-  | 'love';       // warm companion vibe
+  | 'walking'
+  | 'sleeping'
+  | 'surprised';
 
 export type MascotEvent =
   | 'IDLE'
@@ -48,7 +50,7 @@ export const REACTIONS: Record<MascotEvent, MascotReaction> = {
     duration: 0,
     lines: {
       friend: ['Ready when you are!'],
-      companion: ["I'm right here with you 💛"],
+      companion: ["Ready to learn together."],
     },
   },
   WELCOME: {
@@ -61,9 +63,9 @@ export const REACTIONS: Record<MascotEvent, MascotReaction> = {
         'Your future self will thank you for showing up.',
       ],
       companion: [
-        'There you are! I missed you 🥰',
+        'Welcome back! Ready for a fresh start?',
         "Hey you 👋 ready to shine together?",
-        "So happy you're back. Let's do this 💕",
+        "Great to see you back. Let's do this!",
       ],
     },
   },
@@ -78,10 +80,10 @@ export const REACTIONS: Record<MascotEvent, MascotReaction> = {
         'Boom. Smart cookie 🍪',
       ],
       companion: [
-        'That\'s my genius 😍',
-        "See? I always believed in you 💖",
+        'Great reasoning! You figured it out 🎯',
+        "Your practice is paying off!",
         'Correct! You\'re amazing, you know that?',
-        'Proud of you, cutie 🎯',
+        'Well done — keep that focus 🎯',
       ],
     },
   },
@@ -97,8 +99,8 @@ export const REACTIONS: Record<MascotEvent, MascotReaction> = {
       ],
       companion: [
         "It's okay, I've got you. Try again 🤗",
-        "Don't worry, we'll figure it out together 💛",
-        "You're still my favourite, wrong answer and all 😌",
+        "Don't worry, we'll figure it out together.",
+        "A wrong answer is a chance to learn something new.",
         'Deep breath — I believe in you, always.',
       ],
     },
@@ -113,9 +115,9 @@ export const REACTIONS: Record<MascotEvent, MascotReaction> = {
         'Three in a row — show-off 😎',
       ],
       companion: [
-        'Unstoppable AND adorable 🔥😍',
-        "Look at you go! My heart's racing 💓",
-        "A streak this hot? Marry the syllabus already 😏",
+        'Unstoppable progress 🔥',
+        "Look at you go! Keep that momentum 🚀",
+        "Excellent streak — your consistency is showing.",
       ],
     },
   },
@@ -129,8 +131,8 @@ export const REACTIONS: Record<MascotEvent, MascotReaction> = {
         'New adventure unlocked 🎉',
       ],
       companion: [
-        "A new journey — and I'm coming with you 💕",
-        "Just us two and this course. Perfect 🥰",
+        "A new journey — let's learn together 🚀",
+        "A new course and a fresh challenge. Great choice!",
         'New adventure unlocked, together 🎉',
       ],
     },
@@ -146,8 +148,8 @@ export const REACTIONS: Record<MascotEvent, MascotReaction> = {
       ],
       companion: [
         "You passed! I knew it. Come here 🤗🏆",
-        "My brilliant human did it again 😍",
-        "I'm SO proud I could burst 💖🌟",
+        "You did it again — excellent work!",
+        "Your hard work deserves a celebration 🌟",
       ],
     },
   },
@@ -161,7 +163,7 @@ export const REACTIONS: Record<MascotEvent, MascotReaction> = {
         'Review the misses and come back stronger 🙌',
       ],
       companion: [
-        "Hey — this doesn't change a thing between us. We retry 💛",
+        "A tough test is useful feedback. Let's review and retry.",
         "I'm right beside you. One more go, together?",
         "You're still incredible to me. Let's bounce back 🤗",
       ],
@@ -176,8 +178,8 @@ export const REACTIONS: Record<MascotEvent, MascotReaction> = {
         'Checked off another one — nice pace!',
       ],
       companion: [
-        'Another one down — we make a great team 💞',
-        'Look at us go! One step closer, love 🎓',
+        'Another one down — we make a great team 🙌',
+        'Look at us go! One step closer 🎓',
       ],
     },
   },
@@ -186,11 +188,11 @@ export const REACTIONS: Record<MascotEvent, MascotReaction> = {
     duration: 4500,
     lines: {
       friend: ['Level up! 🆙 You earned it.', 'New level unlocked — legend!'],
-      companion: ['Level up! My little legend 🆙💖', 'You leveled up and so did my crush on your brain 😍'],
+      companion: ['Level up! You earned this progress 🆙', 'New level unlocked — keep exploring 🌟'],
     },
   },
   IDLE_NUDGE: {
-    mood: 'love',
+    mood: 'sleeping',
     duration: 5000,
     lines: {
       friend: [
@@ -198,8 +200,8 @@ export const REACTIONS: Record<MascotEvent, MascotReaction> = {
         'Take your time — I\'m not going anywhere.',
       ],
       companion: [
-        'Miss me yet? I\'m right here 🥺💛',
-        'Thinking of you... ready when you are 💕',
+        'Taking a little recharge break. Ready when you are.',
+        'Rest is part of learning. Continue whenever you’re ready.',
         "No rush, I just like keeping you company 🤗",
       ],
     },

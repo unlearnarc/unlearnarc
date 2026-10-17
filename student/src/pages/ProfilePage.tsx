@@ -5,8 +5,10 @@ import { ProgressBar } from '../components/ui/ProgressBar';
 import { RegionEditor } from '../components/profile/RegionEditor';
 import { StreakCalendar } from '../components/profile/StreakCalendar';
 import { BuddySettings } from '../components/mascot';
-import { TtsSettings } from '../components/profile/TtsSettings';
+// Temporarily disabled: read-aloud settings UI.
+// import { TtsSettings } from '../components/profile/TtsSettings';
 import { regionLabel } from '../utils/region';
+import { ProfileAvatar } from '../components/ui/ProfileAvatar';
 import { User, Mail, Globe, Star, Trophy, Shield, ExternalLink, Flame, Heart } from 'lucide-react';
 
 export const ProfilePage: React.FC = () => {
@@ -32,17 +34,8 @@ export const ProfilePage: React.FC = () => {
         <div className="h-28 bg-gradient-primary" />
         <div className="px-6 pb-6">
           <div className="flex items-end gap-4 -mt-10 mb-4">
-            {user.profilePicture ? (
-              <img
-                src={user.profilePicture}
-                alt={user.name}
-                className="w-20 h-20 rounded-2xl object-cover border-4 border-white shadow-hover"
-              />
-            ) : (
-              <div className="w-20 h-20 rounded-2xl bg-primary-500 border-4 border-white shadow-hover flex items-center justify-center">
-                <User size={32} className="text-white" />
-              </div>
-            )}
+            <ProfileAvatar src={user.profilePicture} name={user.name} iconSize={32}
+              className="w-20 h-20 rounded-2xl object-cover border-4 border-white shadow-hover" />
             <div className="mb-1">
               <h1 className="text-xl font-bold text-text-primary">{user.name}</h1>
               <p className="text-sm text-text-muted">{user.email}</p>
@@ -128,8 +121,9 @@ export const ProfilePage: React.FC = () => {
         <BuddySettings />
       </div>
 
-      {/* Read aloud (text-to-speech) — accessibility toggle for dynamic content */}
+      {/* Temporarily disabled: read-aloud settings.
       <TtsSettings />
+      */}
 
       {/* Region self-service (manual select or browser geolocation) */}
       <RegionEditor />

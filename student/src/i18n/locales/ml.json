@@ -1,4 +1,25 @@
 {
+  "algoDetail": {
+    "notFound": "അൽഗോരിതം കണ്ടെത്തിയില്ല",
+    "notFoundDesc": "ഈ അൽഗോരിതം ലഭ്യമല്ല അല്ലെങ്കിൽ ഇതുവരെ പ്രസിദ്ധീകരിച്ചിട്ടില്ല.",
+    "backToAlgorithms": "അൽഗോരിതങ്ങളിലേക്ക് മടങ്ങുക",
+    "allAlgorithms": "എല്ലാ അൽഗോരിതങ്ങളും",
+    "time": "സമയം",
+    "space": "സ്ഥലം",
+    "whenToUse": "എപ്പോൾ ഉപയോഗിക്കാം",
+    "currentAction": "നിലവിലെ പ്രവർത്തനം",
+    "rowCol": "വരി / നിര",
+    "visitedCells": "സന്ദർശിച്ച സെല്ലുകൾ",
+    "step": "ഘട്ടം",
+    "stepN": "ഘട്ടം {{num}}",
+    "status": "നില",
+    "statusAwaiting": "ഉത്തരത്തിനായി കാത്തിരിക്കുന്നു",
+    "statusPlaying": "പ്രവർത്തിക്കുന്നു",
+    "statusComplete": "പൂർത്തിയായി",
+    "statusPaused": "താൽക്കാലികമായി നിർത്തി",
+    "true": "ശരി",
+    "false": "തെറ്റ്"
+  },
   "common": {
     "appName": "UnlearnArc",
     "viewAll": "എല്ലാം കാണുക",
@@ -56,6 +77,12 @@
     "autoDrawNote": "എളുപ്പം, ഇടത്തരം, കഠിനം എന്നീ നിലവാരങ്ങളിൽ നിന്ന് ചോദ്യങ്ങൾ സ്വയമേവ തിരഞ്ഞെടുക്കുന്നു.",
     "noTests": "ഈ പരിധിക്കായി ഇതുവരെ പരീക്ഷകൾ ലഭ്യമല്ല.",
     "startTest": "പരീക്ഷ ആരംഭിക്കുക",
+    "adaptiveNote": "ഈ പരീക്ഷ ഈ സ്കോപ്പിലെ നിങ്ങളുടെ മുൻ പ്രകടനത്തിന് അനുസൃതമായി മാറുന്നു.",
+    "strategy": {
+      "MASTERY": "പ്രാവീണ്യം · കഠിനമായ സെറ്റ്",
+      "ADVANCING": "പുരോഗതി · കൂടുതൽ കഠിനം",
+      "REINFORCE": "ശക്തിപ്പെടുത്തൽ · അടിസ്ഥാനങ്ങൾ"
+    },
     "questionOf": "ചോദ്യം {{current}} / {{total}}",
     "answeredCount": "{{count}} ഉത്തരം നൽകി",
     "percentComplete": "{{percent}}% പൂർത്തിയായി",
@@ -258,7 +285,6 @@
   },
   "algorithms": {
     "title": "അൽഗോരിതം വിഷ്വലൈസർ",
-    "subtitle": "Watch algorithms run step by step, control the pace, and learn how each one works.",
     "searchPlaceholder": "Search algorithms…",
     "empty": "No algorithms available",
     "emptyDesc": "Check back soon — new visualizations are added regularly.",
@@ -372,6 +398,18 @@
     "learn": "പഠിക്കൂ",
     "projects": "പ്രോജക്ടുകൾ",
     "profile": "പ്രൊഫൈൽ"
+  },
+  "notes": {
+    "lessons": "പാഠങ്ങൾ",
+    "reading": "വായിക്കുന്നു",
+    "minRead": "{{count}} മിനിറ്റ് വായന",
+    "minShort": "{{count}}മി",
+    "noMaterials": "ഇതുവരെ പഠന സാമഗ്രികൾ ഇല്ല.",
+    "loadError": "ഈ കുറിപ്പ് ലോഡ് ചെയ്യാനായില്ല.",
+    "readAloud": "ഉറക്കെ വായിക്കുക",
+    "courseLessons": "കോഴ്‌സ് പാഠങ്ങൾ",
+    "lessonCount": "{{count}} പാഠങ്ങൾ",
+    "read": "വായിക്കുക"
   },
   "courseDetail": {
     "notFound": "കോഴ്‌സ് കണ്ടെത്തിയില്ല",

@@ -21,7 +21,12 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
   <div className={clsx('ua-progress', height, className)}>
     <div
       className={clsx('ua-progress__fill', height, color, !animate && 'transition-none')}
-      style={{ width: `${Math.min(100, Math.max(0, value))}%` }}
+      style={{
+        width: `${Number.isFinite(value) ? Math.min(100, Math.max(0, value)) : 0}%`,
+        minWidth: 0,
+        display: value > 0 && Number.isFinite(value) ? undefined : 'none',
+        ...(!animate && { animation: 'none', transition: 'none' }),
+      }}
     />
   </div>
 );

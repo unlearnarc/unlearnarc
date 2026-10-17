@@ -11,8 +11,7 @@ import { LanguageSwitcher } from '../ui/LanguageSwitcher';
    pressing ⌘K / Ctrl-K anywhere) opens the command-palette style
    <GlobalSearchDialog/>, which searches across all resource types.
 
-   It also hosts the <LanguageSwitcher/> so users can change the UI language
-   from anywhere in the app.
+   The language selector switches bundled static interface translations.
 
    Pages that need their own scoped search (e.g. ExplorePage, Interviews) embed
    <SearchPanel/> directly with their own filters — this bar is only the global

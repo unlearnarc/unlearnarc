@@ -8,7 +8,8 @@ import clsx from 'clsx';
 import { useContestGrader } from '../../sandbox/useContestGrader';
 import { clearRuntimeCache } from '../../sandbox/assetCache';
 import { CodeEditor } from './CodeEditor';
-import { SpeakButton } from '../ui/SpeakButton';
+// Temporarily disabled: read-aloud UI.
+// import { SpeakButton } from '../ui/SpeakButton';
 import type { Language } from '../../sandbox/types';
 import type { Contest, ContestProblem, SubmissionVerdict } from '../../types';
 
@@ -148,11 +149,12 @@ export const ContestSolver: React.FC<ContestSolverProps> = ({ contest, problem, 
           <div className="flex items-center justify-between gap-3">
             <h2 className="text-lg font-bold text-text-primary">{problem.title}</h2>
             <div className="flex items-center gap-2 shrink-0">
-              {/* Read-aloud for the dynamic problem statement (+ constraints). */}
+              {/* Temporarily disabled: read-aloud for the problem statement.
               <SpeakButton
                 text={[problem.statement, problem.constraints].filter(Boolean).join('. ')}
                 id={`problem-${problem.id}`}
               />
+              */}
               <span className="text-xs font-semibold text-text-muted">{problem.maxPoints} pts</span>
             </div>
           </div>

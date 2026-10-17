@@ -52,13 +52,14 @@ export const SkeletonText: React.FC<{ lines?: number; className?: string }> = ({
 /* ── Domain-shaped skeletons (match the real components 1:1) ─────────────── */
 
 export const CourseCardSkeleton: React.FC = () => (
-  <div className="card p-5" aria-hidden="true">
-    <Skeleton className="w-full h-32 mb-4" rounded="lg" />
-    <div className="flex items-start justify-between gap-2 mb-2">
+  <div className="card overflow-hidden" aria-hidden="true">
+    <Skeleton className="w-full h-28" />
+    <div className="p-4 space-y-3">
+      <Skeleton className="h-2 w-24" />
       <Skeleton className="h-4 w-3/4" />
-      <Skeleton className="h-4 w-14" rounded="full" />
+      <Skeleton className="h-3 w-1/2" />
+      <Skeleton className="h-8 w-full" />
     </div>
-    <Skeleton className="h-3 w-1/2" />
   </div>
 );
 

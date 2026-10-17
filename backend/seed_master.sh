@@ -150,8 +150,10 @@ for row in "${USERS[@]}"; do
   uid=$(EMAIL="$uemail" PY "import os,uuid;print(uuid.uuid5(uuid.NAMESPACE_DNS,'unlearnarc:'+os.environ['EMAIL']))")
   USER_IDS+=("$uid")
   e_name=$(esc "$uname"); e_email=$(esc "$uemail"); e_region=$(esc "$uregion")
-  sql "INSERT INTO \`user\` (id,name,email,region,points,\`rank\`,auth_provider,is_active,created_at)
-       SELECT '$uid','$e_name','$e_email','$e_region',$upoints,0,'LOCAL',b'1',NOW()
+  sql "INSERT INTO \`user\` (id,name,email,region,points,\`rank\`,auth_provider,is_active,
+                           current_streak,longest_streak,mascot_character,mascot_vibe,mascot_muted,created_at)
+       SELECT '$uid','$e_name','$e_email','$e_region',$upoints,0,'LOCAL',b'1',
+              0,0,'byte','friend',b'0',NOW()
        FROM DUAL
        WHERE NOT EXISTS (SELECT 1 FROM \`user\` WHERE email='$e_email');"
   pass "user: $uname ($uregion, ${upoints}pts)"

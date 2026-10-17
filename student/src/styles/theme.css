@@ -1,32 +1,24 @@
 /* =============================================================================
    UnlearnArc — Design Tokens (the single source of truth)
    -----------------------------------------------------------------------------
-   Every color, font, radius, shadow, spacing and motion value lives here as a
-   CSS custom property. Change a value here and it propagates everywhere.
-   Think of this like Bootstrap's :root — nothing else should hardcode a hex.
+   Components consume semantic tokens and automatically re-skin when the
+   <html> data-theme attribute changes. Existing token names are preserved.
 
    THEMING
-   -------
-   Two themes are defined below:
-     • :root / [data-theme="light"]  — comfortable neutral light UI
-     • [data-theme="dark"]           — charcoal dark UI (matches the logo)
-   Components consume the *semantic* tokens (--ua-surface, --ua-text-primary …)
-   so they automatically re-skin when the `data-theme` attribute on <html>
-   flips. The brand palette + gradient stay identical across both themes.
+     • :root / [data-theme="light"] — clean light surfaces and blue actions
+     • [data-theme="dark"]          — charcoal surfaces and bright blue actions
    ============================================================================= */
 
-/* ─────────────────────────────────────────────────────────────────────────
-   LIGHT THEME  (default)
-   ───────────────────────────────────────────────────────────────────────── */
 :root,
 [data-theme="light"] {
   color-scheme: light;
 
-  /* ---- Brand gradient stops (shared across both themes) ---------------- */
+  /* ---- Brand gradient stops (shared across both themes) --------------- */
   --ua-brand-blue:   #2563EB;
-  --ua-brand-cyan:   #3B82F6;
-  --ua-brand-green:  #4F46E5;
-  --ua-brand-orange: #6366F1;
+  --ua-brand-cyan:   #06B6D4;
+  --ua-brand-green:  #10B981;
+  --ua-brand-orange: #F59E0B;
+
   --ua-brand-gradient: linear-gradient(
     110deg,
     var(--ua-brand-blue)   0%,
@@ -35,148 +27,177 @@
     var(--ua-brand-orange) 100%
   );
 
-  /* ---- Brand / Primary scale (blue — anchored on #2563EB / #3478D4) ---- */
-  --ua-primary-50:  #EFF5FF;
-  --ua-primary-100: #DCE8FD;
-  --ua-primary-200: #BFD6FB;
-  --ua-primary-300: #93B8F6;
-  --ua-primary-400: #5E90EC;
-  --ua-primary-500: #2563EB;   /* primary action (light) */
+  /* ---- Brand / Primary scale ----------------------------------------- */
+  --ua-primary-50:  #EFF6FF;
+  --ua-primary-100: #DBEAFE;
+  --ua-primary-200: #BFDBFE;
+  --ua-primary-300: #93C5FD;
+  --ua-primary-400: #60A5FA;
+  --ua-primary-500: #2563EB;
   --ua-primary-600: #1D4ED8;
   --ua-primary-700: #1E40AF;
   --ua-primary-800: #1E3A8A;
   --ua-primary-900: #172554;
 
-  /* convenience aliases */
-  --ua-primary:        var(--ua-primary-500);
-  --ua-primary-hover:  var(--ua-primary-600);
-  --ua-primary-soft:   var(--ua-primary-50);
-  --ua-focus-ring:     #3478D4;
+  --ua-primary:       var(--ua-primary-500);
+  --ua-primary-hover: var(--ua-primary-600);
+  --ua-primary-soft:  var(--ua-primary-50);
+  --ua-focus-ring:    #2563EB;
 
-  /* ---- Accent / tier colors (podium, cyan highlight) ------------------ */
-  --ua-accent-cyan:   #0891B2;
-  --ua-tier-gold:     #D4A017;
-  --ua-tier-silver:   #8A97A8;
-  --ua-tier-bronze:   #B06B2E;
-  --ua-gradient-accent: linear-gradient(110deg, #2563EB 0%, #0891B2 100%);
+  /* ---- Accent / achievement colors ----------------------------------- */
+  --ua-accent-cyan:    #0891B2;
+  --ua-tier-gold:      #B7791F;
+  --ua-tier-silver:    #64748B;
+  --ua-tier-bronze:    #B45309;
 
-  /* ---- Navy / charcoal dark surfaces (brand gradients, hero, quiz) ----- */
+  /* ---- Neutral surfaces: clean light --------------------------------- */
   --ua-navy-950: #0B1119;
   --ua-navy-900: #111820;
-  --ua-navy-800: #1B252D;   /* charcoal — logo background */
+  --ua-navy-800: #1B252D;
   --ua-navy-700: #24313B;
   --ua-navy-600: #35434F;
 
-  /* ---- Neutral surfaces ----------------------------------------------- */
-  --ua-background:    #F6F8FB;
-  --ua-surface:       #FFFFFF;
-  --ua-surface-soft:  #EEF2F7;
-  --ua-surface-elevated: #EEF2F7;
-  --ua-bg-soft:       #F6F8FB;
+  --ua-background:      #F6F8FB;
+  --ua-surface:         #FFFFFF;
+  --ua-surface-soft:    #EEF2F7;
+  --ua-surface-elevated:#FFFFFF;
+  --ua-bg-soft:         #F1F5F9;
 
-  /* ---- Borders -------------------------------------------------------- */
-  --ua-border:        #DCE3EC;
-  --ua-border-strong: #CAD4E0;
+  /* ---- Borders ------------------------------------------------------- */
+  --ua-border:        #E2E8F0;
+  --ua-border-strong: #CBD5E1;
 
-  /* ---- Text ----------------------------------------------------------- */
+  /* ---- Text ---------------------------------------------------------- */
   --ua-text-primary:   #17212B;
   --ua-text-secondary: #64748B;
   --ua-text-muted:     #94A3B8;
-  --ua-text-on-dark:   #C9D4E8;   /* body text on navy/charcoal surfaces */
+  --ua-text-on-dark:   #E2E8F0;
 
-  /* ---- Semantic / status ---------------------------------------------- */
-  --ua-success:        #087F5B;
-  --ua-success-soft:   #E3F6EF;
-  --ua-warning:        #B45309;
-  --ua-warning-soft:   #FBEEDC;
-  --ua-danger:         #DC2626;
-  --ua-danger-hover:   #B91C1C;
-  --ua-danger-soft:    #FBE6E6;
-  --ua-achievement:    #B45309;
-  --ua-achievement-soft:#FBEEDC;
+  /* Learning levels stay separate from warning / error status colors. */
+  --ua-level-beginner: #0F766E;
+  --ua-level-beginner-soft: #CCFBF1;
+  --ua-level-intermediate: #1D4ED8;
+  --ua-level-intermediate-soft: #DBEAFE;
+  --ua-level-advanced: #4338CA;
+  --ua-level-advanced-soft: #E0E7FF;
+  --ua-level-expert: #7E22CE;
+  --ua-level-expert-soft: #F3E8FF;
 
-  /* ---- Shadows (soft blue-grey) --------------------------------------- */
-  --ua-shadow-card:  0 2px 8px rgba(30,55,90,0.05);
-  --ua-shadow-hover: 0 8px 24px rgba(30,55,90,0.10);
-  --ua-shadow-lg:    0 16px 48px rgba(30,55,90,0.14);
+  /* ---- Semantic / status --------------------------------------------- */
+  --ua-success:         #087F5B;
+  --ua-success-soft:    #E3F6EF;
+  --ua-warning:         #B45309;
+  --ua-warning-soft:    #FEF3C7;
+  --ua-danger:          #DC2626;
+  --ua-danger-hover:    #B91C1C;
+  --ua-danger-soft:     #FEE2E2;
+  --ua-achievement:     #B45309;
+  --ua-achievement-soft:#FEF3C7;
 
-  /* ---- Gradients ------------------------------------------------------ */
-  --ua-gradient-primary: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
-  --ua-gradient-card:    var(--ua-brand-gradient);
-  --ua-gradient-hero:    linear-gradient(135deg, #EFF5FF 0%, #E6F7F4 55%, #F6F8FB 100%);
-  --ua-gradient-dark:    linear-gradient(135deg, #111820 0%, #1B252D 55%, #24313B 100%);
+  /* ---- Shadows ------------------------------------------------------- */
+  --ua-shadow-card:  0 2px 8px rgba(15, 23, 42, 0.04);
+  --ua-shadow-hover: 0 8px 24px rgba(15, 23, 42, 0.09);
+  --ua-shadow-lg:    0 16px 48px rgba(15, 23, 42, 0.12);
+
+  /* ---- Gradients ----------------------------------------------------- */
+  --ua-gradient-primary: linear-gradient(
+    135deg, #2563EB 0%, #1D4ED8 100%
+  );
+  --ua-gradient-card: var(--ua-brand-gradient);
+  --ua-gradient-hero: linear-gradient(
+    135deg, #EFF6FF 0%, #F0FDFA 55%, #F6F8FB 100%
+  );
+  --ua-gradient-dark: linear-gradient(
+    135deg, #111820 0%, #1B252D 55%, #24313B 100%
+  );
+  --ua-gradient-accent: linear-gradient(
+    110deg, #2563EB 0%, #0891B2 100%
+  );
 }
 
-/* ─────────────────────────────────────────────────────────────────────────
-   DARK THEME
-   Only the semantic/neutral tokens change — brand palette + gradient persist.
-   ───────────────────────────────────────────────────────────────────────── */
 [data-theme="dark"] {
   color-scheme: dark;
 
-  /* ---- Brand / Primary scale (UnlearnArc blue → #2878FF on dark) ------- */
-  --ua-primary-50:  #0F2340;
-  --ua-primary-100: #133056;
-  --ua-primary-200: #184071;
-  --ua-primary-300: #1E57A0;
-  --ua-primary-400: #2878FF;
-  --ua-primary-500: #2878FF;   /* primary action (dark) — brand blue */
-  --ua-primary-600: #4D92FF;
-  --ua-primary-700: #78ABFF;
-  --ua-primary-800: #A6C9FF;
-  --ua-primary-900: #D6E6FF;
+  /* ---- Brand / Primary scale ----------------------------------------- */
+  --ua-primary-50:  #101F3B;
+  --ua-primary-100: #152C50;
+  --ua-primary-200: #1B4075;
+  --ua-primary-300: #2456A1;
+  --ua-primary-400: #6095FF;
+  --ua-primary-500: #4D8DFF;
+  --ua-primary-600: #75A7FF;
+  --ua-primary-700: #94BBFF;
+  --ua-primary-800: #BCD4FF;
+  --ua-primary-900: #E0ECFF;
 
-  --ua-primary:        var(--ua-primary-500);
-  --ua-primary-hover:  #4D92FF;
-  --ua-primary-soft:   rgba(40,120,255,0.16);
-  --ua-focus-ring:     #78ABFF;
+  --ua-primary:       var(--ua-primary-500);
+  --ua-primary-hover: var(--ua-primary-600);
+  --ua-primary-soft:  rgba(77, 141, 255, 0.14);
+  --ua-focus-ring:    #75A7FF;
 
-  /* ---- Accent / tier colors (podium, cyan highlight) ------------------ */
-  --ua-accent-cyan:   #22D3EE;
-  --ua-tier-gold:     #FFC247;
-  --ua-tier-silver:   #C7D2E0;
-  --ua-tier-bronze:   #CD8748;
+  /* ---- Accent / achievement colors ----------------------------------- */
+  --ua-accent-cyan:    #22D3EE;
+  --ua-tier-gold:      #FBBF24;
+  --ua-tier-silver:    #CBD5E1;
+  --ua-tier-bronze:    #D99A68;
 
-  /* ---- Neutral surfaces (deep navy design system) --------------------- */
-  --ua-background:    #07111F;
-  --ua-surface:       #0D1B2A;
-  --ua-surface-soft:  #112338;
-  --ua-surface-elevated: #112338;
-  --ua-bg-soft:       #0D1B2A;
+  /* ---- Neutral surfaces: charcoal dark ------------------------------- */
+  --ua-background:       #111820;
+  --ua-surface:          #18212B;
+  --ua-surface-soft:     #202B36;
+  --ua-surface-elevated: #24313D;
+  --ua-bg-soft:          #151E28;
 
-  /* ---- Borders -------------------------------------------------------- */
-  --ua-border:        #22384F;
-  --ua-border-strong: #2E4863;
+  /* ---- Borders ------------------------------------------------------- */
+  --ua-border:        #2B3745;
+  --ua-border-strong: #3B4A5B;
 
-  /* ---- Text ----------------------------------------------------------- */
-  --ua-text-primary:   #F4F7FB;
-  --ua-text-secondary: #9BACBF;
-  --ua-text-muted:     #6E8097;
-  --ua-text-on-dark:   #C9D4E8;
+  /* ---- Text ---------------------------------------------------------- */
+  --ua-text-primary:   #F1F5F9;
+  --ua-text-secondary: #B0BDCC;
+  --ua-text-muted:     #8493A5;
+  --ua-text-on-dark:   #E2E8F0;
 
-  /* ---- Semantic / status ---------------------------------------------- */
-  --ua-success:        #5DE0B2;
-  --ua-success-soft:   rgba(93,224,178,0.14);
-  --ua-warning:        #FFC56E;
-  --ua-warning-soft:   rgba(255,197,110,0.14);
-  --ua-danger:         #FF7B81;
-  --ua-danger-hover:   #FF9BA0;
-  --ua-danger-soft:    rgba(255,123,129,0.14);
-  --ua-achievement:    #FFC56E;
-  --ua-achievement-soft:rgba(255,197,110,0.14);
+  /* Learning levels — brighter accents on dark surfaces. */
+  --ua-level-beginner: #5EEAD4;
+  --ua-level-beginner-soft: rgba(94, 234, 212, 0.13);
+  --ua-level-intermediate: #93C5FD;
+  --ua-level-intermediate-soft: rgba(147, 197, 253, 0.13);
+  --ua-level-advanced: #A5B4FC;
+  --ua-level-advanced-soft: rgba(165, 180, 252, 0.13);
+  --ua-level-expert: #D8B4FE;
+  --ua-level-expert-soft: rgba(216, 180, 254, 0.13);
 
-  /* ---- Shadows (deeper, for dark surfaces) ---------------------------- */
-  --ua-shadow-card:  0 2px 8px rgba(0,0,0,0.30);
-  --ua-shadow-hover: 0 8px 24px rgba(0,0,0,0.40);
-  --ua-shadow-lg:    0 16px 48px rgba(0,0,0,0.55);
+  /* ---- Semantic / status --------------------------------------------- */
+  --ua-success:          #5EE0B5;
+  --ua-success-soft:     rgba(94, 224, 181, 0.13);
+  --ua-warning:          #FBBF24;
+  --ua-warning-soft:     rgba(251, 191, 36, 0.13);
+  --ua-danger:           #F87171;
+  --ua-danger-hover:     #FCA5A5;
+  --ua-danger-soft:      rgba(248, 113, 113, 0.13);
+  --ua-achievement:      #FBBF24;
+  --ua-achievement-soft: rgba(251, 191, 36, 0.13);
 
-  /* ---- Gradients ------------------------------------------------------ */
-  --ua-gradient-primary: linear-gradient(135deg, #2878FF 0%, #1E57A0 100%);
-  --ua-gradient-card:    var(--ua-brand-gradient);
-  --ua-gradient-hero:    linear-gradient(135deg, #0D1B2A 0%, #0A1626 55%, #07111F 100%);
-  --ua-gradient-dark:    linear-gradient(135deg, #07111F 0%, #0D1B2A 55%, #112338 100%);
-  /* Blue → cyan accent used by the leaderboard hero / standing card. */
-  --ua-gradient-accent:  linear-gradient(110deg, #2878FF 0%, #22D3EE 100%);
+  /* ---- Shadows ------------------------------------------------------- */
+  --ua-shadow-card:  0 2px 8px rgba(0, 0, 0, 0.20);
+  --ua-shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.30);
+  --ua-shadow-lg:    0 16px 48px rgba(0, 0, 0, 0.42);
+
+  /* ---- Gradients ----------------------------------------------------- */
+  --ua-gradient-primary: linear-gradient(
+    135deg, #4D8DFF 0%, #2456A1 100%
+  );
+  --ua-gradient-card: var(--ua-brand-gradient);
+  --ua-gradient-hero: linear-gradient(
+    135deg, #18212B 0%, #151E28 55%, #111820 100%
+  );
+  --ua-gradient-dark: linear-gradient(
+    135deg, #111820 0%, #18212B 55%, #24313D 100%
+  );
+  --ua-gradient-accent: linear-gradient(
+    110deg, #4D8DFF 0%, #22D3EE 100%
+  );
 }
 
 /* ─────────────────────────────────────────────────────────────────────────

@@ -24,6 +24,7 @@ import { CheckpointPrompt } from './CheckpointPrompt';
 import { InstructionRail } from './InstructionRail';
 import { AnimationNotesPanel } from './AnimationNotesPanel';
 import { CodeProgramPanel } from './CodeProgramPanel';
+import { AnimationFocus } from '../ui/AnimationFocus';
 
 /* =============================================================================
    CanvasAnimator — declarative React wrapper around an HTML5 <canvas> driven by
@@ -111,8 +112,10 @@ export const CanvasAnimator: React.FC<CanvasAnimatorProps> = ({
     const el = wrapRef.current;
     if (!el) return;
     const ro = new ResizeObserver(() => {
-      const w = Math.max(280, Math.floor(el.clientWidth));
-      const h = height ?? Math.round(w * aspect);
+      const focused = !!el.closest('.is-expanded');
+      const availableWidth = Math.max(1, Math.floor(el.clientWidth) - 2);
+      const w = focused ? Math.min(availableWidth, Math.max(1, el.clientHeight - 2) / aspect) : availableWidth;
+      const h = focused ? Math.round(w * aspect) : height ?? Math.round(w * aspect);
       setSize({ w, h });
     });
     ro.observe(el);
@@ -191,12 +194,13 @@ export const CanvasAnimator: React.FC<CanvasAnimatorProps> = ({
   const activeCp = enableCheckpoints ? playback.state.activeCheckpoint : null;
 
   return (
-    <div className={className}>
-      <div className={hasInstructions ? 'grid gap-3 lg:grid-cols-[1fr_260px]' : ''}>
+    <div className={`ua-animation-player ${className ?? ''}`}>
+      <AnimationFocus title={traceData.title}>
+      <div className={`ua-animation-layout ${hasInstructions ? 'grid gap-3 lg:grid-cols-[minmax(0,1fr)_260px]' : ''}`}>
         <div className="min-w-0">
           <div
             ref={wrapRef}
-            className="relative rounded-2xl border border-border overflow-hidden"
+            className="ua-animation-canvas relative rounded-2xl border border-border overflow-hidden"
             style={{ background: theme.background }}
           >
             <canvas
@@ -225,7 +229,7 @@ export const CanvasAnimator: React.FC<CanvasAnimatorProps> = ({
             <CodeProgramPanel
               programs={traceData.programs!}
               time={playback.state.time}
-              className="mt-3"
+              className="ua-animation-secondary mt-3"
             />
           )}
         </div>
@@ -235,12 +239,13 @@ export const CanvasAnimator: React.FC<CanvasAnimatorProps> = ({
             steps={traceData.instructions!}
             time={playback.state.time}
             controls={playback.controls}
-            className="self-start"
+            className="ua-animation-secondary self-start"
           />
         )}
       </div>
 
-      {hasNotes && <AnimationNotesPanel notes={traceData.notes!} className="mt-3" />}
+      {hasNotes && <AnimationNotesPanel notes={traceData.notes!} className="ua-animation-secondary mt-3" />}
+      </AnimationFocus>
     </div>
   );
 };

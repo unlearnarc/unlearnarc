@@ -1,4 +1,25 @@
 {
+  "algoDetail": {
+    "notFound": "Algoritmo no encontrado",
+    "notFoundDesc": "Este algoritmo no está disponible o aún no se ha publicado.",
+    "backToAlgorithms": "Volver a los algoritmos",
+    "allAlgorithms": "Todos los algoritmos",
+    "time": "Tiempo",
+    "space": "Espacio",
+    "whenToUse": "Cuándo usarlo",
+    "currentAction": "Acción actual",
+    "rowCol": "Fila / columna",
+    "visitedCells": "Celdas visitadas",
+    "step": "Paso",
+    "stepN": "Paso {{num}}",
+    "status": "Estado",
+    "statusAwaiting": "Esperando respuesta",
+    "statusPlaying": "En reproducción",
+    "statusComplete": "Completado",
+    "statusPaused": "En pausa",
+    "true": "Verdadero",
+    "false": "Falso"
+  },
   "common": {
     "appName": "UnlearnArc",
     "viewAll": "Ver todo",
@@ -56,6 +77,12 @@
     "autoDrawNote": "Las preguntas se seleccionan automáticamente entre dificultad fácil, media y difícil.",
     "noTests": "Aún no hay pruebas disponibles para este ámbito.",
     "startTest": "Iniciar prueba",
+    "adaptiveNote": "Esta prueba se adapta a tu rendimiento anterior en este ámbito.",
+    "strategy": {
+      "MASTERY": "Dominio · conjunto más difícil",
+      "ADVANCING": "Avanzando · más difíciles",
+      "REINFORCE": "Refuerzo · fundamentos"
+    },
     "questionOf": "Pregunta {{current}} de {{total}}",
     "answeredCount": "{{count}} respondidas",
     "percentComplete": "{{percent}}% completado",
@@ -258,7 +285,6 @@
   },
   "algorithms": {
     "title": "Visualizador de Algoritmos",
-    "subtitle": "Watch algorithms run step by step, control the pace, and learn how each one works.",
     "searchPlaceholder": "Search algorithms…",
     "empty": "No algorithms available",
     "emptyDesc": "Check back soon — new visualizations are added regularly.",
@@ -372,6 +398,18 @@
     "learn": "Aprender",
     "projects": "Proyectos",
     "profile": "Perfil"
+  },
+  "notes": {
+    "lessons": "Lecciones",
+    "reading": "Leyendo",
+    "minRead": "{{count}} min de lectura",
+    "minShort": "{{count}}m",
+    "noMaterials": "Aún no hay material de estudio.",
+    "loadError": "No se pudo cargar esta nota.",
+    "readAloud": "Leer en voz alta",
+    "courseLessons": "Lecciones del curso",
+    "lessonCount": "{{count}} lecciones",
+    "read": "Leer"
   },
   "courseDetail": {
     "notFound": "Curso no encontrado",

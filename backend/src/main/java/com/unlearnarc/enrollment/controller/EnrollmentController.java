@@ -31,6 +31,14 @@ public class EnrollmentController {
 
     private final EnrollmentService service;
     private final UserRepository userRepo;
+    private final com.unlearnarc.enrollment.service.LearningProgressService progressService;
+
+    @GetMapping("/course/{courseId}/progress")
+    public ResponseEntity<ApiResponse<com.unlearnarc.enrollment.dto.CourseProgressResponse>> progress(
+            @PathVariable String courseId, Authentication auth) {
+        return ResponseEntity.ok(ApiResponse.ok(
+                progressService.forCourse(currentUserId(auth), courseId), "Learning progress fetched"));
+    }
 
     /** Start learning a course — maps it to the current user. Idempotent. */
     @PostMapping("/course/{courseId}")

@@ -1,4 +1,25 @@
 {
+  "algoDetail": {
+    "notFound": "ಅಲ್ಗಾರಿದಮ್ ಕಂಡುಬಂದಿಲ್ಲ",
+    "notFoundDesc": "ಈ ಅಲ್ಗಾರಿದಮ್ ಲಭ್ಯವಿಲ್ಲ ಅಥವಾ ಇನ್ನೂ ಪ್ರಕಟವಾಗಿಲ್ಲ.",
+    "backToAlgorithms": "ಅಲ್ಗಾರಿದಮ್‌ಗಳಿಗೆ ಹಿಂತಿರುಗಿ",
+    "allAlgorithms": "ಎಲ್ಲಾ ಅಲ್ಗಾರಿದಮ್‌ಗಳು",
+    "time": "ಸಮಯ",
+    "space": "ಸ್ಥಳ",
+    "whenToUse": "ಯಾವಾಗ ಬಳಸಬೇಕು",
+    "currentAction": "ಪ್ರಸ್ತುತ ಕ್ರಿಯೆ",
+    "rowCol": "ಸಾಲು / ಕಾಲಮ್",
+    "visitedCells": "ಭೇಟಿ ನೀಡಿದ ಕೋಶಗಳು",
+    "step": "ಹಂತ",
+    "stepN": "ಹಂತ {{num}}",
+    "status": "ಸ್ಥಿತಿ",
+    "statusAwaiting": "ಉತ್ತರಕ್ಕಾಗಿ ಕಾಯುತ್ತಿದೆ",
+    "statusPlaying": "ಚಾಲನೆಯಲ್ಲಿದೆ",
+    "statusComplete": "ಪೂರ್ಣಗೊಂಡಿದೆ",
+    "statusPaused": "ವಿರಾಮದಲ್ಲಿದೆ",
+    "true": "ಸರಿ",
+    "false": "ತಪ್ಪು"
+  },
   "common": {
     "appName": "UnlearnArc",
     "viewAll": "ಎಲ್ಲವನ್ನೂ ನೋಡಿ",
@@ -56,6 +77,12 @@
     "autoDrawNote": "ಸುಲಭ, ಮಧ್ಯಮ ಮತ್ತು ಕಠಿಣ ಮಟ್ಟಗಳಿಂದ ಪ್ರಶ್ನೆಗಳನ್ನು ಸ್ವಯಂಚಾಲಿತವಾಗಿ ಆರಿಸಲಾಗುತ್ತದೆ.",
     "noTests": "ಈ ವ್ಯಾಪ್ತಿಗೆ ಇನ್ನೂ ಪರೀಕ್ಷೆಗಳು ಲಭ್ಯವಿಲ್ಲ.",
     "startTest": "ಪರೀಕ್ಷೆ ಪ್ರಾರಂಭಿಸಿ",
+    "adaptiveNote": "ಈ ಪರೀಕ್ಷೆಯು ಈ ವ್ಯಾಪ್ತಿಯಲ್ಲಿ ನಿಮ್ಮ ಹಿಂದಿನ ಕಾರ್ಯಕ್ಷಮತೆಗೆ ಹೊಂದಿಕೊಳ್ಳುತ್ತದೆ.",
+    "strategy": {
+      "MASTERY": "ಪ್ರಾವೀಣ್ಯತೆ · ಕಠಿಣ ಸೆಟ್",
+      "ADVANCING": "ಪ್ರಗತಿ · ಹೆಚ್ಚು ಕಠಿಣ",
+      "REINFORCE": "ಬಲವರ್ಧನೆ · ಮೂಲಭೂತಗಳು"
+    },
     "questionOf": "ಪ್ರಶ್ನೆ {{current}} / {{total}}",
     "answeredCount": "{{count}} ಉತ್ತರಿಸಲಾಗಿದೆ",
     "percentComplete": "{{percent}}% ಪೂರ್ಣಗೊಂಡಿದೆ",
@@ -258,7 +285,6 @@
   },
   "algorithms": {
     "title": "ಅಲ್ಗಾರಿದಮ್ ವಿಷುಯಲೈಸರ್",
-    "subtitle": "Watch algorithms run step by step, control the pace, and learn how each one works.",
     "searchPlaceholder": "Search algorithms…",
     "empty": "No algorithms available",
     "emptyDesc": "Check back soon — new visualizations are added regularly.",
@@ -372,6 +398,18 @@
     "learn": "ಕಲಿ",
     "projects": "ಪ್ರಾಜೆಕ್ಟ್‌ಗಳು",
     "profile": "ಪ್ರೊಫೈಲ್"
+  },
+  "notes": {
+    "lessons": "ಪಾಠಗಳು",
+    "reading": "ಓದುತ್ತಿದ್ದೀರಿ",
+    "minRead": "{{count}} ನಿಮಿ ಓದು",
+    "minShort": "{{count}}ನಿ",
+    "noMaterials": "ಇನ್ನೂ ಅಧ್ಯಯನ ಸಾಮಗ್ರಿ ಇಲ್ಲ.",
+    "loadError": "ಈ ಟಿಪ್ಪಣಿಯನ್ನು ಲೋಡ್ ಮಾಡಲಾಗಲಿಲ್ಲ.",
+    "readAloud": "ಜೋರಾಗಿ ಓದಿ",
+    "courseLessons": "ಕೋರ್ಸ್ ಪಾಠಗಳು",
+    "lessonCount": "{{count}} ಪಾಠಗಳು",
+    "read": "ಓದಿ"
   },
   "courseDetail": {
     "notFound": "ಕೋರ್ಸ್ ಸಿಗಲಿಲ್ಲ",

@@ -1,10 +1,9 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { MascotProvider, CoachBuddy } from './components/mascot';
-import { TtsProvider } from './tts/TtsContext';
 import { ProtectedRoute } from './router/ProtectedRoute';
 import { AppLayout } from './components/layout/AppLayout';
 import { LandingPage }       from './pages/LandingPage';
@@ -24,6 +23,7 @@ import { ContestsPage }      from './pages/ContestsPage';
 import { ContestDetailPage } from './pages/ContestDetailPage';
 import { LeaderboardPage }   from './pages/LeaderboardPage';
 import { RoadmapPage }       from './pages/RoadmapPage';
+import { MascotPreviewPage } from './pages/MascotPreviewPage';
 
 const qc = new QueryClient({
   defaultOptions: {
@@ -31,18 +31,23 @@ const qc = new QueryClient({
   },
 });
 
+function RoutedStudyBuddy() {
+  const { pathname } = useLocation();
+  return pathname === '/' ? null : <CoachBuddy />;
+}
+
 function App() {
   return (
     <QueryClientProvider client={qc}>
       <ThemeProvider>
       <AuthProvider>
-      <TtsProvider>
       <MascotProvider>
         <BrowserRouter>
           <Routes>
             {/* Public (no layout) */}
             <Route path="/"               element={<LandingPage />} />
             <Route path="/login"          element={<LoginPage />} />
+            <Route path="/mascot-preview" element={<MascotPreviewPage />} />
             <Route path="/auth/callback"  element={<AuthCallbackPage />} />
 
             {/* Public, but inside the shared sidebar layout.
@@ -77,6 +82,7 @@ function App() {
 
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
+          <RoutedStudyBuddy />
         </BrowserRouter>
 
         <Toaster
@@ -95,10 +101,7 @@ function App() {
           }}
         />
 
-        {/* Floating motivational mascot — reacts to learning events */}
-        <CoachBuddy />
       </MascotProvider>
-      </TtsProvider>
       </AuthProvider>
       </ThemeProvider>
     </QueryClientProvider>

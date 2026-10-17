@@ -1,10 +1,16 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="light">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#4169E1" />
+    <meta name="theme-color" content="#F6F8FB" />
+    <script>
+      // Restore an explicit choice before paint; new visitors always get light.
+      try {
+        document.documentElement.dataset.theme = localStorage.getItem('ua_theme') === 'dark' ? 'dark' : 'light';
+      } catch { /* Keep light when storage is unavailable. */ }
+    </script>
     <meta name="description" content="UnlearnArc — Learn smarter, unlearn faster." />
     <title>UnlearnArc</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />

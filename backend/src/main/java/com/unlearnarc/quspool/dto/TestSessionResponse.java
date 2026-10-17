@@ -24,5 +24,12 @@ public class TestSessionResponse {
     private Integer    timeLimitMinutes;
     private Integer    passPercentage;
     private Integer    totalPoints;
+    /**
+     * Which selection strategy produced this session, for UI messaging:
+     *   DEFAULT / DEFAULT_NO_HISTORY — fixed pool mix (direct quiz, or adaptive
+     *   with no prior attempts); MASTERY / ADVANCING / REINFORCE — adaptive mix
+     *   shaped from the learner's past performance on this scope.
+     */
+    private String     strategy;
     private List<TestQuestionResponse> questions;
 }

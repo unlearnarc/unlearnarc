@@ -56,4 +56,34 @@ public interface QuestionRepository extends JpaRepository<Question, String> {
     List<Question> findRandomByPool(
             @Param("poolId") String poolId,
             @Param("count")  int count);
+
+    /**
+     * Randomly pick N active questions across MANY pools + a difficulty.
+     * Used by the test engine to aggregate child pools (a course test draws from
+     * every topic pool under it; a domain test draws from every course+topic pool).
+     * Duplicate questions cannot occur because each question belongs to one pool.
+     */
+    @Query(value = """
+            SELECT * FROM question
+            WHERE pool_id IN (:poolIds)
+              AND difficulty = :difficulty
+              AND is_active  = true
+            ORDER BY RAND()
+            LIMIT :count
+            """, nativeQuery = true)
+    List<Question> findRandomByPoolsAndDifficulty(
+            @Param("poolIds")    List<String> poolIds,
+            @Param("difficulty") String difficulty,
+            @Param("count")      int count);
+
+    /** Count active questions of a difficulty across MANY pools. */
+    @Query("""
+            SELECT COUNT(q) FROM Question q
+            WHERE q.poolId IN :poolIds
+              AND q.difficulty = :difficulty
+              AND q.isActive = true
+            """)
+    long countByPoolIdsAndDifficulty(
+            @Param("poolIds")    List<String> poolIds,
+            @Param("difficulty") Difficulty difficulty);
 }

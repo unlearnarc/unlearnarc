@@ -1,0 +1,18 @@
+.searchable-select { min-width: 0; width: 100%; color: var(--ua-text-primary); }
+.searchable-select-control { display: flex; align-items: center; gap: 10px; min-height: 50px; padding-inline: 14px 4px; border: 1px solid var(--ua-border-strong); border-bottom-width: 3px; border-radius: 14px; background: var(--ua-surface); }
+.searchable-select-control > svg { flex-shrink: 0; color: var(--ua-text-secondary); }
+.searchable-select-control:focus-within { border-color: var(--ua-focus-ring); outline: 2px solid var(--ua-focus-ring); outline-offset: 2px; }
+.searchable-select-control input { flex: 1; min-width: 0; width: 100%; padding-block: 12px; border: 0; border-radius: 0; outline: none; background: transparent; color: var(--ua-text-primary); font-size: 16px; line-height: 1.5; }
+.searchable-select-control input::placeholder { color: var(--ua-text-secondary); opacity: 1; }
+.searchable-select-control input:disabled { cursor: not-allowed; }
+.searchable-select-control button { display: grid; place-items: center; flex-shrink: 0; width: 44px; height: 44px; color: var(--ua-text-secondary); border-radius: 10px; }
+.searchable-select-control button:hover { background: var(--ua-surface-soft); }
+.searchable-select-panel { margin-top: 8px; padding: 6px; border: 1px solid var(--ua-border-strong); border-radius: 16px; background: var(--ua-surface); box-shadow: var(--ua-shadow-hover); }
+.searchable-select-hint { padding: 9px 10px; color: var(--ua-text-secondary); font-size: .75rem; line-height: 1.6; overflow-wrap: anywhere; }
+.searchable-select-options { max-height: min(280px, 38dvh); overflow-y: auto; overscroll-behavior: contain; scroll-padding: 4px; list-style: none; margin: 0; padding: 0; }
+.searchable-select-options [role="option"] { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 46px; margin-block: 2px; padding: 11px 12px; border: 1px solid transparent; border-radius: 10px; font-size: .875rem; line-height: 1.5; cursor: pointer; overflow-wrap: anywhere; }
+.searchable-select-options [role="option"] > span { min-width: 0; }
+.searchable-select-options [role="option"] > svg { flex-shrink: 0; color: var(--ua-primary); }
+.searchable-select-options [data-active="true"] { background: var(--ua-primary-soft); border-color: var(--ua-primary); }
+.searchable-select-options [aria-selected="true"] { font-weight: 750; }
+.searchable-select-retry { min-height: 44px; padding: 8px 12px; color: var(--ua-primary); font-weight: 700; }

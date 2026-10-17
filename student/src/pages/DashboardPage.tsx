@@ -3,295 +3,173 @@ import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
-import {
-  courseAPI, contestAPI, enrollmentAPI, testAPI, roadmapAPI,
-} from '../api/endpoints';
+import { courseAPI, contestAPI, enrollmentAPI, testAPI, roadmapAPI } from '../api/endpoints';
 import { CourseCard, Spinner } from '../components/ui';
 import { formatDateTime } from '../i18n/format';
-import type {
-  Course, Contest, TestAttemptSummary, Page,
-} from '../types';
+import type { Course, Contest, TestAttemptSummary, Page } from '../types';
 import {
-  GraduationCap, Trophy, Clock, Sparkles, ArrowRight,
-  BookOpen, History, Map as MapIcon, CheckCircle, XCircle,
+  ArrowRight, BookOpen, CheckCircle, ChevronRight, Clock, Code2,
+  Flame, GraduationCap, Map as MapIcon, Play, Sparkles, Star, Target, Trophy,
 } from 'lucide-react';
+import './dashboard.css';
 
 interface EnrolledCourse { courseId: string }
 interface Role { id: string; name: string; description?: string }
 
-/**
- * Reusable column wrapper: fixed header + an independently scrolling body.
- * Each of the four dashboard sections uses this so only the inner list scrolls.
- */
-const DashboardColumn: React.FC<{
-  icon: React.ElementType;
-  title: string;
-  to: string;
-  linkLabel: string;
+const LearningSection: React.FC<{
+  id: string; title: string; subtitle: string; to: string; linkLabel: string;
   children: React.ReactNode;
-}> = ({ icon: Icon, title, to, linkLabel, children }) => (
-  <div className="card flex flex-col overflow-hidden p-0 h-[60vh] min-h-[380px]">
-    {/* Sticky header stays put while the body scrolls */}
-    <div className="flex items-center justify-between gap-2 border-b border-border px-4 py-3 shrink-0">
-      <div className="flex items-center gap-2 min-w-0">
-        <span className="ua-icon-tile w-8 h-8 bg-primary-50 text-primary-500 shrink-0">
-          <Icon size={16} />
-        </span>
-        <h2 className="text-sm font-semibold text-text-primary truncate">{title}</h2>
-      </div>
-      <Link
-        to={to}
-        className="text-xs text-primary-500 font-medium hover:underline flex items-center gap-1 shrink-0"
-      >
-        {linkLabel} <ArrowRight size={12} className="ua-flip-rtl" />
-      </Link>
-    </div>
-
-    {/* Independent scroll region */}
-    <div className="flex-1 overflow-y-auto px-4 py-3 ua-scroll">
-      {children}
-    </div>
-  </div>
+}> = ({ id, title, subtitle, to, linkLabel, children }) => (
+  <section className="study-section" aria-labelledby={id}>
+    <header className="study-section-heading">
+      <div><h2 id={id}>{title}</h2><p>{subtitle}</p></div>
+      <Link className="study-text-link" to={to}>{linkLabel}<ArrowRight size={16} className="ua-flip-rtl" /></Link>
+    </header>
+    {children}
+  </section>
 );
 
-/** Standardises the loading / empty / content states inside each column. */
 const SectionBody: React.FC<{
-  isLoading?: boolean;
-  isEmpty?: boolean;
-  emptyText: string;
-  children: React.ReactNode;
-}> = ({ isLoading, isEmpty, emptyText, children }) => {
-  if (isLoading) {
-    return (
-      <div className="flex h-full items-center justify-center">
-        <Spinner />
-      </div>
-    );
-  }
-  if (isEmpty) {
-    return (
-      <div className="flex h-full items-center justify-center text-center">
-        <p className="text-sm text-text-muted">{emptyText}</p>
-      </div>
-    );
-  }
+  isLoading: boolean; isError: boolean; isEmpty: boolean; emptyText: string;
+  retry: () => void; children: React.ReactNode;
+}> = ({ isLoading, isError, isEmpty, emptyText, retry, children }) => {
+  const { t } = useTranslation();
+  if (isLoading) return <div className="study-placeholder" role="status"><Spinner /><span>{t('common.loading')}</span></div>;
+  if (isError) return <div className="study-placeholder" role="status"><p>{t('dashboard.learningHome.loadError')}</p><button className="study-text-link" onClick={retry}>{t('dashboard.learningHome.retry')}</button></div>;
+  if (isEmpty) return <div className="study-placeholder"><Sparkles size={24} aria-hidden="true" /><p>{emptyText}</p></div>;
   return <>{children}</>;
 };
 
 export const DashboardPage: React.FC = () => {
   const { user } = useAuth();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const copy = (key: string, options?: Record<string, unknown>) => t(`dashboard.learningHome.${key}`, options);
+  const enrollQuery = useQuery({ queryKey: ['my-learnings'], queryFn: enrollmentAPI.getMine });
+  const coursesQuery = useQuery({ queryKey: ['courses'], queryFn: courseAPI.getAll });
+  const contestsQuery = useQuery({ queryKey: ['contests'], queryFn: contestAPI.getAll });
+  const historyQuery = useQuery({ queryKey: ['test-history', 0], queryFn: () => testAPI.history(0, 20) });
+  const rolesQuery = useQuery({ queryKey: ['roadmap-roles'], queryFn: roadmapAPI.roles });
 
-  // ── My Courses (enrollments hydrated against the catalog) ──
-  const { data: enrollRes, isLoading: enrollLoading } = useQuery({
-    queryKey: ['my-learnings'],
-    queryFn: enrollmentAPI.getMine,
-  });
-  const { data: coursesRes, isLoading: coursesLoading } = useQuery({
-    queryKey: ['courses'],
-    queryFn: courseAPI.getAll,
-  });
-
-  // ── Live & upcoming contests ──
-  const { data: contestsRes, isLoading: contestsLoading } = useQuery({
-    queryKey: ['contests'],
-    queryFn: contestAPI.getAll,
-  });
-
-  // ── Test history ──
-  const { data: historyRes, isLoading: historyLoading } = useQuery({
-    queryKey: ['test-history', 0],
-    queryFn: () => testAPI.history(0, 20),
-  });
-
-  // ── Recent roadmaps (roles) ──
-  const { data: rolesRes, isLoading: rolesLoading } = useQuery({
-    queryKey: ['roadmap-roles'],
-    queryFn: roadmapAPI.roles,
-  });
-
-  const myCourses: Course[] = useMemo(() => {
-    const enrollments: EnrolledCourse[] = enrollRes?.data?.data ?? [];
-    const catalog: Course[] = coursesRes?.data?.data ?? [];
-    const byId = new Map(catalog.map((c) => [c.id, c]));
-    return enrollments
-      .map((e) => byId.get(e.courseId))
-      .filter((c): c is Course => Boolean(c));
-  }, [enrollRes, coursesRes]);
-
-  const contests: Contest[] = contestsRes?.data?.data ?? [];
-  const liveContests = contests.filter(
-    (c) => c.phase === 'RUNNING' || c.phase === 'UPCOMING',
-  );
-
-  const historyPage: Page<TestAttemptSummary> | undefined = historyRes?.data?.data;
-  const attempts: TestAttemptSummary[] = historyPage?.content ?? [];
-
-  const roles: Role[] = rolesRes?.data?.data ?? [];
-
-  const firstName = user?.name?.split(' ')[0] ?? t('dashboard.defaultName');
+  const myCourses = useMemo(() => {
+    const enrollments: EnrolledCourse[] = enrollQuery.data?.data?.data ?? [];
+    const catalog: Course[] = coursesQuery.data?.data?.data ?? [];
+    const byId = new Map(catalog.map(course => [course.id, course]));
+    return enrollments.map(e => byId.get(e.courseId)).filter((course): course is Course => Boolean(course));
+  }, [enrollQuery.data, coursesQuery.data]);
+  const contests: Contest[] = contestsQuery.data?.data?.data ?? [];
+  const liveContests = contests.filter(c => c.phase === 'RUNNING' || c.phase === 'UPCOMING');
+  const historyPage: Page<TestAttemptSummary> | undefined = historyQuery.data?.data?.data;
+  const attempts = historyPage?.content ?? [];
+  const roles: Role[] = rolesQuery.data?.data?.data ?? [];
+  const firstName = user?.name?.trim().split(/\s+/)[0] || t('dashboard.defaultName');
+  const streak = user?.currentStreak;
+  const milestone = Math.max(7, Math.ceil(((streak ?? 0) + 1) / 7) * 7);
+  const streakProgress = Math.min(100, ((streak ?? 0) / milestone) * 100);
+  const number = (value: number | undefined) => value === undefined ? '—' : value.toLocaleString(i18n.language);
+  const firstCourse = myCourses[0];
+  const stats = [
+    { icon: Flame, value: number(streak), label: copy('dayStreak'), detail: copy('bestStreak', { count: user?.longestStreak ?? 0 }), tone: 'warm', to: '/profile' },
+    { icon: Star, value: number(user?.points), label: copy('learningPoints'), detail: copy('pointsHint'), tone: 'gold', to: '/leaderboard' },
+    { icon: BookOpen, value: enrollQuery.isSuccess && coursesQuery.isSuccess ? number(myCourses.length) : '—', label: copy('coursesStarted'), detail: copy('coursesHint'), tone: 'blue', to: '/my-courses' },
+    { icon: Target, value: historyQuery.isSuccess ? number(historyPage?.totalElements ?? attempts.length) : '—', label: copy('practiceRounds'), detail: copy('practiceHint'), tone: 'mint', to: '/tests?view=history' },
+  ];
 
   return (
-    <div className="space-y-8 animate-fade-in">
+    <div className="study-home">
+      <header className="study-greeting">
+        <h1 id="study-greeting">{t('dashboard.greeting', { name: firstName })}</h1>
+        <p>{t('dashboard.subtitle')}</p>
+      </header>
 
-      {/* Hero greeting */}
-      <div className="relative overflow-hidden rounded-[20px] bg-gradient-primary p-8 sm:p-10 text-white">
-        <div className="ua-hero-grid absolute inset-0 opacity-40" aria-hidden="true" />
-        <div className="relative z-10">
-          <h1 className="text-2xl sm:text-3xl font-bold mb-1.5">
-            {t('dashboard.greeting', { name: firstName })}
-          </h1>
-          <p className="text-white/80 text-sm sm:text-base mb-6">
-            {t('dashboard.subtitle')}
-          </p>
-          <div className="flex flex-wrap gap-3">
-            {/* Browse Courses — now light & transparent, matching the other buttons */}
-            <Link to="/explore" className="inline-flex items-center gap-2 bg-white/15 text-white border border-white/25 px-5 py-2.5 rounded-[10px] text-sm font-semibold hover:bg-white/25 hover:-translate-y-0.5 transition-all">
-              {t('dashboard.browseCourses')} <ArrowRight size={15} />
-            </Link>
-            <Link to="/tests" className="inline-flex items-center gap-2 bg-white/15 text-white border border-white/25 px-5 py-2.5 rounded-[10px] text-sm font-semibold hover:bg-white/25 hover:-translate-y-0.5 transition-all">
-              {t('dashboard.takeTest')} <GraduationCap size={15} />
-            </Link>
-            <Link to="/tests?view=insights" className="inline-flex items-center gap-2 bg-white/15 text-white border border-white/25 px-5 py-2.5 rounded-[10px] text-sm font-semibold hover:bg-white/25 hover:-translate-y-0.5 transition-all">
-              {t('dashboard.myInsights')} <Sparkles size={15} />
-            </Link>
-          </div>
+      <section className="study-welcome" aria-labelledby="study-resume-title">
+        <span className="study-icon study-tone-blue" aria-hidden="true"><BookOpen size={25} /></span>
+        <div className="study-welcome-copy">
+          <span className="study-eyebrow">{copy(firstCourse ? 'continueLearning' : 'startLearning')}</span>
+          <h2 id="study-resume-title">{firstCourse?.name ?? t('dashboard.browseCourses')}</h2>
+          {firstCourse ? <div className="study-meta">
+            {firstCourse.topicsCount > 0 && <span><BookOpen size={13} aria-hidden="true" />{copy('topics', { count: firstCourse.topicsCount })}</span>}
+            {firstCourse.totalTime && <span><Clock size={13} aria-hidden="true" />{firstCourse.totalTime}</span>}
+          </div> : <p>{t('dashboard.subtitle')}</p>}
         </div>
-        <div className="absolute -right-8 -top-8 w-48 h-48 rounded-full bg-white/10" aria-hidden="true" />
-        <div className="absolute -right-4 bottom-4 w-24 h-24 rounded-full bg-white/5" aria-hidden="true" />
+        <div className="study-hero-actions">
+          <Link className="study-button study-button-primary" to={firstCourse ? `/courses/${firstCourse.id}` : '/explore'}>
+            <Play size={17} fill="currentColor" aria-hidden="true" />{copy(firstCourse ? 'continueLearning' : 'startLearning')}<ArrowRight size={17} className="ua-flip-rtl" />
+          </Link>
+        </div>
+      </section>
+
+      <div className="study-stats" role="group" aria-label={copy('statsLabel')}>
+        {stats.map(({ icon: Icon, value, label, detail, tone, to }) => (
+          <Link key={to} to={to} className={`study-stat study-tone-${tone}`}>
+            <span className="study-icon"><Icon size={22} aria-hidden="true" /></span>
+            <div><strong className="study-stat-value">{value}</strong><span className="study-stat-label">{label}</span><span className="study-stat-detail">{detail}</span></div>
+          </Link>
+        ))}
       </div>
 
-      {/* ── 2×2 grid on tablet/desktop, stacked one-by-one on mobile; each section scrolls internally ── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="study-main-grid">
+        <div className="study-main-column">
+          <LearningSection id="study-courses" title={copy('yourNextChapter')} subtitle={copy('chapterHint')} to="/my-courses" linkLabel={t('common.viewAll')}>
+            <SectionBody isLoading={enrollQuery.isLoading || coursesQuery.isLoading} isError={enrollQuery.isError || coursesQuery.isError} isEmpty={!myCourses.length} emptyText={copy('emptyCourses')} retry={() => { void enrollQuery.refetch(); void coursesQuery.refetch(); }}>
+              <div className="study-course-grid">
+                {myCourses.slice(0, 4).map(course => (
+                  <CourseCard key={course.id} course={course} actionLabel={copy('keepLearning')} />
+                ))}
+              </div>
+            </SectionBody>
+            {enrollQuery.isSuccess && coursesQuery.isSuccess && !myCourses.length && <Link className="study-button study-button-primary study-empty-action" to="/explore">{t('dashboard.browseCourses')}<ArrowRight size={16} /></Link>}
+          </LearningSection>
 
-        {/* 1. My Courses */}
-        <DashboardColumn
-          icon={BookOpen}
-          title={t('dashboard.myCourses')}
-          to="/my-courses"
-          linkLabel={t('common.viewAll')}
-        >
-          <SectionBody
-            isLoading={enrollLoading || coursesLoading}
-            isEmpty={myCourses.length === 0}
-            emptyText={t('dashboard.noCourses')}
-          >
-            <div className="space-y-3">
-              {myCourses.map((course) => (
-                <CourseCard key={course.id} course={course} variant="list" />
-              ))}
-            </div>
-          </SectionBody>
-        </DashboardColumn>
-
-        {/* 2. Live & Upcoming Contests */}
-        <DashboardColumn
-          icon={Trophy}
-          title={t('dashboard.liveUpcomingContests')}
-          to="/contests"
-          linkLabel={t('common.all')}
-        >
-          <SectionBody
-            isLoading={contestsLoading}
-            isEmpty={liveContests.length === 0}
-            emptyText={t('dashboard.noContests')}
-          >
-            <div className="space-y-2.5">
-              {liveContests.map((c) => (
-                <Link
-                  key={c.id}
-                  to={`/contests/${c.id}`}
-                  className="ua-card--accent card p-4 block hover:-translate-y-0.5 transition-all duration-200 group"
-                >
-                  <div className="flex items-center justify-between gap-2 mb-1">
-                    <span className="text-sm font-semibold text-text-primary truncate group-hover:text-primary-500 transition-colors">
-                      {c.title}
-                    </span>
-                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0 inline-flex items-center gap-1 ${
-                      c.phase === 'RUNNING' ? 'bg-success-soft text-success' : 'bg-warning-soft text-warning'
-                    }`}>
-                      {c.phase === 'RUNNING' && (
-                        <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" aria-hidden="true" />
-                      )}
-                      {t(`contest.phase.${c.phase}`, { defaultValue: c.phase })}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-1 text-xs text-text-muted">
-                    <Clock size={12} /> {c.durationMinutes} {t('common.minutes')} · {t('common.problems', { count: c.problemCount })}
-                  </div>
+          <LearningSection id="study-challenges" title={copy('challengeTitle')} subtitle={copy('challengeHint')} to="/contests" linkLabel={t('common.viewAll')}>
+            <SectionBody isLoading={contestsQuery.isLoading} isError={contestsQuery.isError} isEmpty={!liveContests.length} emptyText={t('dashboard.noContests')} retry={() => { void contestsQuery.refetch(); }}>
+              <div className="study-list">{liveContests.slice(0, 3).map(c => (
+                <Link key={c.id} to={`/contests/${c.id}`} className="study-list-card">
+                  <span className="study-icon study-tone-gold"><Trophy size={23} aria-hidden="true" /></span>
+                  <div className="study-list-copy"><span className={`study-pill ${c.phase === 'RUNNING' ? 'study-pill-live' : ''}`}>{t(`contest.phase.${c.phase}`, { defaultValue: c.phase })}</span><h3>{c.title}</h3><div className="study-meta"><span><Clock size={13} />{c.durationMinutes} {t('common.minutes')}</span><span>{t('common.problems', { count: c.problemCount })}</span></div></div>
+                  <ArrowRight className="study-list-arrow ua-flip-rtl" size={18} aria-hidden="true" />
                 </Link>
-              ))}
-            </div>
-          </SectionBody>
-        </DashboardColumn>
+              ))}</div>
+            </SectionBody>
+          </LearningSection>
 
-        {/* 3. Test History */}
-        <DashboardColumn
-          icon={History}
-          title={t('dashboard.testHistory')}
-          to="/tests?view=history"
-          linkLabel={t('common.viewAll')}
-        >
-          <SectionBody
-            isLoading={historyLoading}
-            isEmpty={attempts.length === 0}
-            emptyText={t('dashboard.noTests')}
-          >
-            <div className="space-y-2.5">
-              {attempts.map((a) => (
-                <div key={a.attemptId} className="ua-card--accent card p-4">
-                  <div className="flex items-center justify-between gap-2 mb-1">
-                    <span className="text-sm font-semibold text-text-primary truncate">
-                      {a.poolName}
-                    </span>
-                    <span className={`text-xs font-bold shrink-0 inline-flex items-center gap-1 ${
-                      a.passed ? 'text-success' : 'text-danger'
-                    }`}>
-                      {a.passed ? <CheckCircle size={13} /> : <XCircle size={13} />}
-                      {Math.round(a.scorePercentage)}%
-                    </span>
-                  </div>
-                  <div className="text-xs text-text-muted">
-                    {a.correctCount}/{a.totalQuestions} · {formatDateTime(a.attemptedAt)}
-                  </div>
+          <LearningSection id="study-practice" title={copy('practiceTitle')} subtitle={copy('practiceSubtitle')} to="/tests?view=history" linkLabel={t('common.viewAll')}>
+            <SectionBody isLoading={historyQuery.isLoading} isError={historyQuery.isError} isEmpty={!attempts.length} emptyText={copy('emptyPractice')} retry={() => { void historyQuery.refetch(); }}>
+              <div className="study-list">{attempts.slice(0, 3).map(a => (
+                <div key={a.attemptId} className="study-list-card">
+                  <span className={`study-icon ${a.passed ? 'study-tone-mint' : 'study-tone-blue'}`}>{a.passed ? <CheckCircle size={22} /> : <Target size={22} />}</span>
+                  <div className="study-list-copy"><h3>{a.poolName}</h3><p>{a.correctCount}/{a.totalQuestions} · {formatDateTime(a.attemptedAt)}</p><span className="study-result-label">{copy(a.passed ? 'wellDone' : 'keepPracticing')}</span></div>
+                  <strong className="study-score">{Math.round(a.scorePercentage)}%</strong>
                 </div>
-              ))}
-            </div>
-          </SectionBody>
-        </DashboardColumn>
+              ))}</div>
+            </SectionBody>
+          </LearningSection>
+        </div>
 
-        {/* 4. Recent Roadmaps */}
-        <DashboardColumn
-          icon={MapIcon}
-          title={t('dashboard.recentRoadmaps')}
-          to="/roadmap"
-          linkLabel={t('common.viewAll')}
-        >
-          <SectionBody
-            isLoading={rolesLoading}
-            isEmpty={roles.length === 0}
-            emptyText={t('dashboard.noRoadmaps')}
-          >
-            <div className="space-y-2.5">
-              {roles.map((r) => (
-                <Link
-                  key={r.id}
-                  to={`/roadmap?role=${r.id}`}
-                  className="ua-card--accent card p-4 block hover:-translate-y-0.5 transition-all duration-200 group"
-                >
-                  <span className="text-sm font-semibold text-text-primary truncate block group-hover:text-primary-500 transition-colors">
-                    {r.name}
-                  </span>
-                  {r.description && (
-                    <p className="mt-0.5 text-xs text-text-muted line-clamp-2">
-                      {r.description}
-                    </p>
-                  )}
-                </Link>
-              ))}
+        <aside className="study-side-column" aria-label={copy('journeyLabel')}>
+          <section className="study-streak study-panel" aria-labelledby="study-streak-title">
+            <span className="study-icon study-tone-warm"><Flame size={27} aria-hidden="true" /></span>
+            <h2 id="study-streak-title">{copy('streakTitle')}</h2><p>{copy('streakHint')}</p>
+            <div className="study-streak-count"><strong>{number(streak)}</strong><span>{copy('dayStreak')}</span></div>
+            <div className="study-progress-label"><span>{copy('nextMilestone')}</span><strong>{copy('days', { count: milestone })}</strong></div>
+            <div className="study-progress" role="progressbar" aria-label={copy('nextMilestone')} aria-valuemin={0} aria-valuemax={milestone} aria-valuenow={streak ?? 0}><span style={{ width: `${streakProgress}%` }} /></div>
+            <Link className="study-text-link" to="/profile">{copy('activityCalendar')}<ArrowRight size={15} className="ua-flip-rtl" /></Link>
+          </section>
+
+          <section className="study-panel" aria-labelledby="study-picks-title">
+            <span className="study-eyebrow"><Sparkles size={14} aria-hidden="true" />{copy('smallSteps')}</span><h2 id="study-picks-title">{copy('pickAdventure')}</h2>
+            <div className="study-picks">
+              <Link to="/tests"><span className="study-icon study-tone-mint"><GraduationCap size={20} /></span><span><strong>{copy('quickPractice')}</strong><small>{copy('quickPracticeHint')}</small></span><ChevronRight size={17} className="ua-flip-rtl" /></Link>
+              <Link to="/algorithms"><span className="study-icon study-tone-blue"><Code2 size={20} /></span><span><strong>{copy('seeCode')}</strong><small>{copy('seeCodeHint')}</small></span><ChevronRight size={17} className="ua-flip-rtl" /></Link>
+              <Link to="/tests?view=insights"><span className="study-icon study-tone-gold"><Target size={20} /></span><span><strong>{t('dashboard.myInsights')}</strong><small>{copy('insightsHint')}</small></span><ChevronRight size={17} className="ua-flip-rtl" /></Link>
             </div>
-          </SectionBody>
-        </DashboardColumn>
+          </section>
+
+          <LearningSection id="study-roadmaps" title={copy('findPath')} subtitle={copy('pathHint')} to="/roadmap" linkLabel={t('common.viewAll')}>
+            <SectionBody isLoading={rolesQuery.isLoading} isError={rolesQuery.isError} isEmpty={!roles.length} emptyText={t('dashboard.noRoadmaps')} retry={() => { void rolesQuery.refetch(); }}>
+              <div className="study-list">{roles.slice(0, 3).map((role, index) => <Link key={role.id} to={`/roadmap?role=${encodeURIComponent(role.id)}`} className="study-roadmap"><span className="study-path-number">{String(index + 1).padStart(2, '0')}</span><div><h3>{role.name}</h3>{role.description && <p>{role.description}</p>}</div><MapIcon size={18} aria-hidden="true" /></Link>)}</div>
+            </SectionBody>
+          </LearningSection>
+        </aside>
       </div>
     </div>
   );

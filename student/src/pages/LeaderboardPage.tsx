@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { leaderboardAPI } from '../api/endpoints';
 import { useAuth } from '../context/AuthContext';
 import { Spinner, EmptyState, InitialsBadge } from '../components/ui';
+import './leaderboard.css';
 
 /* =============================================================================
    LeaderboardPage — points-based ranking across the whole platform.
@@ -69,7 +70,7 @@ const PodiumCard: React.FC<{ row: Row; place: 1 | 2 | 3 }> = ({ row, place }) =>
   }[place];
 
   return (
-    <div className={`flex flex-col items-center ${styles.order} flex-1 min-w-0 self-end`}>
+    <div className={`leaderboard-podium leaderboard-place-${place} flex flex-col items-center ${styles.order} flex-1 min-w-0 self-end`}>
       <div className="mb-1">{styles.icon}</div>
 
       {/* Identity: initials badge, rank chip, name, region, points */}
@@ -120,7 +121,7 @@ const RankRow: React.FC<{ row: Row }> = ({ row }) => {
   const { t } = useTranslation();
   return (
     <div
-      className={`group flex items-center gap-3 sm:gap-4 px-3 sm:px-4 py-3 transition-colors ${
+      className={`leaderboard-row ${row.isCurrentUser ? 'leaderboard-row-self' : ''} group flex items-center gap-3 sm:gap-4 px-3 sm:px-4 py-3 transition-colors ${
         row.isCurrentUser
           ? 'bg-primary-500/10 ring-1 ring-inset ring-primary-500/40'
           : 'hover:bg-surface-soft'
@@ -205,9 +206,9 @@ export const LeaderboardPage: React.FC = () => {
   );
 
   return (
-    <div className="space-y-5 sm:space-y-6 animate-fade-in">
+    <div className="leaderboard-page space-y-5 sm:space-y-6 animate-fade-in">
       {/* ── Hero ──────────────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden rounded-2xl px-5 py-6 sm:px-7 sm:py-7 text-white shadow-lg bg-gradient-accent">
+      <section className="leaderboard-header relative overflow-hidden rounded-2xl px-5 py-6 sm:px-7 sm:py-7">
         {/* decorative CSS trophy glyph */}
         <div className="pointer-events-none absolute -right-6 -top-8 opacity-15">
           <Trophy size={150} />
@@ -255,7 +256,7 @@ export const LeaderboardPage: React.FC = () => {
 
       {/* ── Your standing ─────────────────────────────────────────────── */}
       {me && (
-        <div className="rounded-2xl p-[1.5px] bg-gradient-accent shadow-card">
+        <div className="leaderboard-standing rounded-2xl p-[1.5px] shadow-card">
           <div className="flex items-center gap-3 sm:gap-4 p-4 rounded-2xl bg-surface">
             <InitialsBadge name={me.name} size="md" tone="cyan" ringClassName="shadow" />
             <div className="flex-1 min-w-0">

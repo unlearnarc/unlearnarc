@@ -1,31 +1,4287 @@
 {
   "slug": "merge-sort",
   "title": "Merge Sort",
-  "summary": "Divide-and-conquer: split the array, sort halves recursively, then merge.",
-  "usage": "Stable, guaranteed O(n log n). Great for linked lists and external sorting.",
+  "summary": "Recursively split the input and merge sorted halves by choosing the smaller front value.",
+  "usage": "How it works\nRanges are half-open: [lo, hi). Recursively sort both halves, copy them, then write back their smallest remaining fronts. The merge invariant is that the written prefix is sorted. Useful when stable ordering and guaranteed running time matter. Temporary duplicates while writing back are normal; the copied halves retain the original values.\n\nProperties and prerequisites\nStable: yes (choose the left value on ties). In-place: no in this implementation.\n\nComplexity\nTime: O(n log n) best/average/worst. Space: O(n) auxiliary + O(log n) stack.\n\nExample\nInput: [5, 2, 4, 1, 3]. Output: [1, 2, 3, 4, 5].\n\nTry it\nUse Play/Pause, Previous/Next, the timeline, and playback speed. Answer the prediction checkpoints to continue; feedback reveals the expected answer. Python is the line-synchronized walkthrough; Java is an equivalent complete implementation. Sorting functions accept empty arrays, duplicates, negative values, and already sorted inputs. Java methods belong inside a class; Python functions can be called directly.",
   "category": "Sorting",
   "difficulty": "MEDIUM",
   "visualizer": "ARRAY",
-  "complexity": { "time": "O(n log n)", "space": "O(n)" },
-  "javaSource": "void mergeSort(int[] a,int l,int r){\n  if(l>=r) return;\n  int m=(l+r)/2;\n  mergeSort(a,l,m); mergeSort(a,m+1,r);\n  merge(a,l,m,r);\n}",
-  "pythonSource": "def merge_sort(a):\n    if len(a) <= 1: return a\n    m = len(a)//2\n    L, R = merge_sort(a[:m]), merge_sort(a[m:])\n    return merge(L, R)",
+  "complexity": {
+    "time": "O(n log n) best/average/worst",
+    "space": "O(n) auxiliary + O(log n) stack"
+  },
+  "pythonSource": "def merge_sort(a):\n    def sort(lo, hi):\n        if hi - lo <= 1:\n            return\n        mid = (lo + hi) // 2  # Split the half-open range [lo, hi).\n        sort(lo, mid)\n        sort(mid, hi)\n        left, right = a[lo:mid], a[mid:hi]  # Copy the two sorted halves.\n        i = j = 0\n        k = lo\n        while i < len(left) and j < len(right):\n            if left[i] <= right[j]:  # Taking left on ties preserves stability.\n                a[k] = left[i]\n                i += 1\n            else:\n                a[k] = right[j]\n                j += 1\n            k += 1\n        while i < len(left):\n            a[k] = left[i]  # Copy the remaining left values.\n            i += 1\n            k += 1\n        while j < len(right):\n            a[k] = right[j]  # Copy the remaining right values.\n            j += 1\n            k += 1\n    sort(0, len(a))\n    return a\n",
+  "javaSource": "static void mergeSort(int[] a) {\n    mergeRange(a, 0, a.length);\n}\nstatic void mergeRange(int[] a, int lo, int hi) {\n    if (hi - lo <= 1) return;\n    int mid = lo + (hi - lo) / 2;\n    mergeRange(a, lo, mid);\n    mergeRange(a, mid, hi);\n    int[] left = java.util.Arrays.copyOfRange(a, lo, mid);\n    int[] right = java.util.Arrays.copyOfRange(a, mid, hi);\n    int i = 0, j = 0, k = lo;\n    while (i < left.length && j < right.length)\n        a[k++] = left[i] <= right[j] ? left[i++] : right[j++];\n    while (i < left.length) a[k++] = left[i++];\n    while (j < right.length) a[k++] = right[j++];\n}",
   "spec": {
     "visualizer": "ARRAY",
-    "initialState": { "array": [5, 2, 4, 1] },
-    "variables": [{ "name": "m", "label": "mid", "color": "#8b5cf6" }],
+    "initialState": {
+      "array": [
+        5,
+        2,
+        4,
+        1,
+        3
+      ]
+    },
+    "variables": [
+      {
+        "name": "hi",
+        "label": "hi"
+      },
+      {
+        "name": "i",
+        "label": "i"
+      },
+      {
+        "name": "j",
+        "label": "j"
+      },
+      {
+        "name": "k",
+        "label": "k"
+      },
+      {
+        "name": "lo",
+        "label": "lo"
+      },
+      {
+        "name": "mid",
+        "label": "mid"
+      }
+    ],
     "steps": [
-      { "title": "Split", "explanation": "Divide into [5,2] and [4,1].",
-        "state": { "array": [5, 2, 4, 1] }, "variables": { "m": 1 },
-        "highlights": [{ "target": "array", "indices": [0, 1], "style": "ACTIVE" }, { "target": "array", "indices": [2, 3], "style": "PIVOT" }], "line": 3, "lang": "java" },
-      { "title": "Sort left", "explanation": "Merge [5,2] -> [2,5].",
-        "state": { "array": [2, 5, 4, 1] },
-        "highlights": [{ "target": "array", "indices": [0, 1], "style": "DONE" }] },
-      { "title": "Sort right", "explanation": "Merge [4,1] -> [1,4].",
-        "state": { "array": [2, 5, 1, 4] },
-        "highlights": [{ "target": "array", "indices": [2, 3], "style": "DONE" }] },
-      { "title": "Merge halves", "explanation": "Merge [2,5] and [1,4] by picking smallest fronts.",
-        "state": { "array": [1, 2, 4, 5] },
-        "highlights": [{ "target": "array", "indices": [0, 1, 2, 3], "style": "DONE" }] }
+      {
+        "title": "Start the walkthrough",
+        "explanation": "Sort ascending. Python steps show the state BEFORE each highlighted line executes.",
+        "state": {
+          "array": [
+            5,
+            2,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {},
+        "input": {
+          "key": "merge-sort-prediction",
+          "type": "NUMBER",
+          "prompt": "Which value will be at index 0 after sorting?",
+          "expected": 1
+        }
+      },
+      {
+        "title": "def sort(lo, hi):",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            5,
+            2,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {},
+        "pointers": {},
+        "line": 2,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "sort(0, len(a))",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            5,
+            2,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {},
+        "pointers": {},
+        "line": 27,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "if hi - lo <= 1:",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            5,
+            2,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "lo": 0,
+          "hi": 5
+        },
+        "pointers": {
+          "lo": 0
+        },
+        "line": 3,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0
+            ],
+            "style": "COMPARE"
+          }
+        ]
+      },
+      {
+        "title": "mid = (lo + hi) // 2 ",
+        "explanation": "Split the half-open range [lo, hi).",
+        "state": {
+          "array": [
+            5,
+            2,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "lo": 0,
+          "hi": 5
+        },
+        "pointers": {
+          "lo": 0
+        },
+        "line": 5,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "sort(lo, mid)",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            5,
+            2,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "lo": 0,
+          "hi": 5,
+          "mid": 2
+        },
+        "pointers": {
+          "lo": 0,
+          "mid": 2
+        },
+        "line": 6,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              2
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "if hi - lo <= 1:",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            5,
+            2,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "lo": 0,
+          "hi": 2
+        },
+        "pointers": {
+          "lo": 0,
+          "hi": 2
+        },
+        "line": 3,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              2
+            ],
+            "style": "COMPARE"
+          }
+        ]
+      },
+      {
+        "title": "mid = (lo + hi) // 2 ",
+        "explanation": "Split the half-open range [lo, hi).",
+        "state": {
+          "array": [
+            5,
+            2,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "lo": 0,
+          "hi": 2
+        },
+        "pointers": {
+          "lo": 0,
+          "hi": 2
+        },
+        "line": 5,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              2
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "sort(lo, mid)",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            5,
+            2,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "lo": 0,
+          "hi": 2,
+          "mid": 1
+        },
+        "pointers": {
+          "lo": 0,
+          "hi": 2,
+          "mid": 1
+        },
+        "line": 6,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              1,
+              2
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "if hi - lo <= 1:",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            5,
+            2,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "lo": 0,
+          "hi": 1
+        },
+        "pointers": {
+          "lo": 0,
+          "hi": 1
+        },
+        "line": 3,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              1
+            ],
+            "style": "COMPARE"
+          }
+        ]
+      },
+      {
+        "title": "return",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            5,
+            2,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "lo": 0,
+          "hi": 1
+        },
+        "pointers": {
+          "lo": 0,
+          "hi": 1
+        },
+        "line": 4,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              1
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "sort(mid, hi)",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            5,
+            2,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "lo": 0,
+          "hi": 2,
+          "mid": 1
+        },
+        "pointers": {
+          "lo": 0,
+          "hi": 2,
+          "mid": 1
+        },
+        "line": 7,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              1,
+              2
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "if hi - lo <= 1:",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            5,
+            2,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "lo": 1,
+          "hi": 2
+        },
+        "pointers": {
+          "lo": 1,
+          "hi": 2
+        },
+        "line": 3,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              1,
+              2
+            ],
+            "style": "COMPARE"
+          }
+        ]
+      },
+      {
+        "title": "return",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            5,
+            2,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "lo": 1,
+          "hi": 2
+        },
+        "pointers": {
+          "lo": 1,
+          "hi": 2
+        },
+        "line": 4,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              1,
+              2
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "left, right = a[lo:mid], a[mid:hi] ",
+        "explanation": "Copy the two sorted halves.",
+        "state": {
+          "array": [
+            5,
+            2,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "lo": 0,
+          "hi": 2,
+          "mid": 1
+        },
+        "pointers": {
+          "lo": 0,
+          "hi": 2,
+          "mid": 1
+        },
+        "line": 8,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              1,
+              2
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "i = j = 0",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            5,
+            2,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "lo": 0,
+          "hi": 2,
+          "mid": 1
+        },
+        "pointers": {
+          "lo": 0,
+          "hi": 2,
+          "mid": 1
+        },
+        "line": 9,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              1,
+              2
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "k = lo",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            5,
+            2,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "lo": 0,
+          "hi": 2,
+          "mid": 1,
+          "i": 0,
+          "j": 0
+        },
+        "pointers": {
+          "lo": 0,
+          "hi": 2,
+          "mid": 1,
+          "i": 0,
+          "j": 0
+        },
+        "line": 10,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              1,
+              2
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "while i < len(left) and j < len(right):",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            5,
+            2,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "lo": 0,
+          "hi": 2,
+          "mid": 1,
+          "i": 0,
+          "j": 0,
+          "k": 0
+        },
+        "pointers": {
+          "lo": 0,
+          "hi": 2,
+          "mid": 1,
+          "i": 0,
+          "j": 0,
+          "k": 0
+        },
+        "line": 11,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              1,
+              2
+            ],
+            "style": "COMPARE"
+          }
+        ]
+      },
+      {
+        "title": "if left[i] <= right[j]: ",
+        "explanation": "Taking left on ties preserves stability.",
+        "state": {
+          "array": [
+            5,
+            2,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "lo": 0,
+          "hi": 2,
+          "mid": 1,
+          "i": 0,
+          "j": 0,
+          "k": 0
+        },
+        "pointers": {
+          "lo": 0,
+          "hi": 2,
+          "mid": 1,
+          "i": 0,
+          "j": 0,
+          "k": 0
+        },
+        "line": 12,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              1,
+              2
+            ],
+            "style": "COMPARE"
+          }
+        ]
+      },
+      {
+        "title": "a[k] = right[j]",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            5,
+            2,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "lo": 0,
+          "hi": 2,
+          "mid": 1,
+          "i": 0,
+          "j": 0,
+          "k": 0
+        },
+        "pointers": {
+          "lo": 0,
+          "hi": 2,
+          "mid": 1,
+          "i": 0,
+          "j": 0,
+          "k": 0
+        },
+        "line": 16,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              1,
+              2
+            ],
+            "style": "ACTIVE"
+          }
+        ],
+        "input": {
+          "key": "merge-sort-next",
+          "type": "NUMBER",
+          "prompt": "After the highlighted Python line executes, what value will be at index 0?",
+          "expected": 2
+        }
+      },
+      {
+        "title": "j += 1",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            2,
+            2,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "lo": 0,
+          "hi": 2,
+          "mid": 1,
+          "i": 0,
+          "j": 0,
+          "k": 0
+        },
+        "pointers": {
+          "lo": 0,
+          "hi": 2,
+          "mid": 1,
+          "i": 0,
+          "j": 0,
+          "k": 0
+        },
+        "line": 17,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              1,
+              2
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "k += 1",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            2,
+            2,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "lo": 0,
+          "hi": 2,
+          "mid": 1,
+          "i": 0,
+          "j": 1,
+          "k": 0
+        },
+        "pointers": {
+          "lo": 0,
+          "hi": 2,
+          "mid": 1,
+          "i": 0,
+          "j": 1,
+          "k": 0
+        },
+        "line": 18,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              1,
+              2
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "while i < len(left) and j < len(right):",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            2,
+            2,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "lo": 0,
+          "hi": 2,
+          "mid": 1,
+          "i": 0,
+          "j": 1,
+          "k": 1
+        },
+        "pointers": {
+          "lo": 0,
+          "hi": 2,
+          "mid": 1,
+          "i": 0,
+          "j": 1,
+          "k": 1
+        },
+        "line": 11,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              1,
+              2
+            ],
+            "style": "COMPARE"
+          }
+        ]
+      },
+      {
+        "title": "while i < len(left):",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            2,
+            2,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "lo": 0,
+          "hi": 2,
+          "mid": 1,
+          "i": 0,
+          "j": 1,
+          "k": 1
+        },
+        "pointers": {
+          "lo": 0,
+          "hi": 2,
+          "mid": 1,
+          "i": 0,
+          "j": 1,
+          "k": 1
+        },
+        "line": 19,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              1,
+              2
+            ],
+            "style": "COMPARE"
+          }
+        ]
+      },
+      {
+        "title": "a[k] = left[i] ",
+        "explanation": "Copy the remaining left values.",
+        "state": {
+          "array": [
+            2,
+            2,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "lo": 0,
+          "hi": 2,
+          "mid": 1,
+          "i": 0,
+          "j": 1,
+          "k": 1
+        },
+        "pointers": {
+          "lo": 0,
+          "hi": 2,
+          "mid": 1,
+          "i": 0,
+          "j": 1,
+          "k": 1
+        },
+        "line": 20,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              1,
+              2
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "i += 1",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            2,
+            5,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "lo": 0,
+          "hi": 2,
+          "mid": 1,
+          "i": 0,
+          "j": 1,
+          "k": 1
+        },
+        "pointers": {
+          "lo": 0,
+          "hi": 2,
+          "mid": 1,
+          "i": 0,
+          "j": 1,
+          "k": 1
+        },
+        "line": 21,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              1,
+              2
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "k += 1",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            2,
+            5,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "lo": 0,
+          "hi": 2,
+          "mid": 1,
+          "i": 1,
+          "j": 1,
+          "k": 1
+        },
+        "pointers": {
+          "lo": 0,
+          "hi": 2,
+          "mid": 1,
+          "i": 1,
+          "j": 1,
+          "k": 1
+        },
+        "line": 22,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              1,
+              2
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "while i < len(left):",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            2,
+            5,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "lo": 0,
+          "hi": 2,
+          "mid": 1,
+          "i": 1,
+          "j": 1,
+          "k": 2
+        },
+        "pointers": {
+          "lo": 0,
+          "hi": 2,
+          "mid": 1,
+          "i": 1,
+          "j": 1,
+          "k": 2
+        },
+        "line": 19,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              1,
+              2
+            ],
+            "style": "COMPARE"
+          }
+        ]
+      },
+      {
+        "title": "while j < len(right):",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            2,
+            5,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "lo": 0,
+          "hi": 2,
+          "mid": 1,
+          "i": 1,
+          "j": 1,
+          "k": 2
+        },
+        "pointers": {
+          "lo": 0,
+          "hi": 2,
+          "mid": 1,
+          "i": 1,
+          "j": 1,
+          "k": 2
+        },
+        "line": 23,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              1,
+              2
+            ],
+            "style": "COMPARE"
+          }
+        ]
+      },
+      {
+        "title": "sort(mid, hi)",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            2,
+            5,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "lo": 0,
+          "hi": 5,
+          "mid": 2
+        },
+        "pointers": {
+          "lo": 0,
+          "mid": 2
+        },
+        "line": 7,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              2
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "if hi - lo <= 1:",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            2,
+            5,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "lo": 2,
+          "hi": 5
+        },
+        "pointers": {
+          "lo": 2
+        },
+        "line": 3,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              2
+            ],
+            "style": "COMPARE"
+          }
+        ]
+      },
+      {
+        "title": "mid = (lo + hi) // 2 ",
+        "explanation": "Split the half-open range [lo, hi).",
+        "state": {
+          "array": [
+            2,
+            5,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "lo": 2,
+          "hi": 5
+        },
+        "pointers": {
+          "lo": 2
+        },
+        "line": 5,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              2
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "sort(lo, mid)",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            2,
+            5,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "lo": 2,
+          "hi": 5,
+          "mid": 3
+        },
+        "pointers": {
+          "lo": 2,
+          "mid": 3
+        },
+        "line": 6,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              2,
+              3
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "if hi - lo <= 1:",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            2,
+            5,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "lo": 2,
+          "hi": 3
+        },
+        "pointers": {
+          "lo": 2,
+          "hi": 3
+        },
+        "line": 3,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              2,
+              3
+            ],
+            "style": "COMPARE"
+          }
+        ]
+      },
+      {
+        "title": "return",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            2,
+            5,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "lo": 2,
+          "hi": 3
+        },
+        "pointers": {
+          "lo": 2,
+          "hi": 3
+        },
+        "line": 4,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              2,
+              3
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "sort(mid, hi)",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            2,
+            5,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "lo": 2,
+          "hi": 5,
+          "mid": 3
+        },
+        "pointers": {
+          "lo": 2,
+          "mid": 3
+        },
+        "line": 7,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              2,
+              3
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "if hi - lo <= 1:",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            2,
+            5,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "lo": 3,
+          "hi": 5
+        },
+        "pointers": {
+          "lo": 3
+        },
+        "line": 3,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              3
+            ],
+            "style": "COMPARE"
+          }
+        ]
+      },
+      {
+        "title": "mid = (lo + hi) // 2 ",
+        "explanation": "Split the half-open range [lo, hi).",
+        "state": {
+          "array": [
+            2,
+            5,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "lo": 3,
+          "hi": 5
+        },
+        "pointers": {
+          "lo": 3
+        },
+        "line": 5,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              3
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "sort(lo, mid)",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            2,
+            5,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "lo": 3,
+          "hi": 5,
+          "mid": 4
+        },
+        "pointers": {
+          "lo": 3,
+          "mid": 4
+        },
+        "line": 6,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              3,
+              4
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "if hi - lo <= 1:",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            2,
+            5,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "lo": 3,
+          "hi": 4
+        },
+        "pointers": {
+          "lo": 3,
+          "hi": 4
+        },
+        "line": 3,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              3,
+              4
+            ],
+            "style": "COMPARE"
+          }
+        ]
+      },
+      {
+        "title": "return",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            2,
+            5,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "lo": 3,
+          "hi": 4
+        },
+        "pointers": {
+          "lo": 3,
+          "hi": 4
+        },
+        "line": 4,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              3,
+              4
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "sort(mid, hi)",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            2,
+            5,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "lo": 3,
+          "hi": 5,
+          "mid": 4
+        },
+        "pointers": {
+          "lo": 3,
+          "mid": 4
+        },
+        "line": 7,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              3,
+              4
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "if hi - lo <= 1:",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            2,
+            5,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "lo": 4,
+          "hi": 5
+        },
+        "pointers": {
+          "lo": 4
+        },
+        "line": 3,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              4
+            ],
+            "style": "COMPARE"
+          }
+        ]
+      },
+      {
+        "title": "return",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            2,
+            5,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "lo": 4,
+          "hi": 5
+        },
+        "pointers": {
+          "lo": 4
+        },
+        "line": 4,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              4
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "left, right = a[lo:mid], a[mid:hi] ",
+        "explanation": "Copy the two sorted halves.",
+        "state": {
+          "array": [
+            2,
+            5,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "lo": 3,
+          "hi": 5,
+          "mid": 4
+        },
+        "pointers": {
+          "lo": 3,
+          "mid": 4
+        },
+        "line": 8,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              3,
+              4
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "i = j = 0",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            2,
+            5,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "lo": 3,
+          "hi": 5,
+          "mid": 4
+        },
+        "pointers": {
+          "lo": 3,
+          "mid": 4
+        },
+        "line": 9,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              3,
+              4
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "k = lo",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            2,
+            5,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "lo": 3,
+          "hi": 5,
+          "mid": 4,
+          "i": 0,
+          "j": 0
+        },
+        "pointers": {
+          "lo": 3,
+          "mid": 4,
+          "i": 0,
+          "j": 0
+        },
+        "line": 10,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              3,
+              4
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "while i < len(left) and j < len(right):",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            2,
+            5,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "lo": 3,
+          "hi": 5,
+          "mid": 4,
+          "i": 0,
+          "j": 0,
+          "k": 3
+        },
+        "pointers": {
+          "lo": 3,
+          "mid": 4,
+          "i": 0,
+          "j": 0,
+          "k": 3
+        },
+        "line": 11,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              3,
+              4
+            ],
+            "style": "COMPARE"
+          }
+        ]
+      },
+      {
+        "title": "if left[i] <= right[j]: ",
+        "explanation": "Taking left on ties preserves stability.",
+        "state": {
+          "array": [
+            2,
+            5,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "lo": 3,
+          "hi": 5,
+          "mid": 4,
+          "i": 0,
+          "j": 0,
+          "k": 3
+        },
+        "pointers": {
+          "lo": 3,
+          "mid": 4,
+          "i": 0,
+          "j": 0,
+          "k": 3
+        },
+        "line": 12,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              3,
+              4
+            ],
+            "style": "COMPARE"
+          }
+        ]
+      },
+      {
+        "title": "a[k] = left[i]",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            2,
+            5,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "lo": 3,
+          "hi": 5,
+          "mid": 4,
+          "i": 0,
+          "j": 0,
+          "k": 3
+        },
+        "pointers": {
+          "lo": 3,
+          "mid": 4,
+          "i": 0,
+          "j": 0,
+          "k": 3
+        },
+        "line": 13,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              3,
+              4
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "i += 1",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            2,
+            5,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "lo": 3,
+          "hi": 5,
+          "mid": 4,
+          "i": 0,
+          "j": 0,
+          "k": 3
+        },
+        "pointers": {
+          "lo": 3,
+          "mid": 4,
+          "i": 0,
+          "j": 0,
+          "k": 3
+        },
+        "line": 14,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              3,
+              4
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "k += 1",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            2,
+            5,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "lo": 3,
+          "hi": 5,
+          "mid": 4,
+          "i": 1,
+          "j": 0,
+          "k": 3
+        },
+        "pointers": {
+          "lo": 3,
+          "mid": 4,
+          "i": 1,
+          "j": 0,
+          "k": 3
+        },
+        "line": 18,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              1,
+              3,
+              4
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "while i < len(left) and j < len(right):",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            2,
+            5,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "lo": 3,
+          "hi": 5,
+          "mid": 4,
+          "i": 1,
+          "j": 0,
+          "k": 4
+        },
+        "pointers": {
+          "lo": 3,
+          "mid": 4,
+          "i": 1,
+          "j": 0,
+          "k": 4
+        },
+        "line": 11,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              1,
+              3,
+              4
+            ],
+            "style": "COMPARE"
+          }
+        ]
+      },
+      {
+        "title": "while i < len(left):",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            2,
+            5,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "lo": 3,
+          "hi": 5,
+          "mid": 4,
+          "i": 1,
+          "j": 0,
+          "k": 4
+        },
+        "pointers": {
+          "lo": 3,
+          "mid": 4,
+          "i": 1,
+          "j": 0,
+          "k": 4
+        },
+        "line": 19,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              1,
+              3,
+              4
+            ],
+            "style": "COMPARE"
+          }
+        ]
+      },
+      {
+        "title": "while j < len(right):",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            2,
+            5,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "lo": 3,
+          "hi": 5,
+          "mid": 4,
+          "i": 1,
+          "j": 0,
+          "k": 4
+        },
+        "pointers": {
+          "lo": 3,
+          "mid": 4,
+          "i": 1,
+          "j": 0,
+          "k": 4
+        },
+        "line": 23,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              1,
+              3,
+              4
+            ],
+            "style": "COMPARE"
+          }
+        ]
+      },
+      {
+        "title": "a[k] = right[j] ",
+        "explanation": "Copy the remaining right values.",
+        "state": {
+          "array": [
+            2,
+            5,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "lo": 3,
+          "hi": 5,
+          "mid": 4,
+          "i": 1,
+          "j": 0,
+          "k": 4
+        },
+        "pointers": {
+          "lo": 3,
+          "mid": 4,
+          "i": 1,
+          "j": 0,
+          "k": 4
+        },
+        "line": 24,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              1,
+              3,
+              4
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "j += 1",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            2,
+            5,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "lo": 3,
+          "hi": 5,
+          "mid": 4,
+          "i": 1,
+          "j": 0,
+          "k": 4
+        },
+        "pointers": {
+          "lo": 3,
+          "mid": 4,
+          "i": 1,
+          "j": 0,
+          "k": 4
+        },
+        "line": 25,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              1,
+              3,
+              4
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "k += 1",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            2,
+            5,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "lo": 3,
+          "hi": 5,
+          "mid": 4,
+          "i": 1,
+          "j": 1,
+          "k": 4
+        },
+        "pointers": {
+          "lo": 3,
+          "mid": 4,
+          "i": 1,
+          "j": 1,
+          "k": 4
+        },
+        "line": 26,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              1,
+              3,
+              4
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "while j < len(right):",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            2,
+            5,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "lo": 3,
+          "hi": 5,
+          "mid": 4,
+          "i": 1,
+          "j": 1,
+          "k": 5
+        },
+        "pointers": {
+          "lo": 3,
+          "mid": 4,
+          "i": 1,
+          "j": 1
+        },
+        "line": 23,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              1,
+              3,
+              4
+            ],
+            "style": "COMPARE"
+          }
+        ]
+      },
+      {
+        "title": "left, right = a[lo:mid], a[mid:hi] ",
+        "explanation": "Copy the two sorted halves.",
+        "state": {
+          "array": [
+            2,
+            5,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "lo": 2,
+          "hi": 5,
+          "mid": 3
+        },
+        "pointers": {
+          "lo": 2,
+          "mid": 3
+        },
+        "line": 8,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              2,
+              3
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "i = j = 0",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            2,
+            5,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "lo": 2,
+          "hi": 5,
+          "mid": 3
+        },
+        "pointers": {
+          "lo": 2,
+          "mid": 3
+        },
+        "line": 9,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              2,
+              3
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "k = lo",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            2,
+            5,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "lo": 2,
+          "hi": 5,
+          "mid": 3,
+          "i": 0,
+          "j": 0
+        },
+        "pointers": {
+          "lo": 2,
+          "mid": 3,
+          "i": 0,
+          "j": 0
+        },
+        "line": 10,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              2,
+              3
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "while i < len(left) and j < len(right):",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            2,
+            5,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "lo": 2,
+          "hi": 5,
+          "mid": 3,
+          "i": 0,
+          "j": 0,
+          "k": 2
+        },
+        "pointers": {
+          "lo": 2,
+          "mid": 3,
+          "i": 0,
+          "j": 0,
+          "k": 2
+        },
+        "line": 11,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              2,
+              3
+            ],
+            "style": "COMPARE"
+          }
+        ]
+      },
+      {
+        "title": "if left[i] <= right[j]: ",
+        "explanation": "Taking left on ties preserves stability.",
+        "state": {
+          "array": [
+            2,
+            5,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "lo": 2,
+          "hi": 5,
+          "mid": 3,
+          "i": 0,
+          "j": 0,
+          "k": 2
+        },
+        "pointers": {
+          "lo": 2,
+          "mid": 3,
+          "i": 0,
+          "j": 0,
+          "k": 2
+        },
+        "line": 12,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              2,
+              3
+            ],
+            "style": "COMPARE"
+          }
+        ]
+      },
+      {
+        "title": "a[k] = right[j]",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            2,
+            5,
+            4,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "lo": 2,
+          "hi": 5,
+          "mid": 3,
+          "i": 0,
+          "j": 0,
+          "k": 2
+        },
+        "pointers": {
+          "lo": 2,
+          "mid": 3,
+          "i": 0,
+          "j": 0,
+          "k": 2
+        },
+        "line": 16,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              2,
+              3
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "j += 1",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            2,
+            5,
+            1,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "lo": 2,
+          "hi": 5,
+          "mid": 3,
+          "i": 0,
+          "j": 0,
+          "k": 2
+        },
+        "pointers": {
+          "lo": 2,
+          "mid": 3,
+          "i": 0,
+          "j": 0,
+          "k": 2
+        },
+        "line": 17,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              2,
+              3
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "k += 1",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            2,
+            5,
+            1,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "lo": 2,
+          "hi": 5,
+          "mid": 3,
+          "i": 0,
+          "j": 1,
+          "k": 2
+        },
+        "pointers": {
+          "lo": 2,
+          "mid": 3,
+          "i": 0,
+          "j": 1,
+          "k": 2
+        },
+        "line": 18,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              1,
+              2,
+              3
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "while i < len(left) and j < len(right):",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            2,
+            5,
+            1,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "lo": 2,
+          "hi": 5,
+          "mid": 3,
+          "i": 0,
+          "j": 1,
+          "k": 3
+        },
+        "pointers": {
+          "lo": 2,
+          "mid": 3,
+          "i": 0,
+          "j": 1,
+          "k": 3
+        },
+        "line": 11,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              1,
+              2,
+              3
+            ],
+            "style": "COMPARE"
+          }
+        ]
+      },
+      {
+        "title": "if left[i] <= right[j]: ",
+        "explanation": "Taking left on ties preserves stability.",
+        "state": {
+          "array": [
+            2,
+            5,
+            1,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "lo": 2,
+          "hi": 5,
+          "mid": 3,
+          "i": 0,
+          "j": 1,
+          "k": 3
+        },
+        "pointers": {
+          "lo": 2,
+          "mid": 3,
+          "i": 0,
+          "j": 1,
+          "k": 3
+        },
+        "line": 12,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              1,
+              2,
+              3
+            ],
+            "style": "COMPARE"
+          }
+        ]
+      },
+      {
+        "title": "a[k] = right[j]",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            2,
+            5,
+            1,
+            1,
+            3
+          ]
+        },
+        "variables": {
+          "lo": 2,
+          "hi": 5,
+          "mid": 3,
+          "i": 0,
+          "j": 1,
+          "k": 3
+        },
+        "pointers": {
+          "lo": 2,
+          "mid": 3,
+          "i": 0,
+          "j": 1,
+          "k": 3
+        },
+        "line": 16,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              1,
+              2,
+              3
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "j += 1",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            2,
+            5,
+            1,
+            3,
+            3
+          ]
+        },
+        "variables": {
+          "lo": 2,
+          "hi": 5,
+          "mid": 3,
+          "i": 0,
+          "j": 1,
+          "k": 3
+        },
+        "pointers": {
+          "lo": 2,
+          "mid": 3,
+          "i": 0,
+          "j": 1,
+          "k": 3
+        },
+        "line": 17,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              1,
+              2,
+              3
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "k += 1",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            2,
+            5,
+            1,
+            3,
+            3
+          ]
+        },
+        "variables": {
+          "lo": 2,
+          "hi": 5,
+          "mid": 3,
+          "i": 0,
+          "j": 2,
+          "k": 3
+        },
+        "pointers": {
+          "lo": 2,
+          "mid": 3,
+          "i": 0,
+          "j": 2,
+          "k": 3
+        },
+        "line": 18,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              2,
+              3
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "while i < len(left) and j < len(right):",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            2,
+            5,
+            1,
+            3,
+            3
+          ]
+        },
+        "variables": {
+          "lo": 2,
+          "hi": 5,
+          "mid": 3,
+          "i": 0,
+          "j": 2,
+          "k": 4
+        },
+        "pointers": {
+          "lo": 2,
+          "mid": 3,
+          "i": 0,
+          "j": 2,
+          "k": 4
+        },
+        "line": 11,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              2,
+              3,
+              4
+            ],
+            "style": "COMPARE"
+          }
+        ]
+      },
+      {
+        "title": "while i < len(left):",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            2,
+            5,
+            1,
+            3,
+            3
+          ]
+        },
+        "variables": {
+          "lo": 2,
+          "hi": 5,
+          "mid": 3,
+          "i": 0,
+          "j": 2,
+          "k": 4
+        },
+        "pointers": {
+          "lo": 2,
+          "mid": 3,
+          "i": 0,
+          "j": 2,
+          "k": 4
+        },
+        "line": 19,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              2,
+              3,
+              4
+            ],
+            "style": "COMPARE"
+          }
+        ]
+      },
+      {
+        "title": "a[k] = left[i] ",
+        "explanation": "Copy the remaining left values.",
+        "state": {
+          "array": [
+            2,
+            5,
+            1,
+            3,
+            3
+          ]
+        },
+        "variables": {
+          "lo": 2,
+          "hi": 5,
+          "mid": 3,
+          "i": 0,
+          "j": 2,
+          "k": 4
+        },
+        "pointers": {
+          "lo": 2,
+          "mid": 3,
+          "i": 0,
+          "j": 2,
+          "k": 4
+        },
+        "line": 20,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              2,
+              3,
+              4
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "i += 1",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            2,
+            5,
+            1,
+            3,
+            4
+          ]
+        },
+        "variables": {
+          "lo": 2,
+          "hi": 5,
+          "mid": 3,
+          "i": 0,
+          "j": 2,
+          "k": 4
+        },
+        "pointers": {
+          "lo": 2,
+          "mid": 3,
+          "i": 0,
+          "j": 2,
+          "k": 4
+        },
+        "line": 21,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              2,
+              3,
+              4
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "k += 1",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            2,
+            5,
+            1,
+            3,
+            4
+          ]
+        },
+        "variables": {
+          "lo": 2,
+          "hi": 5,
+          "mid": 3,
+          "i": 1,
+          "j": 2,
+          "k": 4
+        },
+        "pointers": {
+          "lo": 2,
+          "mid": 3,
+          "i": 1,
+          "j": 2,
+          "k": 4
+        },
+        "line": 22,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              1,
+              2,
+              3,
+              4
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "while i < len(left):",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            2,
+            5,
+            1,
+            3,
+            4
+          ]
+        },
+        "variables": {
+          "lo": 2,
+          "hi": 5,
+          "mid": 3,
+          "i": 1,
+          "j": 2,
+          "k": 5
+        },
+        "pointers": {
+          "lo": 2,
+          "mid": 3,
+          "i": 1,
+          "j": 2
+        },
+        "line": 19,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              1,
+              2,
+              3
+            ],
+            "style": "COMPARE"
+          }
+        ]
+      },
+      {
+        "title": "while j < len(right):",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            2,
+            5,
+            1,
+            3,
+            4
+          ]
+        },
+        "variables": {
+          "lo": 2,
+          "hi": 5,
+          "mid": 3,
+          "i": 1,
+          "j": 2,
+          "k": 5
+        },
+        "pointers": {
+          "lo": 2,
+          "mid": 3,
+          "i": 1,
+          "j": 2
+        },
+        "line": 23,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              1,
+              2,
+              3
+            ],
+            "style": "COMPARE"
+          }
+        ]
+      },
+      {
+        "title": "left, right = a[lo:mid], a[mid:hi] ",
+        "explanation": "Copy the two sorted halves.",
+        "state": {
+          "array": [
+            2,
+            5,
+            1,
+            3,
+            4
+          ]
+        },
+        "variables": {
+          "lo": 0,
+          "hi": 5,
+          "mid": 2
+        },
+        "pointers": {
+          "lo": 0,
+          "mid": 2
+        },
+        "line": 8,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              2
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "i = j = 0",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            2,
+            5,
+            1,
+            3,
+            4
+          ]
+        },
+        "variables": {
+          "lo": 0,
+          "hi": 5,
+          "mid": 2
+        },
+        "pointers": {
+          "lo": 0,
+          "mid": 2
+        },
+        "line": 9,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              2
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "k = lo",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            2,
+            5,
+            1,
+            3,
+            4
+          ]
+        },
+        "variables": {
+          "lo": 0,
+          "hi": 5,
+          "mid": 2,
+          "i": 0,
+          "j": 0
+        },
+        "pointers": {
+          "lo": 0,
+          "mid": 2,
+          "i": 0,
+          "j": 0
+        },
+        "line": 10,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              2
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "while i < len(left) and j < len(right):",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            2,
+            5,
+            1,
+            3,
+            4
+          ]
+        },
+        "variables": {
+          "lo": 0,
+          "hi": 5,
+          "mid": 2,
+          "i": 0,
+          "j": 0,
+          "k": 0
+        },
+        "pointers": {
+          "lo": 0,
+          "mid": 2,
+          "i": 0,
+          "j": 0,
+          "k": 0
+        },
+        "line": 11,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              2
+            ],
+            "style": "COMPARE"
+          }
+        ]
+      },
+      {
+        "title": "if left[i] <= right[j]: ",
+        "explanation": "Taking left on ties preserves stability.",
+        "state": {
+          "array": [
+            2,
+            5,
+            1,
+            3,
+            4
+          ]
+        },
+        "variables": {
+          "lo": 0,
+          "hi": 5,
+          "mid": 2,
+          "i": 0,
+          "j": 0,
+          "k": 0
+        },
+        "pointers": {
+          "lo": 0,
+          "mid": 2,
+          "i": 0,
+          "j": 0,
+          "k": 0
+        },
+        "line": 12,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              2
+            ],
+            "style": "COMPARE"
+          }
+        ]
+      },
+      {
+        "title": "a[k] = right[j]",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            2,
+            5,
+            1,
+            3,
+            4
+          ]
+        },
+        "variables": {
+          "lo": 0,
+          "hi": 5,
+          "mid": 2,
+          "i": 0,
+          "j": 0,
+          "k": 0
+        },
+        "pointers": {
+          "lo": 0,
+          "mid": 2,
+          "i": 0,
+          "j": 0,
+          "k": 0
+        },
+        "line": 16,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              2
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "j += 1",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            1,
+            5,
+            1,
+            3,
+            4
+          ]
+        },
+        "variables": {
+          "lo": 0,
+          "hi": 5,
+          "mid": 2,
+          "i": 0,
+          "j": 0,
+          "k": 0
+        },
+        "pointers": {
+          "lo": 0,
+          "mid": 2,
+          "i": 0,
+          "j": 0,
+          "k": 0
+        },
+        "line": 17,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              2
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "k += 1",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            1,
+            5,
+            1,
+            3,
+            4
+          ]
+        },
+        "variables": {
+          "lo": 0,
+          "hi": 5,
+          "mid": 2,
+          "i": 0,
+          "j": 1,
+          "k": 0
+        },
+        "pointers": {
+          "lo": 0,
+          "mid": 2,
+          "i": 0,
+          "j": 1,
+          "k": 0
+        },
+        "line": 18,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              1,
+              2
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "while i < len(left) and j < len(right):",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            1,
+            5,
+            1,
+            3,
+            4
+          ]
+        },
+        "variables": {
+          "lo": 0,
+          "hi": 5,
+          "mid": 2,
+          "i": 0,
+          "j": 1,
+          "k": 1
+        },
+        "pointers": {
+          "lo": 0,
+          "mid": 2,
+          "i": 0,
+          "j": 1,
+          "k": 1
+        },
+        "line": 11,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              1,
+              2
+            ],
+            "style": "COMPARE"
+          }
+        ]
+      },
+      {
+        "title": "if left[i] <= right[j]: ",
+        "explanation": "Taking left on ties preserves stability.",
+        "state": {
+          "array": [
+            1,
+            5,
+            1,
+            3,
+            4
+          ]
+        },
+        "variables": {
+          "lo": 0,
+          "hi": 5,
+          "mid": 2,
+          "i": 0,
+          "j": 1,
+          "k": 1
+        },
+        "pointers": {
+          "lo": 0,
+          "mid": 2,
+          "i": 0,
+          "j": 1,
+          "k": 1
+        },
+        "line": 12,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              1,
+              2
+            ],
+            "style": "COMPARE"
+          }
+        ]
+      },
+      {
+        "title": "a[k] = left[i]",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            1,
+            5,
+            1,
+            3,
+            4
+          ]
+        },
+        "variables": {
+          "lo": 0,
+          "hi": 5,
+          "mid": 2,
+          "i": 0,
+          "j": 1,
+          "k": 1
+        },
+        "pointers": {
+          "lo": 0,
+          "mid": 2,
+          "i": 0,
+          "j": 1,
+          "k": 1
+        },
+        "line": 13,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              1,
+              2
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "i += 1",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            1,
+            2,
+            1,
+            3,
+            4
+          ]
+        },
+        "variables": {
+          "lo": 0,
+          "hi": 5,
+          "mid": 2,
+          "i": 0,
+          "j": 1,
+          "k": 1
+        },
+        "pointers": {
+          "lo": 0,
+          "mid": 2,
+          "i": 0,
+          "j": 1,
+          "k": 1
+        },
+        "line": 14,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              1,
+              2
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "k += 1",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            1,
+            2,
+            1,
+            3,
+            4
+          ]
+        },
+        "variables": {
+          "lo": 0,
+          "hi": 5,
+          "mid": 2,
+          "i": 1,
+          "j": 1,
+          "k": 1
+        },
+        "pointers": {
+          "lo": 0,
+          "mid": 2,
+          "i": 1,
+          "j": 1,
+          "k": 1
+        },
+        "line": 18,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              1,
+              2
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "while i < len(left) and j < len(right):",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            1,
+            2,
+            1,
+            3,
+            4
+          ]
+        },
+        "variables": {
+          "lo": 0,
+          "hi": 5,
+          "mid": 2,
+          "i": 1,
+          "j": 1,
+          "k": 2
+        },
+        "pointers": {
+          "lo": 0,
+          "mid": 2,
+          "i": 1,
+          "j": 1,
+          "k": 2
+        },
+        "line": 11,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              1,
+              2
+            ],
+            "style": "COMPARE"
+          }
+        ]
+      },
+      {
+        "title": "if left[i] <= right[j]: ",
+        "explanation": "Taking left on ties preserves stability.",
+        "state": {
+          "array": [
+            1,
+            2,
+            1,
+            3,
+            4
+          ]
+        },
+        "variables": {
+          "lo": 0,
+          "hi": 5,
+          "mid": 2,
+          "i": 1,
+          "j": 1,
+          "k": 2
+        },
+        "pointers": {
+          "lo": 0,
+          "mid": 2,
+          "i": 1,
+          "j": 1,
+          "k": 2
+        },
+        "line": 12,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              1,
+              2
+            ],
+            "style": "COMPARE"
+          }
+        ]
+      },
+      {
+        "title": "a[k] = right[j]",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            1,
+            2,
+            1,
+            3,
+            4
+          ]
+        },
+        "variables": {
+          "lo": 0,
+          "hi": 5,
+          "mid": 2,
+          "i": 1,
+          "j": 1,
+          "k": 2
+        },
+        "pointers": {
+          "lo": 0,
+          "mid": 2,
+          "i": 1,
+          "j": 1,
+          "k": 2
+        },
+        "line": 16,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              1,
+              2
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "j += 1",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            1,
+            2,
+            3,
+            3,
+            4
+          ]
+        },
+        "variables": {
+          "lo": 0,
+          "hi": 5,
+          "mid": 2,
+          "i": 1,
+          "j": 1,
+          "k": 2
+        },
+        "pointers": {
+          "lo": 0,
+          "mid": 2,
+          "i": 1,
+          "j": 1,
+          "k": 2
+        },
+        "line": 17,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              1,
+              2
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "k += 1",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            1,
+            2,
+            3,
+            3,
+            4
+          ]
+        },
+        "variables": {
+          "lo": 0,
+          "hi": 5,
+          "mid": 2,
+          "i": 1,
+          "j": 2,
+          "k": 2
+        },
+        "pointers": {
+          "lo": 0,
+          "mid": 2,
+          "i": 1,
+          "j": 2,
+          "k": 2
+        },
+        "line": 18,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              1,
+              2
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "while i < len(left) and j < len(right):",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            1,
+            2,
+            3,
+            3,
+            4
+          ]
+        },
+        "variables": {
+          "lo": 0,
+          "hi": 5,
+          "mid": 2,
+          "i": 1,
+          "j": 2,
+          "k": 3
+        },
+        "pointers": {
+          "lo": 0,
+          "mid": 2,
+          "i": 1,
+          "j": 2,
+          "k": 3
+        },
+        "line": 11,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              1,
+              2,
+              3
+            ],
+            "style": "COMPARE"
+          }
+        ]
+      },
+      {
+        "title": "if left[i] <= right[j]: ",
+        "explanation": "Taking left on ties preserves stability.",
+        "state": {
+          "array": [
+            1,
+            2,
+            3,
+            3,
+            4
+          ]
+        },
+        "variables": {
+          "lo": 0,
+          "hi": 5,
+          "mid": 2,
+          "i": 1,
+          "j": 2,
+          "k": 3
+        },
+        "pointers": {
+          "lo": 0,
+          "mid": 2,
+          "i": 1,
+          "j": 2,
+          "k": 3
+        },
+        "line": 12,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              1,
+              2,
+              3
+            ],
+            "style": "COMPARE"
+          }
+        ]
+      },
+      {
+        "title": "a[k] = right[j]",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            1,
+            2,
+            3,
+            3,
+            4
+          ]
+        },
+        "variables": {
+          "lo": 0,
+          "hi": 5,
+          "mid": 2,
+          "i": 1,
+          "j": 2,
+          "k": 3
+        },
+        "pointers": {
+          "lo": 0,
+          "mid": 2,
+          "i": 1,
+          "j": 2,
+          "k": 3
+        },
+        "line": 16,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              1,
+              2,
+              3
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "j += 1",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            1,
+            2,
+            3,
+            4,
+            4
+          ]
+        },
+        "variables": {
+          "lo": 0,
+          "hi": 5,
+          "mid": 2,
+          "i": 1,
+          "j": 2,
+          "k": 3
+        },
+        "pointers": {
+          "lo": 0,
+          "mid": 2,
+          "i": 1,
+          "j": 2,
+          "k": 3
+        },
+        "line": 17,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              1,
+              2,
+              3
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "k += 1",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            1,
+            2,
+            3,
+            4,
+            4
+          ]
+        },
+        "variables": {
+          "lo": 0,
+          "hi": 5,
+          "mid": 2,
+          "i": 1,
+          "j": 3,
+          "k": 3
+        },
+        "pointers": {
+          "lo": 0,
+          "mid": 2,
+          "i": 1,
+          "j": 3,
+          "k": 3
+        },
+        "line": 18,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              1,
+              2,
+              3
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "while i < len(left) and j < len(right):",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            1,
+            2,
+            3,
+            4,
+            4
+          ]
+        },
+        "variables": {
+          "lo": 0,
+          "hi": 5,
+          "mid": 2,
+          "i": 1,
+          "j": 3,
+          "k": 4
+        },
+        "pointers": {
+          "lo": 0,
+          "mid": 2,
+          "i": 1,
+          "j": 3,
+          "k": 4
+        },
+        "line": 11,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              1,
+              2,
+              3,
+              4
+            ],
+            "style": "COMPARE"
+          }
+        ]
+      },
+      {
+        "title": "while i < len(left):",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            1,
+            2,
+            3,
+            4,
+            4
+          ]
+        },
+        "variables": {
+          "lo": 0,
+          "hi": 5,
+          "mid": 2,
+          "i": 1,
+          "j": 3,
+          "k": 4
+        },
+        "pointers": {
+          "lo": 0,
+          "mid": 2,
+          "i": 1,
+          "j": 3,
+          "k": 4
+        },
+        "line": 19,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              1,
+              2,
+              3,
+              4
+            ],
+            "style": "COMPARE"
+          }
+        ]
+      },
+      {
+        "title": "a[k] = left[i] ",
+        "explanation": "Copy the remaining left values.",
+        "state": {
+          "array": [
+            1,
+            2,
+            3,
+            4,
+            4
+          ]
+        },
+        "variables": {
+          "lo": 0,
+          "hi": 5,
+          "mid": 2,
+          "i": 1,
+          "j": 3,
+          "k": 4
+        },
+        "pointers": {
+          "lo": 0,
+          "mid": 2,
+          "i": 1,
+          "j": 3,
+          "k": 4
+        },
+        "line": 20,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              1,
+              2,
+              3,
+              4
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "i += 1",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ]
+        },
+        "variables": {
+          "lo": 0,
+          "hi": 5,
+          "mid": 2,
+          "i": 1,
+          "j": 3,
+          "k": 4
+        },
+        "pointers": {
+          "lo": 0,
+          "mid": 2,
+          "i": 1,
+          "j": 3,
+          "k": 4
+        },
+        "line": 21,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              1,
+              2,
+              3,
+              4
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "k += 1",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ]
+        },
+        "variables": {
+          "lo": 0,
+          "hi": 5,
+          "mid": 2,
+          "i": 2,
+          "j": 3,
+          "k": 4
+        },
+        "pointers": {
+          "lo": 0,
+          "mid": 2,
+          "i": 2,
+          "j": 3,
+          "k": 4
+        },
+        "line": 22,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              2,
+              3,
+              4
+            ],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "while i < len(left):",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ]
+        },
+        "variables": {
+          "lo": 0,
+          "hi": 5,
+          "mid": 2,
+          "i": 2,
+          "j": 3,
+          "k": 5
+        },
+        "pointers": {
+          "lo": 0,
+          "mid": 2,
+          "i": 2,
+          "j": 3
+        },
+        "line": 19,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              2,
+              3
+            ],
+            "style": "COMPARE"
+          }
+        ]
+      },
+      {
+        "title": "while j < len(right):",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ]
+        },
+        "variables": {
+          "lo": 0,
+          "hi": 5,
+          "mid": 2,
+          "i": 2,
+          "j": 3,
+          "k": 5
+        },
+        "pointers": {
+          "lo": 0,
+          "mid": 2,
+          "i": 2,
+          "j": 3
+        },
+        "line": 23,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              2,
+              3
+            ],
+            "style": "COMPARE"
+          }
+        ]
+      },
+      {
+        "title": "return a",
+        "explanation": "Execute this Python line using the displayed variables. The array shows its state before the line runs.",
+        "state": {
+          "array": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ]
+        },
+        "variables": {},
+        "pointers": {},
+        "line": 28,
+        "lang": "python",
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [],
+            "style": "ACTIVE"
+          }
+        ]
+      },
+      {
+        "title": "Fully sorted",
+        "explanation": "All values are now in ascending order. Every input value is preserved.",
+        "state": {
+          "array": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ]
+        },
+        "variables": {},
+        "highlights": [
+          {
+            "target": "array",
+            "indices": [
+              0,
+              1,
+              2,
+              3,
+              4
+            ],
+            "style": "DONE"
+          }
+        ]
+      }
     ]
   }
 }

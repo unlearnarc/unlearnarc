@@ -170,9 +170,20 @@ class SpeechService {
 
   cancel() {
     if (!isTtsSupported()) return;
+    // Detach handlers on the outgoing utterance so its onend/onerror (which
+    // Chrome may still fire after cancel()) can't clobber a freshly-started one.
+    if (this.current) {
+      this.current.onend = null;
+      this.current.onerror = null;
+    }
     window.speechSynthesis.cancel();
     this.current = null;
     this.emit({ status: 'idle', activeId: null });
+  }
+
+  /** The utterance currently queued/playing, if any. */
+  get currentUtterance(): SpeechSynthesisUtterance | null {
+    return this.current;
   }
 
   /** Toggle: if this id is playing → stop; otherwise start speaking it. */

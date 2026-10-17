@@ -15,6 +15,8 @@ import { AlgorithmsPage } from './pages/AlgorithmsPage';
 import { AnimationScenesPage } from './pages/AnimationScenesPage';
 import { ContestsPage } from './pages/ContestsPage';
 import { RolesPage } from './pages/RolesPage';
+import { NotesPage } from './pages/NotesPage';
+import { AiAuthoringPage } from './pages/AiAuthoringPage';
 
 const qc = new QueryClient({
   defaultOptions: {
@@ -40,11 +42,13 @@ function App() {
                 <Route path="skills" element={<SkillsPage />} />
                 <Route path="roles" element={<RolesPage />} />
                 <Route path="courses" element={<CoursesPage />} />
+                <Route path="notes" element={<NotesPage />} />
                 <Route path="question-pools" element={<QuestionPoolsPage />} />
                 <Route path="contests" element={<ContestsPage />} />
                 <Route path="interview-experiences" element={<InterviewExperiencesPage />} />
                 <Route path="algorithms" element={<AlgorithmsPage />} />
                 <Route path="animations" element={<AnimationScenesPage />} />
+                <Route path="ai-authoring" element={<AiAuthoringPage />} />
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Route>
             </Route>

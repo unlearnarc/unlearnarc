@@ -20,7 +20,7 @@ public class Course {
     private String name;
 
     @Column(name = "img_url", nullable = false)
-    private Long imgUrl;
+    private String imgUrl;
 
     @Column(name = "total_time", nullable = false)
     private LocalTime totalTime;

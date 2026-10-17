@@ -1,0 +1,31 @@
+.ua-animation-focus { min-width: 0; }
+.ua-focus-launch, .ua-focus-header button { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; border-radius: 10px; padding: 10px 14px; font-size: 13px; font-weight: 700; }
+.ua-focus-launch { width: 100%; margin-bottom: 10px; background: var(--ua-primary-500, #3288f5); color: white; }
+.ua-focus-launch span { margin-inline-start: auto; font-size: 11px; font-weight: 400; }
+.ua-focus-stage { position: static; width: 100%; max-width: none; max-height: none; padding: 0; margin: 0; border: 0; background: transparent; color: var(--ua-text-primary); min-width: 0; overflow: visible; }
+.ua-focus-stage:not([open]) { display: none; }
+.ua-focus-stage.is-expanded { position: fixed; inset: 0; width: 100%; height: 100%; height: 100dvh; max-width: none; max-height: none; box-sizing: border-box; padding: max(10px, env(safe-area-inset-top)) max(10px, env(safe-area-inset-right)) max(10px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left)); background: var(--ua-surface, #16232e); overflow: auto; overscroll-behavior: contain; }
+.ua-focus-header { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+.ua-focus-header strong { min-width: 0; font-size: 14px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.ua-focus-header button { flex-shrink: 0; background: var(--ua-primary-500, #3288f5); color: white; }
+.ua-focus-content, .ua-focus-content > * { min-width: 0; }
+.ua-focus-stage.is-expanded .ua-animation-layout { display: block; }
+.ua-focus-stage.is-expanded .ua-animation-secondary { display: none; }
+.ua-focus-stage.is-expanded .ua-animation-canvas { display: flex; align-items: center; justify-content: center; height: max(120px, calc(100dvh - 230px)); }
+.ua-animation-canvas { min-width: 0; }
+.ua-animation-player { min-width: 0; }
+.ua-animation-player [aria-label="Animation playback controls"] button { min-height: 44px; }
+.ua-animation-player [aria-label="Animation playback controls"] input { min-width: 0; }
+@media (max-width: 640px) {
+  .ua-focus-launch span { display: none; }
+  .ua-focus-header strong { font-size: 12px; }
+  .ua-focus-header button { padding: 8px; font-size: 12px; }
+  .ua-animation-player [aria-label="Animation playback controls"] { gap: 8px; padding: 8px; }
+  .ua-animation-player [aria-label="Animation playback controls"] > div:first-child { gap: 4px; }
+  .ua-animation-player [aria-label="Animation playback controls"] > div:first-child button { min-width: 36px; padding-inline: 6px; }
+  .ua-animation-player [aria-label="Animation playback controls"] > div:first-child button[aria-label="Play"],
+  .ua-animation-player [aria-label="Animation playback controls"] > div:first-child button[aria-label="Pause"] { min-width: 64px; }
+  .ua-animation-player [aria-label="Animation playback controls"] > div:nth-child(2) { order: 3; flex-basis: 100%; min-width: 0; gap: 8px; }
+  .ua-animation-player [aria-label="Animation playback controls"] > label { margin-inline-start: auto; }
+  .ua-animation-player [aria-label="Animation playback controls"] select { min-height: 44px; }
+}

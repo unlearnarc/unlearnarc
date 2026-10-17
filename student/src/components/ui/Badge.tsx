@@ -3,10 +3,10 @@ import clsx from 'clsx';
 
 /** Maps a semantic label to one of the token-driven ua-badge variants. */
 const variantMap: Record<string, string> = {
-  BEGINNER:         'ua-badge--success',
-  INTERMEDIATE:     'ua-badge--primary',
-  ADVANCED:         'ua-badge--warning',
-  EXPERT:           'ua-badge--danger',
+  BEGINNER:         'ua-badge--beginner',
+  INTERMEDIATE:     'ua-badge--intermediate',
+  ADVANCED:         'ua-badge--advanced',
+  EXPERT:           'ua-badge--expert',
   EASY:             'ua-badge--success',
   MEDIUM:           'ua-badge--warning',
   HARD:             'ua-badge--danger',

@@ -1,3 +1,6 @@
+export { AriaMascot } from './AriaMascot';
+export type { AriaMascotHandle, AriaMascotProps } from './AriaMascot';
+export type { MascotState } from './ariaData';
 export { MascotProvider, useMascot } from './MascotContext';
 export { CoachBuddy } from './CoachBuddy';
 export { MascotAvatar } from './MascotAvatar';

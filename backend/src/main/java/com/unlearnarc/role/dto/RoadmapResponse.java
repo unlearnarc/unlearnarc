@@ -13,7 +13,7 @@ import java.util.List;
  *
  * Courses are grouped into ordered "steps" by skill level (BEGINNER → EXPERT)
  * so the UI can render a progressive path. Each course carries a
- * {@code completed} flag computed from the current user's enrollments.
+ * {@code completed} flag computed from the current user's persisted quiz results.
  */
 @Data
 @Builder
@@ -56,11 +56,15 @@ public class RoadmapResponse {
     public static class CourseNode {
         private String courseId;
         private String courseName;
-        private Long imgUrl;
+        private String imgUrl;
         private CourseLevel level;
         private Integer topicsCount;
         private String totalTime;          // formatted HH:mm:ss
-        private boolean completed;         // derived from enrollment (user-scoped)
+        private boolean completed;         // quiz mastery, not enrollment
+        private boolean enrolled;
+        private int progressPercent;
+        private int completedTopics;
+        private Double bestCourseScore;
     }
 
     @Data

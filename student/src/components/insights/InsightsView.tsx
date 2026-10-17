@@ -10,8 +10,26 @@ import {
   AlertTriangle, Flame, BarChart3, Lightbulb, ArrowRight, Sparkles,
 } from 'lucide-react';
 import clsx from 'clsx';
+import { PracticeStat } from '../ui/PracticeLayout';
+import { CourseRecommendations } from './CourseRecommendations';
 
 // ── Small helpers ──────────────────────────────────────────────────────────────
+
+/** Matches a bare UUID (v4-ish) so we never render a raw id as an entity name. */
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/**
+ * Safe display name for a scoped entity. Guards against legacy history rows whose
+ * `entityName` was persisted as a raw UUID: prefer a real name, fall back to the
+ * pool name, else a short id fragment — never the full UUID.
+ */
+const displayEntityName = (name?: string, poolName?: string): string => {
+  if (name && !UUID_RE.test(name)) return name;
+  if (poolName && !UUID_RE.test(poolName)) return poolName;
+  if (name) return `${name.slice(0, 8)}…`;
+  return 'Unknown area';
+};
+
 const fmtTime = (s: number) => {
   if (!s) return '0m';
   const h = Math.floor(s / 3600);
@@ -20,8 +38,8 @@ const fmtTime = (s: number) => {
 };
 
 const severityStyles: Record<InsightSeverity, { bar: string; chip: string; label: string }> = {
-  CRITICAL:   { bar: 'bg-danger',  chip: 'bg-danger-soft text-danger',   label: 'Critical' },
-  NEEDS_WORK: { bar: 'bg-warning', chip: 'bg-warning-soft text-warning', label: 'Needs work' },
+  CRITICAL:   { bar: 'bg-danger',  chip: 'bg-danger-soft text-danger',   label: 'Start here' },
+  NEEDS_WORK: { bar: 'bg-warning', chip: 'bg-warning-soft text-warning', label: 'Keep practicing' },
   ON_TRACK:   { bar: 'bg-success', chip: 'bg-success-soft text-success', label: 'On track' },
 };
 
@@ -37,12 +55,12 @@ const Panel: React.FC<{
   bodyClassName?: string;
   children: React.ReactNode;
 }> = ({ title, icon, action, className, bodyClassName, children }) => (
-  <section className={clsx('card card--flat border border-border rounded-[14px] p-4 sm:p-5', className)}>
+  <section className={clsx('insight-panel card card--flat border border-border', className)}>
     {(title || action) && (
       <header className="flex items-center justify-between mb-3.5">
-        <div className="flex items-center gap-2 min-w-0">
+        <div className="flex flex-wrap items-center gap-2 min-w-0">
           {icon}
-          {title && <h3 className="text-sm font-semibold text-text-primary truncate">{title}</h3>}
+          {title && <h2 className="text-sm font-semibold text-text-primary break-words">{title}</h2>}
         </div>
         {action}
       </header>
@@ -64,7 +82,7 @@ const TrendPill: React.FC<{ label: TrendLabel; delta: number }> = ({ label, delt
       <Icon size={13} />
       {cfg.text}
       {label !== 'INSUFFICIENT_DATA' && delta !== 0 && (
-        <span className="opacity-80">{delta > 0 ? '+' : ''}{Math.round(delta)}%</span>
+        <span>{delta > 0 ? '+' : ''}{Math.round(delta)}%</span>
       )}
     </span>
   );
@@ -79,7 +97,7 @@ const Sparkline: React.FC<{ points: number[] }> = ({ points }) => {
   const d = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${pad + i * step},${y(p)}`).join(' ');
   const area = `${d} L ${pad + (points.length - 1) * step},${h - pad} L ${pad},${h - pad} Z`;
   return (
-    <svg viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none" className="w-full h-10">
+    <svg viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none" className="insight-sparkline w-full" role="img" aria-label={`Scores from oldest to newest: ${points.map(p => `${Math.round(p)}%`).join(", ")}` }>
       <path d={area} className="fill-primary-500/10" />
       <path d={d} className="stroke-primary-500" strokeWidth={1.2} fill="none"
         strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
@@ -87,42 +105,23 @@ const Sparkline: React.FC<{ points: number[] }> = ({ points }) => {
   );
 };
 
-// ── KPI tile (compact, flat) ─────────────────────────────────────────────────────
-const Kpi: React.FC<{ icon: React.ElementType; label: string; value: string; color: string }> =
-  ({ icon: Icon, label, value, color }) => (
-    <div className="card card--flat border border-border rounded-[12px] p-3.5 flex items-center gap-3">
-      <div className={clsx('w-9 h-9 rounded-lg flex items-center justify-center shrink-0', color)}>
-        <Icon size={16} />
-      </div>
-      <div className="min-w-0">
-        <p className="text-lg font-bold text-text-primary leading-none">{value}</p>
-        <p className="text-[11px] text-text-muted mt-1 truncate">{label}</p>
-      </div>
-    </div>
-  );
-
 // ── Dashboard section ───────────────────────────────────────────────────────────
 const DashboardSection: React.FC<{ data: InsightsDashboard }> = ({ data }) => {
   const series = [...data.recentScores].reverse().map(p => p.scorePercentage);
-  const kpis = [
-    { icon: Target, label: 'Avg score', value: `${Math.round(data.averageScore)}%`, color: 'bg-primary-50 text-primary-500' },
-    { icon: Award,  label: 'Best score', value: `${Math.round(data.bestScore)}%`,   color: 'bg-achievement-soft text-achievement' },
-    { icon: CheckCircle, label: 'Pass rate', value: `${Math.round(data.passRate)}%`, color: 'bg-success-soft text-success' },
-    { icon: Clock,  label: 'Time spent', value: fmtTime(data.totalTimeSeconds),      color: 'bg-surface-soft text-text-secondary' },
-  ];
-
   return (
-    <div className="space-y-4">
-      {/* KPI grid — 2 cols mobile, 4 cols desktop */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        {kpis.map(k => <Kpi key={k.label} {...k} />)}
+    <div className="space-y-6">
+      <div className="practice-stats">
+        <PracticeStat icon={Target} label="Average score" value={`${Math.round(data.averageScore)}%`} />
+        <PracticeStat icon={Award} label="Personal best" value={`${Math.round(data.bestScore)}%`} tone="gold" />
+        <PracticeStat icon={CheckCircle} label="Pass rate" value={`${Math.round(data.passRate)}%`} tone="mint" />
+        <PracticeStat icon={Clock} label="Time invested" value={fmtTime(data.totalTimeSeconds)} tone="warm" />
       </div>
 
       {/* 2-col content grid, single col on mobile */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
         {/* Score trend */}
         <Panel
-          title="Score trend"
+          title="Your growth trail"
           icon={<BarChart3 size={16} className="text-primary-500" />}
           action={<TrendPill label={data.trendLabel} delta={data.trendDelta} />}
         >
@@ -140,7 +139,7 @@ const DashboardSection: React.FC<{ data: InsightsDashboard }> = ({ data }) => {
         </Panel>
 
         {/* Difficulty accuracy */}
-        <Panel title="Accuracy by difficulty" icon={<Target size={16} className="text-primary-500" />}>
+        <Panel title="Your skill power-ups" icon={<Target size={16} className="text-primary-500" />}>
           <div className="space-y-3">
             {data.difficultyAccuracy.map(d => (
               <div key={d.difficulty}>
@@ -161,15 +160,15 @@ const DashboardSection: React.FC<{ data: InsightsDashboard }> = ({ data }) => {
 
         {/* Top weak area — spans both columns on desktop */}
         {data.topWeakArea && (
-          <Panel className="lg:col-span-2 border-warning/30 bg-warning-soft/30">
+          <Panel className="lg:col-span-2 insight-panel--opportunity">
             <div className="flex items-start gap-3">
               <div className="w-9 h-9 rounded-lg bg-warning-soft text-warning flex items-center justify-center shrink-0">
                 <AlertTriangle size={17} />
               </div>
               <div className="min-w-0">
-                <p className="text-xs text-text-muted mb-0.5">Your weakest area right now</p>
+                <p className="text-xs text-text-muted mb-0.5">Your next learning opportunity</p>
                 <p className="text-sm font-semibold text-text-primary">
-                  {data.topWeakArea.entityName}
+                  {displayEntityName(data.topWeakArea.entityName, data.topWeakArea.poolName)}
                   <span className="ml-2"><Badge label={data.topWeakArea.entityType} /></span>
                 </p>
                 <p className="text-xs text-text-secondary mt-1">
@@ -189,10 +188,10 @@ const DashboardSection: React.FC<{ data: InsightsDashboard }> = ({ data }) => {
 const WeakAreaCard: React.FC<{ w: ImprovementReport['weakAreas'][number] }> = ({ w }) => {
   const sv = severityStyles[w.severity];
   return (
-    <div className="card card--flat border border-border rounded-[12px] p-4">
-      <div className="flex items-center justify-between gap-2 mb-2">
-        <div className="flex items-center gap-2 min-w-0">
-          <span className="text-sm font-semibold text-text-primary truncate">{w.entityName}</span>
+    <div className="insight-mini-card card card--flat border border-border">
+      <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+        <div className="flex flex-wrap items-center gap-2 min-w-0">
+          <span className="text-sm font-semibold text-text-primary break-words">{displayEntityName(w.entityName, w.poolName)}</span>
           <Badge label={w.entityType} />
         </div>
         <span className={clsx('text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0', sv.chip)}>{sv.label}</span>
@@ -215,7 +214,7 @@ const WeakAreaCard: React.FC<{ w: ImprovementReport['weakAreas'][number] }> = ({
 const ImprovementSection: React.FC<{ data: ImprovementReport }> = ({ data }) => (
   <div className="space-y-4">
     {/* Summary banner — full width */}
-    <Panel className="flex items-start gap-3 bg-primary-50/40 border-primary-200">
+    <Panel className="insight-panel--summary">
       <div className="w-9 h-9 rounded-lg bg-primary-50 text-primary-500 flex items-center justify-center shrink-0">
         <Sparkles size={17} />
       </div>
@@ -229,7 +228,7 @@ const ImprovementSection: React.FC<{ data: ImprovementReport }> = ({ data }) => 
     {/* 2-col: weak areas (left) | difficulty gaps + recurring (right) */}
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
       {/* Weak areas */}
-      <Panel title="Weak areas" icon={<TrendingDown size={16} className="text-warning" />}>
+      <Panel title="Skills to level up" icon={<TrendingDown size={16} className="text-warning" />}>
         {data.weakAreas.length === 0 ? (
           <div className="text-center py-6">
             <CheckCircle size={22} className="text-success mx-auto mb-2" />
@@ -245,12 +244,12 @@ const ImprovementSection: React.FC<{ data: ImprovementReport }> = ({ data }) => 
       {/* Right column: difficulty gaps + recurring mistakes stacked */}
       <div className="space-y-4">
         {data.difficultyGaps.length > 0 && (
-          <Panel title="Difficulty gaps" icon={<BarChart3 size={16} className="text-primary-500" />}>
+          <Panel title="Your next challenge levels" icon={<BarChart3 size={16} className="text-primary-500" />}>
             <div className="space-y-2.5">
               {data.difficultyGaps.map(g => {
                 const sv = severityStyles[g.severity];
                 return (
-                  <div key={g.difficulty} className="card card--flat border border-border rounded-[12px] p-3.5">
+                  <div key={g.difficulty} className="insight-mini-card card card--flat border border-border">
                     <div className="flex items-center justify-between mb-1.5">
                       <div className="flex items-center gap-2">
                         <Badge label={g.difficulty} />
@@ -268,10 +267,10 @@ const ImprovementSection: React.FC<{ data: ImprovementReport }> = ({ data }) => 
         )}
 
         {data.recurringMistakes.length > 0 && (
-          <Panel title="Questions you keep missing" icon={<Flame size={16} className="text-danger" />}>
+          <Panel title="Give these another go" icon={<Flame size={16} className="text-danger" />}>
             <div className="space-y-2.5">
               {data.recurringMistakes.map(m => (
-                <div key={m.questionId} className="card card--flat border border-border rounded-[12px] p-3.5">
+                <div key={m.questionId} className="insight-mini-card card card--flat border border-border">
                   <div className="flex items-start gap-2 mb-1.5">
                     <Badge label={m.difficulty} />
                     <span className="text-[11px] font-medium text-danger ml-auto shrink-0">
@@ -313,7 +312,6 @@ export const InsightsView: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
   const improvementQ = useQuery({
     queryKey: ['insights-improvement', windowDays],
     queryFn: () => testAPI.improvementReport(windowDays),
-    enabled: tab === 'improvement',
   });
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -324,54 +322,23 @@ export const InsightsView: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
   const noData = tab === 'dashboard' && !dashboardQ.isLoading && dashboard && dashboard.totalAttempts === 0;
 
   return (
-    <div className="max-w-5xl mx-auto space-y-4 animate-slide-up">
-      {/* Header + controls — single flat toolbar row, wraps on mobile */}
-      <div className="flex flex-wrap items-center gap-3">
-        <div className="flex items-center gap-2 mr-auto">
-          <Sparkles size={20} className="text-primary-500" />
-          <h1 className="text-xl font-bold text-text-primary">Deep Insights</h1>
+    <div className="practice-page">
+      <header className="flex flex-wrap items-center justify-between gap-3">
+        <h1 className="text-xl font-bold tracking-tight sm:text-2xl">Deep Insights</h1>
+        {onBack && <button type="button" onClick={onBack} className="practice-button"><ArrowRight size={16} className="rotate-180 ua-flip-rtl" aria-hidden="true" />Back to history</button>}
+      </header>
+      <div className="practice-toolbar">
+        <div className="practice-segment" role="group" aria-label="Insight view">
+          {([['dashboard', 'Your progress'], ['improvement', 'Level-up plan']] as const).map(([k, label]) => <button key={k} aria-pressed={tab === k} onClick={() => setTab(k)}>{label}</button>)}
         </div>
-
-        <div className="inline-flex rounded-[10px] bg-surface-soft p-1">
-          {([['dashboard', 'Dashboard'], ['improvement', 'Improvement']] as const).map(([k, lbl]) => (
-            <button
-              key={k}
-              onClick={() => setTab(k)}
-              className={clsx(
-                'px-4 py-1.5 rounded-[8px] text-sm font-medium transition',
-                tab === k ? 'bg-surface text-primary-500 shadow-sm' : 'text-text-secondary hover:text-text-primary'
-              )}
-            >
-              {lbl}
-            </button>
-          ))}
+        <div className="practice-segment" role="group" aria-label="Time range">
+          {WINDOWS.map(w => <button key={w.label} aria-pressed={windowDays === w.value} onClick={() => setWindowDays(w.value)}>{w.label}</button>)}
         </div>
-
-        <div className="inline-flex rounded-[10px] bg-surface-soft p-1">
-          {WINDOWS.map(w => (
-            <button
-              key={w.label}
-              onClick={() => setWindowDays(w.value)}
-              className={clsx(
-                'px-3 py-1.5 rounded-[8px] text-xs font-medium transition',
-                windowDays === w.value ? 'bg-surface text-primary-500 shadow-sm' : 'text-text-secondary hover:text-text-primary'
-              )}
-            >
-              {w.label}
-            </button>
-          ))}
-        </div>
-
-        {onBack && (
-          <button onClick={onBack} className="btn-secondary text-sm">
-            <ArrowRight size={14} className="rotate-180" /> Back
-          </button>
-        )}
       </div>
-
+      {(tab === 'dashboard' ? dashboardQ.isError : improvementQ.isError) && <div className="practice-state" role="alert"><p>We couldn’t load your learning story. Let’s try again.</p><button className="practice-button" onClick={() => { void (tab === 'dashboard' ? dashboardQ.refetch() : improvementQ.refetch()); }}>Try again</button></div>}
       {/* Empty state */}
       {noData && (
-        <div className="card card--flat border border-border rounded-[14px] p-10 text-center">
+        <div className="practice-state">
           <BarChart3 size={28} className="text-text-muted mx-auto mb-3" />
           <p className="text-sm text-text-secondary">No test data in this window yet.</p>
           <p className="text-xs text-text-muted mt-1">Take a test or widen the time range.</p>
@@ -389,6 +356,9 @@ export const InsightsView: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
         improvementQ.isLoading
           ? <div className="flex justify-center py-16"><Spinner size="lg" /></div>
           : report && <ImprovementSection data={report} />
+      )}
+      {report && report.weakAreas.filter(w => w.severity !== 'ON_TRACK').length <= 1 && (
+        <CourseRecommendations report={report} />
       )}
     </div>
   );

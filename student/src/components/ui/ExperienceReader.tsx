@@ -5,7 +5,8 @@ import {
 } from 'lucide-react';
 import { formatDate } from '../../i18n/format';
 import { RichTextContent } from './RichTextContent';
-import { SpeakButton } from './SpeakButton';
+// Temporarily disabled: read-aloud UI.
+// import { SpeakButton } from './SpeakButton';
 import type { InterviewExperience } from '../../types';
 
 interface ExperienceReaderProps {
@@ -95,11 +96,11 @@ export const ExperienceReader: React.FC<ExperienceReaderProps> = ({
             </span>
           </div>
 
-          {/* Read-aloud for the (dynamic) story body. Renders only when the
-              user enabled TTS in Profile and the browser supports it. */}
+          {/* Temporarily disabled: read-aloud for the story body.
           <div className="mb-4">
             <SpeakButton text={exp.experience} id={`exp-${exp.id}`} html label />
           </div>
+          */}
 
           <RichTextContent html={exp.experience} className="text-text-secondary text-[15px]" />
         </article>
