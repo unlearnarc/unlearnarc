@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="480" height="270" viewBox="0 0 480 270">
+<style>
+:root { color-scheme:light dark; --bg:#f8faff; --surface:#fff; --soft:#eff6ff; --ink:#1e293b; --border:#94a3b8; --blue:#2563eb; }
+@media(prefers-color-scheme:dark) { :root { --bg:#111827; --surface:#1e293b; --soft:#172554; --ink:#e2e8f0; --border:#64748b; --blue:#60a5fa; } }
+text { fill:var(--ink); font-family:system-ui,sans-serif; stroke:none; }
+.box { fill:var(--surface); stroke:var(--border); }
+.active { fill:var(--soft); stroke:var(--blue); }
+.edge { fill:none; stroke:var(--border); }
+.path-active { fill:none; stroke:var(--blue); }
+rect,circle,path { stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round; }
+</style>
+<rect width="480" height="270" fill="var(--bg)"/>
+<path class="path-active" d="M65 65 L230 45"/><path class="path-active" d="M65 65 L150 165"/><path class="path-active" d="M230 45 L415 70"/><path class="edge" d="M230 45 L340 165"/><path class="edge" d="M150 165 L340 165"/><path class="edge" d="M340 165 L245 230"/><path class="edge" d="M415 70 L340 165"/><circle class="active" cx="65" cy="65" r="19"/><text x="65" y="69" font-size="13" text-anchor="middle">A</text><circle class="active" cx="230" cy="45" r="19"/><text x="230" y="49" font-size="13" text-anchor="middle">B</text><circle class="active" cx="415" cy="70" r="19"/><text x="415" y="74" font-size="13" text-anchor="middle">C</text><circle class="active" cx="150" cy="165" r="19"/><text x="150" y="169" font-size="13" text-anchor="middle">D</text><circle class="box" cx="340" cy="165" r="19"/><text x="340" y="169" font-size="13" text-anchor="middle">E</text><circle class="box" cx="245" cy="230" r="19"/><text x="245" y="234" font-size="13" text-anchor="middle">F</text>
+</svg>

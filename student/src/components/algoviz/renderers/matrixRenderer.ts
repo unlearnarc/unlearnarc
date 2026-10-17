@@ -1,4 +1,4 @@
-import type { Renderer } from "./index";
+import type { Renderer } from "./shared";
 
 /**
  * Renders state.matrix (number[][]) as a square-celled grid.

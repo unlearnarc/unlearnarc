@@ -52,7 +52,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
         String email = oAuth2User.getAttribute("email");
 
-        log.info("[OAUTH2] Google login success for email: {}", email);
+        log.info("[OAUTH2] Google login succeeded");
 
         if (email == null || email.isBlank()) {
             log.error("[OAUTH2] No email in Google profile — cannot proceed.");
@@ -65,7 +65,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         User user = userRepository.findByEmail(email).orElse(null);
 
         if (user == null) {
-            log.error("[OAUTH2] User not found in DB after OAuth2 login: {}", email);
+            log.error("[OAUTH2] Account setup failed after login");
             getRedirectStrategy().sendRedirect(request, response,
                     frontendFailureUri + "?error=" +
                     URLEncoder.encode("Account setup failed, please try again", StandardCharsets.UTF_8));
@@ -76,7 +76,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         String accessToken  = jwtTokenProvider.generateUserAccessToken(user);
         String refreshToken = jwtTokenProvider.generateUserRefreshToken(user);
 
-        log.info("[OAUTH2] JWT issued for user: {} ({})", user.getName(), email);
+        log.info("[OAUTH2] Session issued");
 
         // Build the frontend redirect URL
         String targetUrl = UriComponentsBuilder
@@ -99,7 +99,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
             session.invalidate();
         }
 
-        log.debug("[OAUTH2] Redirecting to: {}", targetUrl);
+        log.debug("[OAUTH2] Redirecting to frontend callback");
         getRedirectStrategy().sendRedirect(request, response, targetUrl);
     }
 }

@@ -48,6 +48,27 @@ var DEFAULT_STYLE_COLORS = {
   PIVOT: "#eab308"
 };
 
+// src/renderers/shared.ts
+function resolveTheme(theme) {
+  return {
+    background: theme?.background ?? "#0f172a",
+    elementFill: theme?.elementFill ?? "#1e293b",
+    elementStroke: theme?.elementStroke ?? "#475569",
+    textColor: theme?.textColor ?? "#e2e8f0",
+    font: theme?.font ?? "600 14px ui-sans-serif, system-ui, sans-serif",
+    styleColors: { ...DEFAULT_STYLE_COLORS, ...theme?.styleColors ?? {} }
+  };
+}
+function highlightMap(step, target, styleColors) {
+  const map = /* @__PURE__ */ new Map();
+  for (const h of step.highlights ?? []) {
+    if (h.target !== target) continue;
+    const color = styleColors[h.style] ?? "#888";
+    for (const idx of h.indices ?? []) map.set(String(idx), color);
+  }
+  return map;
+}
+
 // src/renderers/arrayRenderer.ts
 var renderArray = (rc, step) => {
   const { ctx, width, height, theme } = rc;
@@ -226,25 +247,6 @@ var renderMatrix = (rc, step) => {
 };
 
 // src/renderers/index.ts
-function resolveTheme(theme) {
-  return {
-    background: theme?.background ?? "#0f172a",
-    elementFill: theme?.elementFill ?? "#1e293b",
-    elementStroke: theme?.elementStroke ?? "#475569",
-    textColor: theme?.textColor ?? "#e2e8f0",
-    font: theme?.font ?? "600 14px ui-sans-serif, system-ui, sans-serif",
-    styleColors: { ...DEFAULT_STYLE_COLORS, ...theme?.styleColors ?? {} }
-  };
-}
-function highlightMap(step, target, styleColors) {
-  const map = /* @__PURE__ */ new Map();
-  for (const h of step.highlights ?? []) {
-    if (h.target !== target) continue;
-    const color = styleColors[h.style] ?? "#888";
-    for (const idx of h.indices ?? []) map.set(String(idx), color);
-  }
-  return map;
-}
 var RENDERERS = {
   ARRAY: renderArray,
   STACK: renderStack,

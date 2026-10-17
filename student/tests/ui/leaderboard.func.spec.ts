@@ -33,7 +33,7 @@ test('leaderboard colors remain readable in both themes and on narrow phones', a
     const scan = await new AxeBuilder({ page }).include('.leaderboard-page').withRules(['color-contrast']).analyze();
     expect(scan.violations).toEqual([]);
     await page.getByRole('button', { name: 'Region', exact: true }).click();
-    await expect(page.getByRole('combobox')).toHaveValue('India');
+    await expect(page.getByRole('combobox', { name: 'Select region…' })).toHaveValue('India');
     await expect(page.getByRole('button', { name: 'Region', exact: true })).toHaveAttribute('aria-pressed', 'true');
     await page.getByRole('button', { name: 'Global', exact: true }).click();
   }

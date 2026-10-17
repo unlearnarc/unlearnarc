@@ -36,6 +36,9 @@ public class Algorithm {
     @Column(name = "summary", length = 1000)
     private String summary;
 
+    @Column(name = "thumbnail_url", length = 1024)
+    private String thumbnailUrl;
+
     @Lob
     @Column(name = "usage_notes", columnDefinition = "TEXT")
     private String usage;

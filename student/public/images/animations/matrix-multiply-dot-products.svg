@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="480" height="270" viewBox="0 0 480 270">
+<style>
+:root { color-scheme:light dark; --bg:#f8faff; --surface:#fff; --soft:#eff6ff; --ink:#1e293b; --border:#94a3b8; --blue:#2563eb; }
+@media(prefers-color-scheme:dark) { :root { --bg:#111827; --surface:#1e293b; --soft:#172554; --ink:#e2e8f0; --border:#64748b; --blue:#60a5fa; } }
+text { fill:var(--ink); font-family:system-ui,sans-serif; stroke:none; }
+.box { fill:var(--surface); stroke:var(--border); }
+.active { fill:var(--soft); stroke:var(--blue); }
+.edge { fill:none; stroke:var(--border); }
+.path-active { fill:none; stroke:var(--blue); }
+rect,circle,path { stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round; }
+</style>
+<rect width="480" height="270" fill="var(--bg)"/>
+<rect class="active" x="35" y="88" width="34" height="34" rx="6"/><text x="52.0" y="109.0" font-size="13" text-anchor="middle">1</text><rect class="active" x="73" y="88" width="34" height="34" rx="6"/><text x="90.0" y="109.0" font-size="13" text-anchor="middle">2</text><rect class="box" x="35" y="126" width="34" height="34" rx="6"/><text x="52.0" y="147.0" font-size="13" text-anchor="middle">3</text><rect class="box" x="73" y="126" width="34" height="34" rx="6"/><text x="90.0" y="147.0" font-size="13" text-anchor="middle">4</text><text x="155" y="130" font-size="22" text-anchor="middle">×</text><rect class="active" x="192" y="88" width="34" height="34" rx="6"/><text x="209.0" y="109.0" font-size="13" text-anchor="middle">5</text><rect class="box" x="230" y="88" width="34" height="34" rx="6"/><text x="247.0" y="109.0" font-size="13" text-anchor="middle">6</text><rect class="active" x="192" y="126" width="34" height="34" rx="6"/><text x="209.0" y="147.0" font-size="13" text-anchor="middle">7</text><rect class="box" x="230" y="126" width="34" height="34" rx="6"/><text x="247.0" y="147.0" font-size="13" text-anchor="middle">8</text><text x="310" y="130" font-size="22" text-anchor="middle">=</text><rect class="active" x="350" y="88" width="34" height="34" rx="6"/><text x="367.0" y="109.0" font-size="13" text-anchor="middle">19</text><rect class="box" x="388" y="88" width="34" height="34" rx="6"/><text x="405.0" y="109.0" font-size="13" text-anchor="middle">22</text><rect class="box" x="350" y="126" width="34" height="34" rx="6"/><text x="367.0" y="147.0" font-size="13" text-anchor="middle">43</text><rect class="box" x="388" y="126" width="34" height="34" rx="6"/><text x="405.0" y="147.0" font-size="13" text-anchor="middle">50</text><text x="240" y="209" font-size="13" text-anchor="middle">1 × 5 + 2 × 7 = 19</text>
+</svg>

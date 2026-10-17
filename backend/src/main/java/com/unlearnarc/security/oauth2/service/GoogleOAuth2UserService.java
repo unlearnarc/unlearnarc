@@ -62,7 +62,7 @@ public class GoogleOAuth2UserService extends DefaultOAuth2UserService {
                 UpsertResult result = self.upsertUser(userInfo);
                 Map<String, Object> claims = new HashMap<>(attributes);
                 claims.put("ua_new_user", result.isNewUser());
-                log.info("[OAUTH2] User authenticated via Google (OIDC): {}", result.user().getEmail());
+                log.info("[OAUTH2] User authenticated via Google (OIDC)");
 
                 // Return an OidcUser carrying ROLE_USER + the original id-token/userinfo.
                 return new DefaultOidcUser(
@@ -93,7 +93,7 @@ public class GoogleOAuth2UserService extends DefaultOAuth2UserService {
         UpsertResult result = upsertUser(userInfo);
         attributes = new HashMap<>(attributes);
         attributes.put("ua_new_user", result.isNewUser());
-        log.info("[OAUTH2] User authenticated via Google: {}", result.user().getEmail());
+        log.info("[OAUTH2] User authenticated via Google");
 
         // 5. Return a DefaultOAuth2User the security context can work with
         return new DefaultOAuth2User(

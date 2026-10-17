@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import {
   ArrowDown, ArrowRight, BookOpen, Check, ChevronDown, Code2, Compass,
-  Globe2, Layers3, ListChecks, Map, Pause, Play, Sparkles, Target, Terminal,
+  Globe2, Layers3, ListChecks, Map, Play, Sparkles, Target, Terminal,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { Logo } from '../components/ui/Logo';
@@ -28,7 +28,7 @@ const FAQS = [
 ];
 
 export function LandingPage() {
-  const { loginWithGoogle, isAuthenticated } = useAuth();
+  const { isAuthenticated } = useAuth();
   const root = useRef<HTMLDivElement>(null);
   const [motionEnabled, setMotionEnabled] = useState(() => !window.matchMedia('(prefers-reduced-motion: reduce)').matches);
 
@@ -90,7 +90,7 @@ export function LandingPage() {
             <a href="#playground">Try it out</a>
             <a href="#how">Your learning path</a>
           </nav>
-          <button onClick={loginWithGoogle} className="landing-button small">Get started <ArrowRight size={16} aria-hidden="true" /></button>
+          <Link to="/login" className="landing-button small">Get started <ArrowRight size={16} aria-hidden="true" /></Link>
         </div>
       </header>
 
@@ -104,7 +104,7 @@ export function LandingPage() {
               <h1 id="hero-title">A clearer way to learn.<br /><span>See it. Try it.<br />Make it yours.</span></h1>
               <p>One calm workspace for your next big idea. Follow a learning path, explore concepts in motion, and practise until it clicks.</p>
               <div className="landing-actions">
-                <button onClick={loginWithGoogle} className="landing-button">Start your learning arc <ArrowRight size={18} aria-hidden="true" /></button>
+                <Link to="/login" className="landing-button">Start your learning arc <ArrowRight size={18} aria-hidden="true" /></Link>
                 <a href="#playground" className="landing-button secondary"><Play size={16} aria-hidden="true" /> Try the interactive demo</a>
               </div>
               <div className="landing-hero-notes"><span><Check size={15} aria-hidden="true" /> Learn at your pace</span><span><Check size={15} aria-hidden="true" /> Right in your browser</span></div>
@@ -118,7 +118,7 @@ export function LandingPage() {
               <span className="landing-art-spark spark-one">+</span><span className="landing-art-spark spark-two">✳</span>
             </div>
           </div>
-          <div className="landing-container landing-hero-bottom"><a href="#features"><ArrowDown size={15} aria-hidden="true" /> A closer look at learning, reimagined</a><button className="landing-motion-toggle" onClick={() => setMotionEnabled(value => !value)} aria-pressed={!motionEnabled}>{motionEnabled ? <Pause size={13} /> : <Play size={13} />}{motionEnabled ? 'Pause animations' : 'Enable animations'}</button></div>
+          <div className="landing-container landing-hero-bottom"><a href="#features"><ArrowDown size={15} aria-hidden="true" /> A closer look at learning, reimagined</a></div>
         </section>
 
         <section id="features" className="landing-section landing-container" aria-labelledby="features-title">
@@ -155,7 +155,7 @@ export function LandingPage() {
           <div data-reveal>{FAQS.map(({ q, a }) => <details key={q}><summary>{q}<ChevronDown size={18} aria-hidden="true" /></summary><p>{a}</p></details>)}</div>
         </section>
 
-        <section className="landing-container landing-cta-wrap" aria-labelledby="cta-title" data-reveal><div className="landing-cta"><span className="landing-eyebrow"><Sparkles size={15} aria-hidden="true" /> CURIOSITY LOOKS GOOD ON YOU</span><h2 id="cta-title">Your next chapter<br />starts with an “aha.”</h2><p>We’re just getting started. Come explore a more hands-on way to learn.</p><div className="landing-actions"><button onClick={loginWithGoogle} className="landing-button">Let’s get learning <ArrowRight size={18} aria-hidden="true" /></button><Link to="/explore" className="landing-button secondary">Browse courses <BookOpen size={17} aria-hidden="true" /></Link></div></div></section>
+        <section className="landing-container landing-cta-wrap" aria-labelledby="cta-title" data-reveal><div className="landing-cta"><span className="landing-eyebrow"><Sparkles size={15} aria-hidden="true" /> CURIOSITY LOOKS GOOD ON YOU</span><h2 id="cta-title">Your next chapter<br />starts with an “aha.”</h2><p>We’re just getting started. Come explore a more hands-on way to learn.</p><div className="landing-actions"><Link to="/login" className="landing-button">Let’s get learning <ArrowRight size={18} aria-hidden="true" /></Link><Link to="/explore" className="landing-button secondary">Browse courses <BookOpen size={17} aria-hidden="true" /></Link></div></div></section>
       </main>
       <footer className="landing-footer landing-container"><Logo size="sm" /><p>A little curiosity. A new learning arc.</p><nav aria-label="Footer navigation"><a href="#features">Features</a><a href="#faq">FAQ</a><Link to="/explore">Courses</Link></nav><small>© {new Date().getFullYear()} UnlearnArc</small></footer>
     </div>

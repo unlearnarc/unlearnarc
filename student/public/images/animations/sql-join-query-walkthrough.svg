@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="480" height="270" viewBox="0 0 480 270">
+<style>
+:root { color-scheme:light dark; --bg:#f8faff; --surface:#fff; --soft:#eff6ff; --ink:#1e293b; --border:#94a3b8; --blue:#2563eb; }
+@media(prefers-color-scheme:dark) { :root { --bg:#111827; --surface:#1e293b; --soft:#172554; --ink:#e2e8f0; --border:#64748b; --blue:#60a5fa; } }
+text { fill:var(--ink); font-family:system-ui,sans-serif; stroke:none; }
+.box { fill:var(--surface); stroke:var(--border); }
+.active { fill:var(--soft); stroke:var(--blue); }
+.edge { fill:none; stroke:var(--border); }
+.path-active { fill:none; stroke:var(--blue); }
+rect,circle,path { stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round; }
+</style>
+<rect width="480" height="270" fill="var(--bg)"/>
+<rect class="active" x="24" y="26" width="138" height="34" rx="6"/><text x="93.0" y="47.0" font-size="13" text-anchor="middle">users</text><rect class="active" x="24" y="61" width="138" height="28" rx="6"/><text x="93.0" y="79.0" font-size="13" text-anchor="middle">1 · Ana</text><rect class="box" x="24" y="90" width="138" height="28" rx="6"/><text x="93.0" y="108.0" font-size="13" text-anchor="middle">2 · Ben</text><rect class="box" x="24" y="119" width="138" height="28" rx="6"/><text x="93.0" y="137.0" font-size="13" text-anchor="middle">3 · Cy</text><rect class="active" x="318" y="26" width="138" height="34" rx="6"/><text x="387.0" y="47.0" font-size="13" text-anchor="middle">orders</text><rect class="active" x="318" y="61" width="138" height="28" rx="6"/><text x="387.0" y="79.0" font-size="13" text-anchor="middle">1 · Book</text><rect class="box" x="318" y="90" width="138" height="28" rx="6"/><text x="387.0" y="108.0" font-size="13" text-anchor="middle">2 · Pen</text><rect class="box" x="318" y="119" width="138" height="28" rx="6"/><text x="387.0" y="137.0" font-size="13" text-anchor="middle">5 · Lamp</text><path class="path-active" d="M164 75 L316 75"/><path class="path-active" d="M164 104 L316 104"/><rect class="active" x="178" y="154" width="124" height="26" rx="6"/><text x="240.0" y="171.0" font-size="13" text-anchor="middle">1 · Ana · Book</text><rect class="active" x="178" y="182" width="124" height="26" rx="6"/><text x="240.0" y="199.0" font-size="13" text-anchor="middle">2 · Ben · Pen</text><rect class="box" x="40" y="231" width="100" height="24" rx="6"/><text x="90.0" y="247.0" font-size="13" text-anchor="middle">SELECT</text><rect class="box" x="152" y="231" width="100" height="24" rx="6"/><text x="202.0" y="247.0" font-size="13" text-anchor="middle">FROM</text><rect class="active" x="264" y="231" width="100" height="24" rx="6"/><text x="314.0" y="247.0" font-size="13" text-anchor="middle">JOIN</text><rect class="box" x="376" y="231" width="100" height="24" rx="6"/><text x="426.0" y="247.0" font-size="13" text-anchor="middle">WHERE</text>
+</svg>

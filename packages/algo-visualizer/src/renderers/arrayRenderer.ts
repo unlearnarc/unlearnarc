@@ -1,5 +1,5 @@
-import type { Renderer } from "./index";
-import { highlightMap } from "./index";
+import type { Renderer } from "./shared";
+import { highlightMap } from "./shared";
 
 /**
  * Renders state.array (number[] | {value}[] ) as labelled bars/cells.

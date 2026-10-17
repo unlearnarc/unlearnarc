@@ -35,10 +35,8 @@ export function useSandbox(language: Language): UseSandbox {
   const [error, setError] = useState<string | null>(null);
   const [lastResult, setLastResult] = useState<ExecutionResult | null>(null);
 
-  if (!clientRef.current) clientRef.current = new SandboxClient();
-
   const init = useCallback(async () => {
-    const client = clientRef.current!;
+    const client = clientRef.current ?? (clientRef.current = new SandboxClient());
     setError(null);
 
     const alreadyInstalled = await SandboxClient.isInstalled(language);

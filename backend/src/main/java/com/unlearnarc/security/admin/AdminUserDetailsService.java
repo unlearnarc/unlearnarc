@@ -1,7 +1,6 @@
 package com.unlearnarc.security.admin;
 
 import jakarta.annotation.PostConstruct;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
@@ -22,19 +21,23 @@ import java.util.List;
  */
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class AdminUserDetailsService implements UserDetailsService {
 
     private final AdminProperties adminProperties;
     private final PasswordEncoder passwordEncoder;
 
-    /** BCrypt hash of Admin@123 — computed once at startup. */
+    /** BCrypt hash of the configured password, computed once at startup. */
     private String hashedPassword;
+
+    public AdminUserDetailsService(AdminProperties adminProperties, PasswordEncoder passwordEncoder) {
+        this.adminProperties = adminProperties;
+        this.passwordEncoder = passwordEncoder;
+    }
 
     @PostConstruct
     void init() {
         hashedPassword = passwordEncoder.encode(adminProperties.getPassword());
-        log.info("[ADMIN] Admin account initialised for: {}", adminProperties.getEmail());
+        log.info("[ADMIN] Admin account initialised");
     }
 
     @Override

@@ -35,7 +35,7 @@ public class LoginRateLimitInterceptor implements HandlerInterceptor {
         long remaining = rateLimitService.remainingLoginTokens(ip);
 
         if (!rateLimitService.tryConsumeLogin(ip)) {
-            log.warn("Login rate-limit exceeded for IP: {}", ip);
+            log.warn("Login rate-limit exceeded");
             response.setStatus(HttpStatus.TOO_MANY_REQUESTS.value());
             response.setContentType(MediaType.APPLICATION_JSON_VALUE);
             response.addHeader("X-RateLimit-Limit",     "10");

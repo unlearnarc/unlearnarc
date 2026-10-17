@@ -2,12 +2,12 @@
   "slug": "quick-sort",
   "title": "Quick Sort",
   "summary": "Partition around a pivot, fix its final position, then recursively sort both sides.",
-  "usage": "How it works\nThis example uses Lomuto partitioning with the last element as pivot. Values <= pivot are collected before index i; after scanning, the pivot is swapped into i. Useful for learning partitioning and generally fast in-memory sorting. Sorted, reversed, or all-equal inputs can cause quadratic work and deep recursion here; randomized or three-way partitioning improves practical robustness.\n\nProperties and prerequisites\nStable: no. In-place partitioning: yes, but recursion uses stack space. For very large adversarial inputs use an iterative or depth-limited implementation.\n\nComplexity\nTime: O(n log n) average; O(n\u00b2) worst. Space: O(log n) average stack; O(n) worst.\n\nExample\nInput: [5, 2, 4, 1, 3]. Output: [1, 2, 3, 4, 5].\n\nTry it\nUse Play/Pause, Previous/Next, the timeline, and playback speed. Answer the prediction checkpoints to continue; feedback reveals the expected answer. Python is the line-synchronized walkthrough; Java is an equivalent complete implementation. Sorting functions accept empty arrays, duplicates, negative values, and already sorted inputs. Java methods belong inside a class; Python functions can be called directly.",
+  "usage": "How it works\nThis example uses Lomuto partitioning with the last element as pivot. Values <= pivot are collected before index i; after scanning, the pivot is swapped into i. Useful for learning partitioning and generally fast in-memory sorting. Sorted, reversed, or all-equal inputs can cause quadratic work and deep recursion here; randomized or three-way partitioning improves practical robustness.\n\nProperties and prerequisites\nStable: no. In-place partitioning: yes, but recursion uses stack space. For very large adversarial inputs use an iterative or depth-limited implementation.\n\nComplexity\nTime: O(n log n) average; O(n²) worst. Space: O(log n) average stack; O(n) worst.\n\nExample\nInput: [5, 2, 4, 1, 3]. Output: [1, 2, 3, 4, 5].\n\nTry it\nUse Play/Pause, Previous/Next, the timeline, and playback speed. Answer the prediction checkpoints to continue; feedback reveals the expected answer. Python is the line-synchronized walkthrough; Java is an equivalent complete implementation. Sorting functions accept empty arrays, duplicates, negative values, and already sorted inputs. Java methods belong inside a class; Python functions can be called directly.",
   "category": "Sorting",
   "difficulty": "MEDIUM",
   "visualizer": "ARRAY",
   "complexity": {
-    "time": "O(n log n) average; O(n\u00b2) worst",
+    "time": "O(n log n) average; O(n²) worst",
     "space": "O(log n) average stack; O(n) worst"
   },
   "pythonSource": "def quick_sort(a):\n    def sort(lo, hi):\n        if lo >= hi:\n            return\n        pivot = a[hi]  # Lomuto partition uses the last value as pivot.\n        i = lo\n        for j in range(lo, hi):\n            if a[j] <= pivot:\n                a[i], a[j] = a[j], a[i]  # Grow the partition of values <= pivot.\n                i += 1\n        a[i], a[hi] = a[hi], a[i]  # Put the pivot in its final position.\n        sort(lo, i - 1)\n        sort(i + 1, hi)\n    sort(0, len(a) - 1)\n    return a\n",
@@ -1808,5 +1808,6 @@
         ]
       }
     ]
-  }
+  },
+  "thumbnailUrl": "/images/algorithms/quick-sort.svg"
 }

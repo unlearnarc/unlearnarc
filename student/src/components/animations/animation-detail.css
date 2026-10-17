@@ -1,0 +1,44 @@
+.animation-detail { display: flex; flex-direction: column; gap: 18px; min-width: 0; color: var(--ua-text-primary); }
+.animation-detail-breadcrumb { display: flex; align-items: center; flex-wrap: wrap; gap: 7px; font-size: 12px; overflow-wrap: anywhere; }
+.animation-detail-breadcrumb a, .animation-detail-back { color: var(--ua-primary); }
+.animation-detail-breadcrumb svg { flex-shrink: 0; }
+.animation-detail-header { display: flex; justify-content: space-between; align-items: start; gap: 20px; }
+.animation-detail-heading { display: flex; align-items: start; gap: 12px; min-width: 0; }
+.animation-detail-heading > svg { flex-shrink: 0; color: var(--ua-primary); margin-top: 3px; }
+.animation-detail-heading h1 { font-size: clamp(20px, 2vw, 25px); font-weight: 700; line-height: 1.35; overflow-wrap: anywhere; }
+.animation-detail-heading p { font-size: 13px; line-height: 1.7; color: var(--ua-text-secondary); margin-top: 6px; max-width: 740px; }
+.animation-detail-back { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; min-height: 38px; }
+.animation-detail-metadata { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; padding: 12px 14px; border: 1px solid var(--ua-border); border-radius: var(--ua-radius-md); background: var(--ua-surface); flex-shrink: 0; font-size: 12px; }
+.animation-detail-metadata span { display: inline-flex; align-items: center; gap: 5px; }
+.animation-detail-badge { color: var(--ua-primary); background: var(--ua-primary-soft); border-radius: 5px; padding: 4px 6px; }
+.animation-detail-tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--ua-border); overflow-x: auto; }
+.animation-detail-tabs button { min-height: 44px; padding: 10px 16px; white-space: nowrap; font-size: 13px; font-weight: 600; color: var(--ua-text-secondary); border-bottom: 2px solid transparent; }
+.animation-detail-tabs button[aria-selected=true] { color: var(--ua-primary); border-color: var(--ua-primary); }
+.animation-detail-workspace { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; align-items: start; }
+.animation-detail-workspace.has-code { grid-template-columns: minmax(0, 11fr) minmax(0, 9fr); }
+.animation-detail-workspace [hidden] { display: none !important; }
+.animation-detail-visual, .animation-detail-code { min-width: 0; }
+.animation-detail-code { display: flex; flex-direction: column; gap: 12px; }
+.animation-reference-editor { min-width: 0; overflow: hidden; }
+.animation-reference-editor .cm-editor { height: 300px; }
+.animation-reference-editor .cm-scroller { overflow: auto; }
+.animation-detail-takeaway { display: flex; align-items: start; gap: 9px; padding: 14px; background: var(--ua-primary-soft); border: 1px solid var(--ua-border); border-radius: var(--ua-radius-md); }
+.animation-detail-takeaway > svg { flex-shrink: 0; color: var(--ua-primary); margin-top: 2px; }
+.animation-detail-takeaway h2 { font-size: 13px; font-weight: 700; }
+.animation-detail-takeaway p, .animation-detail-no-code { font-size: 13px; line-height: 1.7; }
+.animation-detail .ua-focus-launch { width: auto; margin-inline-start: auto; min-height: 36px; padding: 6px 10px; background: var(--ua-surface); border: 1px solid var(--ua-border); color: var(--ua-text-primary); }
+.animation-detail .ua-focus-launch span { display: none; }
+.animation-detail .ua-animation-secondary[aria-label="Step-by-step instructions"] ol { max-height: 170px; overflow-y: auto; }
+.animation-detail [aria-label="About this animation"] { background: var(--ua-surface); }
+.animation-detail :is(button, a):focus-visible { outline: 2px solid var(--ua-focus-ring); outline-offset: 2px; }
+@media (max-width: 1199px) { .animation-detail-workspace.has-code { grid-template-columns: minmax(0, 1fr); } .animation-detail-header { flex-wrap: wrap; } }
+@media (max-width: 639px) { .animation-detail { gap: 14px; } .animation-detail-metadata { width: 100%; font-size: 11px; padding: 10px; } .animation-detail-tabs button { padding-inline: 11px; } .animation-detail-breadcrumb { font-size: 11px; } }
+
+.animation-detail-badge { color: var(--ua-text-primary); }
+.animation-detail-code header button[aria-pressed=true] { background: var(--ua-primary-soft); color: var(--ua-text-primary); }
+.animation-detail-code header button span { opacity: 1; }
+.animation-detail [aria-label="Animation playback controls"] button:is([aria-label="Play"], [aria-label="Pause"]) { background: var(--ua-primary-soft); color: var(--ua-text-primary); }
+
+/* Small instructional text needs stronger contrast than shared muted labels. */
+.animation-detail .text-text-secondary, .animation-detail .text-text-muted, .animation-detail-heading p, .animation-detail-tabs button { color: var(--ua-text-primary); }
+.animation-detail-tabs button[aria-selected=true] { color: var(--ua-primary); }

@@ -28,9 +28,9 @@ test('search filters long lists and supports keyboard selection and dismissal', 
   await page.goto('/tests');
   const course = page.getByRole('combobox', { name: 'Select Course', exact: true });
   await course.click();
-  await expect(page.getByRole('option')).toHaveCount(66);
+  await expect(page.getByRole('listbox').getByRole('option')).toHaveCount(66);
   await course.fill('CAFE');
-  await expect(page.getByRole('option')).toHaveCount(1);
+  await expect(page.getByRole('listbox').getByRole('option')).toHaveCount(1);
   await course.press('Enter');
   await expect(course).toHaveValue(/Café programming/);
   await expect(page.getByRole('button', { name: /Start test/i })).toBeEnabled();

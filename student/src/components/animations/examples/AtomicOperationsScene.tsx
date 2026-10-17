@@ -35,7 +35,7 @@ export const AtomicOperationsScene: React.FC<AtomicOperationsSceneProps> = ({
       className={`rounded-2xl border border-border p-4 md:p-5 space-y-4 animate-fade-in ${
         className ?? ''
       }`}
-      style={{ background: '#16232E' }}
+      style={{ background: 'var(--ua-surface)' }}
       aria-label="Atomic operations (CAS) animation"
     >
       <header className="flex items-start gap-2.5">

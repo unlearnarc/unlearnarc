@@ -28,6 +28,17 @@ public class AlgorithmRequest {
     @Size(max = 1000)
     private String summary;
 
+    @Size(max = 1024)
+    private String thumbnailUrl;
+
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    private boolean thumbnailUrlSupplied;
+
+    public void setThumbnailUrl(String thumbnailUrl) {
+        this.thumbnailUrl = thumbnailUrl;
+        this.thumbnailUrlSupplied = true;
+    }
+
     private String usage;
 
     @Size(max = 80)

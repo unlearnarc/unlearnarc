@@ -1,0 +1,29 @@
+{
+  "atomic-cas-3-threads": {
+    "thumbnailUrl": "/images/animations/atomic-cas-3-threads.svg"
+  },
+  "atomic-cas-5-threads": {
+    "thumbnailUrl": "/images/animations/atomic-cas-5-threads.svg"
+  },
+  "authored-hello-pulse": {
+    "thumbnailUrl": "/images/animations/authored-hello-pulse.svg"
+  },
+  "graph-bfs-traversal": {
+    "thumbnailUrl": "/images/animations/graph-bfs-traversal.svg"
+  },
+  "leetcode-two-sum": {
+    "thumbnailUrl": "/images/animations/leetcode-two-sum.svg"
+  },
+  "matrix-multiply-dot-products": {
+    "thumbnailUrl": "/images/animations/matrix-multiply-dot-products.svg"
+  },
+  "request-routing-load-balancer": {
+    "thumbnailUrl": "/images/animations/request-routing-load-balancer.svg"
+  },
+  "sql-inner-join": {
+    "thumbnailUrl": "/images/animations/sql-inner-join.svg"
+  },
+  "sql-join-query-walkthrough": {
+    "thumbnailUrl": "/images/animations/sql-join-query-walkthrough.svg"
+  }
+}

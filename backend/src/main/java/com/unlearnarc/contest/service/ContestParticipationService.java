@@ -134,7 +134,8 @@ public class ContestParticipationService {
                 .userId(userId)
                 .startedAt(Instant.now())
                 .build());
-        log.info("[CONTEST] user={} registered contest={}", userId, contestId);
+        log.info("[CONTEST] user={} registered contest={}",
+                com.unlearnarc.common.SafeLog.field(userId), com.unlearnarc.common.SafeLog.field(contestId));
     }
 
     // ── Submission (authoritative grading) ───────────────────────────────────────

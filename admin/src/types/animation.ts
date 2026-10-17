@@ -175,6 +175,7 @@ export interface AnimationSceneSummary {
   slug: string;
   title: string;
   description?: string;
+  thumbnailUrl?: string | null;
   category?: AnimationCategory;
   source: SceneSource;
   kind?: string;

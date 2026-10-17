@@ -16,6 +16,7 @@ public class AnimationSceneResponse {
     private String slug;
     private String title;
     private String description;
+    private String thumbnailUrl;
     private Category category;
     private Source source;
     private String kind;

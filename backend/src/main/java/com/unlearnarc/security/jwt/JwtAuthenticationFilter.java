@@ -82,7 +82,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                 userDetails, null, userDetails.getAuthorities());
                 auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(auth);
-                log.debug("[JWT] Admin authenticated: {}", email);
+                log.debug("[JWT] Admin authenticated");
 
             } else if ("USER".equals(role)) {
                 String userId = jwtTokenProvider.getUserIdFromToken(token);
@@ -93,7 +93,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                 List.of(new SimpleGrantedAuthority("ROLE_USER")));
                 auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(auth);
-                log.debug("[JWT] User authenticated: {} (id={})", email, userId);
+                log.debug("[JWT] User authenticated");
             }
         }
 

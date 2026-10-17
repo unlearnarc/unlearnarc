@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="480" height="270" viewBox="0 0 480 270">
+<style>
+:root { color-scheme:light dark; --bg:#f8faff; --surface:#fff; --soft:#eff6ff; --ink:#1e293b; --border:#94a3b8; --blue:#2563eb; }
+@media(prefers-color-scheme:dark) { :root { --bg:#111827; --surface:#1e293b; --soft:#172554; --ink:#e2e8f0; --border:#64748b; --blue:#60a5fa; } }
+text { fill:var(--ink); font-family:system-ui,sans-serif; stroke:none; }
+.box { fill:var(--surface); stroke:var(--border); }
+.active { fill:var(--soft); stroke:var(--blue); }
+.edge { fill:none; stroke:var(--border); }
+.path-active { fill:none; stroke:var(--blue); }
+rect,circle,path { stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round; }
+</style>
+<rect width="480" height="270" fill="var(--bg)"/>
+<path class="edge" stroke-dasharray="6 6" d="M75 135 H405"/><circle class="box" cx="75" cy="135" r="18"/><text x="75" y="139" font-size="13" text-anchor="middle">A</text><circle class="active" cx="240" cy="135" r="23"/><text x="240" y="139" font-size="13" text-anchor="middle">A</text><circle class="box" cx="405" cy="135" r="28"/><text x="405" y="139" font-size="13" text-anchor="middle">A</text>
+</svg>

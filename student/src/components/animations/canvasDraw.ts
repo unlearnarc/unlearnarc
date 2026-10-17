@@ -15,6 +15,9 @@ import type {
 
 export interface ResolvedTheme {
   background: string;
+  surface: string;
+  border: string;
+  caption: string;
   gridColor: string;
   textColor: string;
   mutedTextColor: string;
@@ -37,6 +40,9 @@ const DEFAULT_STATUS_COLORS: Record<string, string> = {
 export function resolveTheme(theme?: AnimationTheme): ResolvedTheme {
   return {
     background: theme?.background ?? '#0F172A',
+    surface: theme?.surface ?? '#1E293B',
+    border: theme?.border ?? '#475569',
+    caption: theme?.caption ?? 'rgba(15,23,42,0.92)',
     gridColor: theme?.gridColor ?? 'rgba(148,163,184,0.08)',
     textColor: theme?.textColor ?? '#F1F5F9',
     mutedTextColor: theme?.mutedTextColor ?? '#94A3B8',
@@ -182,14 +188,14 @@ function drawMatrix(
     for (let c = 0; c < cols; c++) {
       const x = e.x + c * cw;
       const y = e.y + r * ch;
-      ctx.fillStyle = hiSet.has(`${r}:${c}`) ? color : 'rgba(255,255,255,0.05)';
+      ctx.fillStyle = hiSet.has(`${r}:${c}`) ? color : theme.surface;
       ctx.fillRect(x, y, cw - 2, ch - 2);
-      ctx.strokeStyle = 'rgba(255,255,255,0.18)';
+      ctx.strokeStyle = theme.border;
       ctx.lineWidth = 1;
       ctx.strokeRect(x, y, cw - 2, ch - 2);
       const v = values[r]?.[c];
       if (v !== undefined && v !== null) {
-        ctx.fillStyle = theme.textColor;
+        ctx.fillStyle = hiSet.has(`${r}:${c}`) ? '#FFFFFF' : theme.textColor;
         ctx.font = `600 12px ${theme.font}`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
@@ -235,7 +241,7 @@ function drawTable(
 
   // header row
   const hy = e.y + titleH;
-  ctx.fillStyle = 'rgba(255,255,255,0.1)';
+  ctx.fillStyle = theme.surface;
   ctx.fillRect(e.x, hy, w, headerH);
   columns.forEach((col, i) => {
     ctx.fillStyle = theme.textColor;
@@ -263,7 +269,7 @@ function drawTable(
 
   // outer border + grid lines
   const totalH = titleH + headerH + rows.length * rowH;
-  ctx.strokeStyle = 'rgba(255,255,255,0.22)';
+  ctx.strokeStyle = theme.border;
   ctx.lineWidth = 1;
   ctx.strokeRect(e.x, e.y, w, totalH);
   for (let i = 1; i < columns.length; i++) {
@@ -394,14 +400,14 @@ export function drawEntity(
   // cylinder captions sit below the shape; others centre inside.
   const labelY = shape === 'cylinder' ? cy + (e.height ?? 70) / 2 + 2 : cy;
   if (e.label) {
-    ctx.fillStyle = shape === 'text' ? color : '#FFFFFF';
+    ctx.fillStyle = shape === 'text' || shape === 'cylinder' ? theme.textColor : '#FFFFFF';
     ctx.font = `600 13px ${theme.font}`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText(e.label, cx, e.sublabel ? labelY - 7 : labelY);
   }
   if (e.sublabel) {
-    ctx.fillStyle = 'rgba(255,255,255,0.8)';
+    ctx.fillStyle = shape === 'text' || shape === 'cylinder' ? theme.mutedTextColor : 'rgba(255,255,255,0.8)';
     ctx.font = `11px ${theme.font}`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
@@ -420,7 +426,7 @@ export function drawCaption(
 ) {
   if (!caption) return;
   ctx.save();
-  ctx.fillStyle = 'rgba(15,23,42,0.72)';
+  ctx.fillStyle = theme.caption;
   const h = 34;
   ctx.fillRect(0, height - h, width, h);
   ctx.fillStyle = theme.textColor;

@@ -89,6 +89,15 @@ public class AnimationSceneController {
                         value ? "Scene published" : "Scene unpublished"));
     }
 
+    @PatchMapping("/{id}/thumbnail")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse<AnimationSceneSummaryResponse>> updateThumbnail(
+            @PathVariable String id,
+            @Valid @RequestBody com.unlearnarc.canvasanim.dto.AnimationThumbnailRequest request) {
+        return ResponseEntity.ok(ApiResponse.ok(service.updateThumbnail(id, request.thumbnailUrl()),
+                "Thumbnail updated"));
+    }
+
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable String id) {

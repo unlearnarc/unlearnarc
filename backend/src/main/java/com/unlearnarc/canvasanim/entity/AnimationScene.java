@@ -48,6 +48,9 @@ public class AnimationScene {
     @Column(name = "description", length = 1000)
     private String description;
 
+    @Column(name = "thumbnail_url", length = 1024)
+    private String thumbnailUrl;
+
     /** Tutorial domain, e.g. CONCURRENCY / SYSTEM_DESIGN / DSA / AI_ML. */
     @Enumerated(EnumType.STRING)
     @Column(name = "category", length = 32)

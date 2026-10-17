@@ -68,6 +68,7 @@ export interface Algorithm {
   slug: string;
   title: string;
   summary?: string;
+  thumbnailUrl?: string | null;
   usage?: string;
   category?: string;
   difficulty?: Difficulty;

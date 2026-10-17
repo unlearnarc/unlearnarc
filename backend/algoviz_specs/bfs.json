@@ -1,4 +1,5 @@
 {
+  "thumbnailUrl": "/images/algorithms/bfs.svg",
   "slug": "bfs",
   "title": "Breadth-First Search",
   "summary": "Explores a graph level by level using a FIFO queue.",

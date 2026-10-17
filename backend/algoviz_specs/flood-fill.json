@@ -1,4 +1,5 @@
 {
+  "thumbnailUrl": "/images/algorithms/flood-fill.svg",
   "slug": "flood-fill",
   "title": "Flood Fill",
   "summary": "Fills a connected region of a grid starting from a seed cell (like paint bucket).",

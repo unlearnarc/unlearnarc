@@ -15,7 +15,7 @@ test('launch page highlights real features without invented social proof', async
   await expect(page.getByRole('heading', { name: 'A little structure. A lot of clarity.' })).toBeAttached();
   await expect(page.getByRole('heading', { name: 'Find your level. Then go further.' })).toBeAttached();
   await expect(page.getByRole('link', { name: 'Browse courses', exact: true }).first()).toHaveAttribute('href', '/explore');
-  await expect(page.getByRole('button', { name: 'Get started', exact: true })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Get started', exact: true })).toHaveAttribute('href', '/login');
 });
 
 test('binary search preview supports stepping, back, reset, and another target', async ({ page }) => {
@@ -50,7 +50,7 @@ test('FAQ expands and the page fits its viewport', async ({ page }) => {
 
 test('reduced motion keeps content visible, disables parallax, and allows manual demo controls', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
-  await expect(page.getByRole('button', { name: 'Enable animations' })).toBeVisible();
+  await expect(page.locator('.landing-page')).toHaveClass(/motion-paused/);
   await page.locator('#playground').scrollIntoViewIfNeeded();
   await expect(page.locator('.landing-hero-art')).toHaveCSS('transform', 'none');
   await expect(page.getByRole('heading', { name: 'Less abstract.' })).toBeVisible();
@@ -58,12 +58,20 @@ test('reduced motion keeps content visible, disables parallax, and allows manual
   await expect(page.locator('.landing-demo-explanation')).toContainText('STEP 2 OF 3');
 });
 
-test('animation toggle pauses decorative movement', async ({ page }) => {
+test('decorative animations run without an on/off toggle', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'no-preference' });
-  await page.getByRole('button', { name: 'Pause animations' }).click();
-  await expect(page.getByRole('button', { name: 'Enable animations' })).toHaveAttribute('aria-pressed', 'true');
-  await expect(page.locator('.float-visual')).toHaveCSS('animation-play-state', 'paused');
+  await expect(page.getByRole('button', { name: /Pause animations|Enable animations/ })).toHaveCount(0);
+  await expect(page.locator('.float-visual')).toHaveCSS('animation-play-state', 'running');
 });
+
+for (const name of ['Get started', 'Start your learning arc', 'Let’s get learning', 'Browse courses', 'Explore animations', 'Explore algorithm visualisations', 'Courses']) {
+  test(`landing action ${name} leads anonymous visitors to login`, async ({ page }) => {
+    await page.getByRole('link', { name, exact: true }).first().click();
+    await expect(page).toHaveURL(/\/login$/);
+    await expect(page.getByRole('button', { name: 'Continue with Google' })).toBeVisible();
+    await expect(page.locator('.app-layout')).toHaveCount(0);
+  });
+}
 
 test('landing content has no serious or critical accessibility violations in either theme', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });

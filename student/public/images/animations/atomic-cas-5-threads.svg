@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="480" height="270" viewBox="0 0 480 270">
+<style>
+:root { color-scheme:light dark; --bg:#f8faff; --surface:#fff; --soft:#eff6ff; --ink:#1e293b; --border:#94a3b8; --blue:#2563eb; }
+@media(prefers-color-scheme:dark) { :root { --bg:#111827; --surface:#1e293b; --soft:#172554; --ink:#e2e8f0; --border:#64748b; --blue:#60a5fa; } }
+text { fill:var(--ink); font-family:system-ui,sans-serif; stroke:none; }
+.box { fill:var(--surface); stroke:var(--border); }
+.active { fill:var(--soft); stroke:var(--blue); }
+.edge { fill:none; stroke:var(--border); }
+.path-active { fill:none; stroke:var(--blue); }
+rect,circle,path { stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round; }
+</style>
+<rect width="480" height="270" fill="var(--bg)"/>
+<path class="edge" d="M48.0 185 L240 78"/><path class="path-active" d="M144.0 185 L240 78"/><path class="edge" d="M240.0 185 L240 78"/><path class="edge" d="M336.0 185 L240 78"/><path class="edge" d="M432.0 185 L240 78"/><rect class="active" x="175" y="38" width="130" height="40" rx="6"/><text x="240.0" y="62.0" font-size="13" text-anchor="middle">counter: 1 → 2</text><rect class="box" x="20.0" y="185" width="56" height="34" rx="6"/><text x="48.0" y="206.0" font-size="13" text-anchor="middle">T1</text><rect class="active" x="116.0" y="185" width="56" height="34" rx="6"/><text x="144.0" y="206.0" font-size="13" text-anchor="middle">T2</text><rect class="box" x="212.0" y="185" width="56" height="34" rx="6"/><text x="240.0" y="206.0" font-size="13" text-anchor="middle">T3</text><rect class="box" x="308.0" y="185" width="56" height="34" rx="6"/><text x="336.0" y="206.0" font-size="13" text-anchor="middle">T4</text><rect class="box" x="404.0" y="185" width="56" height="34" rx="6"/><text x="432.0" y="206.0" font-size="13" text-anchor="middle">T5</text><text x="240" y="147" font-size="13" text-anchor="middle">CAS(1, 2)</text>
+</svg>

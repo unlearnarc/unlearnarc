@@ -15,6 +15,8 @@ public class AlgorithmSummaryResponse {
     private String slug;
     private String title;
     private String summary;
+    private String thumbnailUrl;
+    private java.time.Instant createdAt;
     private String category;
     private Difficulty difficulty;
     private Map<String, Object> complexity;

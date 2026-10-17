@@ -351,6 +351,7 @@ export interface UserProfile {
   profilePicture?: string;
   authProvider?: string;
   isActive?: boolean;
+  createdAt?: string;
   // ── daily-activity streak ──
   currentStreak?: number;
   longestStreak?: number;

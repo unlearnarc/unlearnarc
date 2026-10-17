@@ -1,4 +1,7 @@
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
+import { CodeEditor } from '../contest/CodeEditor';
+import { useTheme } from '../../context/ThemeContext';
+import { Copy } from 'lucide-react';
 import { Code2, Play, Loader2, Info } from 'lucide-react';
 import type { CodeLanguage, CodeProgram } from '../../types/animation';
 import { activeCodeLines, activeCodeNote } from '../../types/animation';
@@ -45,50 +48,6 @@ function isRunnable(lang: CodeLanguage): SandboxLanguage | null {
   return RUNNABLE[lang] ?? null;
 }
 
-/** A tiny, dependency-free, tokenless code renderer with line highlighting.
- *  We keep it monospace + line-numbered rather than pulling CodeMirror here,
- *  because this panel is read-only and must highlight arbitrary line sets. */
-const CodeView: React.FC<{
-  source: string;
-  activeLines: number[];
-}> = ({ source, activeLines }) => {
-  const lines = useMemo(() => source.replace(/\n$/, '').split('\n'), [source]);
-  const active = useMemo(() => new Set(activeLines), [activeLines]);
-  const gutterWidth = String(lines.length).length;
-
-  return (
-    <pre className="m-0 overflow-auto max-h-[22rem] text-[12.5px] leading-[1.65] font-mono">
-      <code className="block">
-        {lines.map((ln, i) => {
-          const no = i + 1;
-          const on = active.has(no);
-          return (
-            <div
-              key={no}
-              className={`flex ${on ? 'bg-primary-500/15' : ''}`}
-              style={
-                on ? { boxShadow: 'inset 3px 0 0 var(--ua-primary-500)' } : undefined
-              }
-            >
-              <span
-                className="select-none pr-3 pl-3 text-right text-text-muted/70 shrink-0"
-                style={{ minWidth: `${gutterWidth + 2}ch` }}
-              >
-                {no}
-              </span>
-              <span
-                className={`pr-4 whitespace-pre ${on ? 'text-text-primary' : 'text-text-secondary'}`}
-              >
-                {ln || ' '}
-              </span>
-            </div>
-          );
-        })}
-      </code>
-    </pre>
-  );
-};
-
 /** Runnable footer: mounts the sandbox lazily and runs the current program. */
 const RunBar: React.FC<{ program: CodeProgram; sandboxLang: SandboxLanguage }> = ({
   program,
@@ -116,7 +75,7 @@ const RunBar: React.FC<{ program: CodeProgram; sandboxLang: SandboxLanguage }> =
 
   return (
     <div className="border-t border-border">
-      <div className="flex items-center gap-2 px-3 py-2 bg-black/20">
+      <div className="flex items-center gap-2 px-3 py-2 bg-surface-soft">
         <button
           onClick={handleRun}
           disabled={busy}
@@ -154,6 +113,8 @@ export const CodeProgramPanel: React.FC<CodeProgramPanelProps> = ({
   time,
   className,
 }) => {
+  const { theme } = useTheme();
+  const [copyStatus, setCopyStatus] = useState('');
   const [activeId, setActiveId] = useState(programs[0]?.id);
   if (!programs || programs.length === 0) return null;
 
@@ -165,18 +126,19 @@ export const CodeProgramPanel: React.FC<CodeProgramPanelProps> = ({
   return (
     <div
       className={`rounded-2xl border border-border overflow-hidden ${className ?? ''}`}
-      style={{ background: '#0F172A' }}
+      style={{ background: 'var(--ua-surface)' }}
       aria-label="Program source code"
     >
       {/* header + tabs */}
-      <header className="flex items-center gap-2 px-3 py-2 border-b border-border bg-[#16232E]">
+      <header className="flex items-center gap-2 px-3 py-2 border-b border-border bg-surface-soft">
         <Code2 size={15} className="text-primary-500 shrink-0" />
         <h4 className="text-[13px] font-bold text-text-primary shrink-0">Code</h4>
-        <div className="ml-auto flex flex-wrap gap-1 justify-end">
+        <div className="ml-auto flex gap-1 overflow-x-auto min-w-0">
           {programs.map((p) => (
             <button
               key={p.id}
-              onClick={() => setActiveId(p.id)}
+              aria-pressed={p.id === program.id}
+              onClick={() => { setActiveId(p.id); setCopyStatus(''); }}
               className={`rounded-md px-2.5 py-1 text-[11.5px] font-semibold transition ${
                 p.id === program.id
                   ? 'bg-primary-500 text-white'
@@ -190,15 +152,23 @@ export const CodeProgramPanel: React.FC<CodeProgramPanelProps> = ({
             </button>
           ))}
         </div>
+        <button type="button" aria-label="Copy code" className="shrink-0 text-text-primary p-2" onClick={async () => {
+          try { await navigator.clipboard.writeText(program.source); setCopyStatus('Copied'); }
+          catch { setCopyStatus('Unable to copy. Select the code to copy manually.'); }
+        }}><Copy size={16} /></button>
       </header>
+      <span role="status" className="text-xs text-text-secondary px-3">{copyStatus}</span>
 
       {program.explanation && (
-        <p className="px-3 py-2 text-[12px] text-text-secondary leading-relaxed border-b border-border bg-black/10">
+        <p className="px-3 py-2 text-[12px] text-text-secondary leading-relaxed border-b border-border bg-surface-soft">
           {program.explanation}
         </p>
       )}
 
-      <CodeView source={program.source} activeLines={activeLines} />
+      <div className="animation-reference-editor">
+        <CodeEditor value={program.source} onChange={() => {}} language={program.language}
+          dark={theme === 'dark'} readOnly activeLines={activeLines} minHeight="16rem" />
+      </div>
 
       {note && (
         <div className="flex items-start gap-2 px-3 py-2 border-t border-border bg-primary-500/5">

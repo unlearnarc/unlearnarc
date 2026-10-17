@@ -13,7 +13,8 @@ import { defineConfig, devices } from '@playwright/test';
  * `webServer` below can auto-start Vite when RUN_WEBSERVER=1.
  */
 
-const BASE_URL = process.env.BASE_URL || 'http://localhost:3002';
+// IPv4 loopback keeps local automation out of corporate HTTP proxies.
+const BASE_URL = process.env.BASE_URL || 'http://127.0.0.1:3002';
 // Optional: force a specific Chrome binary via CHROME_PATH. When unset we use
 // Playwright's own bundled Chromium (installed via `npx playwright install
 // chromium`), which is the most reliable option for headless automation.
@@ -76,7 +77,7 @@ export default defineConfig({
   // Opt-in auto-start of the Vite dev server. By default we reuse a running one.
   webServer: process.env.RUN_WEBSERVER
     ? {
-        command: 'npm run dev',
+        command: 'npm run dev -- --host 127.0.0.1',
         url: BASE_URL,
         reuseExistingServer: true,
         timeout: 120_000,

@@ -21,6 +21,11 @@ import { Spinner } from '../components/ui/Spinner';
 import { QuestionModal } from '../components/ui/QuestionModal';
 import { AnimationFocus } from '../components/ui/AnimationFocus';
 import './visualizer.css';
+import { useTheme } from '../context/ThemeContext';
+import { CodeEditor } from '../components/contest/CodeEditor';
+import { AlgorithmPractice } from '../components/contest/AlgorithmPractice';
+import toast from 'react-hot-toast';
+import { visualizationPalette } from '../styles/visualizationTheme';
 // Temporarily disabled: read-aloud UI.
 // import { SpeakButton } from '../components/ui/SpeakButton';
 import {
@@ -41,6 +46,9 @@ import {
   MapPin,
   CheckCircle2,
   Hash,
+  Copy,
+  RotateCcw,
+  Bookmark,
 } from 'lucide-react';
 
 /* ──────────────────────────────────────────────────────────────────────────
@@ -58,7 +66,8 @@ const SPEED_OPTIONS = [
 ];
 
 const CODE_COLLAPSE_KEY = 'ua_algo_code_collapsed';
-const USAGE_COLLAPSE_KEY = 'ua_algo_usage_open';
+type WorkspaceTab = 'Visualization' | 'Explanation' | 'Code' | 'Practice';
+const WORKSPACE_TABS: WorkspaceTab[] = ['Visualization', 'Explanation', 'Code', 'Practice'];
 
 export const AlgorithmDetailPage: React.FC = () => {
   const { t } = useTranslation();
@@ -108,23 +117,21 @@ const AlgorithmWorkspace: React.FC<{ algo: Algorithm }> = ({ algo }) => {
 
   const complexity = (algo.complexity ?? {}) as Record<string, string>;
 
-  // ── collapsible panels (persisted) ──────────────────────────────────────
-  const [codeCollapsed, setCodeCollapsed] = useState<boolean>(() => {
-    return localStorage.getItem(CODE_COLLAPSE_KEY) !== '0';
-  });
-  const [usageOpen, setUsageOpen] = useState<boolean>(() => {
-    return localStorage.getItem(USAGE_COLLAPSE_KEY) === '1';
-  });
+  const [tab, setTab] = useState<WorkspaceTab>('Visualization');
+  const [bookmarked, setBookmarked] = useState(() => localStorage.getItem(`ua_algo_bookmark_${algo.slug}`) === '1');
+  const [codeCollapsed, setCodeCollapsed] = useState(() => localStorage.getItem(CODE_COLLAPSE_KEY) === '1');
   useEffect(() => {
     localStorage.setItem(CODE_COLLAPSE_KEY, codeCollapsed ? '1' : '0');
   }, [codeCollapsed]);
-  useEffect(() => {
-    localStorage.setItem(USAGE_COLLAPSE_KEY, usageOpen ? '1' : '0');
-  }, [usageOpen]);
+  const selectTab = (next: WorkspaceTab) => {
+    controls.pause();
+    if (next === 'Code') setCodeCollapsed(false);
+    setTab(next);
+  };
 
   // ── language + speed ────────────────────────────────────────────────────
   const [lang, setLang] = useState<'java' | 'python'>(
-    algo.spec.steps.find((entry) => entry.line)?.lang ??
+    algo.spec.steps.find((entry) => entry.line && (entry.lang === 'python' ? algo.pythonSource : algo.javaSource))?.lang ??
       (algo.javaSource ? 'java' : 'python')
   );
   const [speed, setSpeed] = useState<number>(900);
@@ -151,7 +158,7 @@ const AlgorithmWorkspace: React.FC<{ algo: Algorithm }> = ({ algo }) => {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const tag = (e.target as HTMLElement | null)?.tagName;
-      if (pending || tag === 'BUTTON' || tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+      if ((e.target as HTMLElement | null)?.closest('.cm-editor, [contenteditable=true]') || tab !== 'Visualization' || pending || tag === 'BUTTON' || tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
       if (e.key === 'ArrowRight') {
         e.preventDefault();
         if (!state.isFinished && !pending) controls.next();
@@ -169,7 +176,7 @@ const AlgorithmWorkspace: React.FC<{ algo: Algorithm }> = ({ algo }) => {
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [controls, state.isFinished, state.isPlaying, state.index, pending]);
+  }, [controls, state.isFinished, state.isPlaying, state.index, pending, tab]);
 
   // ── derived live state for the inspector (from the REAL trace) ───────────
   const cursor = step?.state?.['cursor'] as [number, number] | undefined;
@@ -210,7 +217,7 @@ const AlgorithmWorkspace: React.FC<{ algo: Algorithm }> = ({ algo }) => {
       </nav>
 
       {/* ── Header: compact title + badges + complexity in one band ──── */}
-      <header className="flex flex-wrap items-start justify-between gap-4">
+      <header className="ua-algorithm-header">
         <div className="min-w-0">
           <div className="flex items-center gap-2.5 flex-wrap">
             <h1 className="text-xl md:text-2xl font-bold text-text-primary flex items-center gap-2">
@@ -268,37 +275,53 @@ const AlgorithmWorkspace: React.FC<{ algo: Algorithm }> = ({ algo }) => {
         )}
       </header>
 
-      {/* ── When to use — compact collapsible ───────────────────────── */}
-      {algo.usage && (
-        <div className="ua-card overflow-hidden">
-          <button
-            type="button"
-            onClick={() => setUsageOpen((v) => !v)}
-            aria-expanded={usageOpen}
-            className="w-full flex items-center justify-between px-4 py-2.5 text-left"
-          >
-            <span className="text-xs font-semibold text-text-secondary uppercase tracking-wider flex items-center gap-1.5">
-              <Info size={13} className="text-primary-500" /> {t('algoDetail.whenToUse')}
-            </span>
-            <ChevronDown
-              size={16}
-              className={`text-text-muted transition-transform duration-200 ${
-                usageOpen ? 'rotate-180' : ''
-              }`}
-            />
-          </button>
-          {usageOpen && (
-            <p className="px-4 pb-3.5 -mt-0.5 text-sm text-text-primary leading-relaxed whitespace-pre-line">
-              {algo.usage}
-            </p>
-          )}
+      <div className="ua-workspace-nav">
+        <div role="tablist" aria-label="Algorithm workspace" className="ua-workspace-tabs">
+          {WORKSPACE_TABS.map((name, i) => (
+            <button key={name} id={`workspace-tab-${name}`} role="tab" type="button"
+              aria-selected={tab === name} aria-controls={`workspace-panel-${name}`}
+              tabIndex={tab === name ? 0 : -1}
+              onClick={() => selectTab(name)}
+              onKeyDown={event => {
+                let index = i;
+                if (event.key === 'ArrowRight') index = (i + 1) % WORKSPACE_TABS.length;
+                else if (event.key === 'ArrowLeft') index = (i + WORKSPACE_TABS.length - 1) % WORKSPACE_TABS.length;
+                else if (event.key === 'Home') index = 0;
+                else if (event.key === 'End') index = WORKSPACE_TABS.length - 1;
+                else return;
+                event.preventDefault();
+                selectTab(WORKSPACE_TABS[index]);
+                document.getElementById(`workspace-tab-${WORKSPACE_TABS[index]}`)?.focus();
+              }}>{name}</button>
+          ))}
         </div>
+        <button type="button" className="ua-bookmark" aria-label={bookmarked ? 'Remove bookmark' : 'Bookmark algorithm'}
+          aria-pressed={bookmarked} onClick={() => {
+            localStorage.setItem(`ua_algo_bookmark_${algo.slug}`, bookmarked ? '0' : '1');
+            setBookmarked(!bookmarked);
+          }}><Bookmark size={16} fill={bookmarked ? 'currentColor' : 'none'} /></button>
+      </div>
+
+      {tab === 'Explanation' && (
+        <section role="tabpanel" id="workspace-panel-Explanation" aria-labelledby="workspace-tab-Explanation" className="ua-card p-5 space-y-4">
+          <h2 className="text-lg font-semibold text-text-primary flex items-center gap-2"><Info size={18} /> How it works</h2>
+          <p className="text-sm text-text-secondary whitespace-pre-line leading-relaxed">{algo.usage || algo.summary}</p>
+          <dl className="text-sm text-text-secondary space-y-2">
+            {Object.entries(complexity).map(([key, value]) => <div key={key}><dt className="font-semibold capitalize">{key} complexity</dt><dd>{String(value)}</dd></div>)}
+          </dl>
+        </section>
       )}
+      <div role="tabpanel" id="workspace-panel-Practice" aria-labelledby="workspace-tab-Practice" hidden={tab !== 'Practice'} className="space-y-4">
+        <AlgorithmPractice title={algo.title} />
+
+      </div>
 
       {/* ══ Visualization workspace: two-column on desktop ══════════════ */}
-      <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,2fr)_minmax(260px,1fr)] gap-3 items-start">
+      <div role="tabpanel" id="workspace-panel-Visualization" aria-labelledby="workspace-tab-Visualization" hidden={tab !== 'Visualization'}>
+      <div className="ua-workspace-grid">
         <AnimationFocus title={algo.title}>
-          <div className="min-w-0 space-y-3">
+          <div className="ua-animation-panel">
+            <div className="ua-animation-panel-title"><Workflow size={15} /><span>{algo.spec.visualizer.toLowerCase().replace(/_/g, ' ')} visualization</span></div>
             <GridPanel algo={algo} step={step} />
             <PlaybackToolbar state={state} controls={controls} pending={!!pending}
               speed={speed} setSpeed={setSpeed} />
@@ -322,8 +345,11 @@ const AlgorithmWorkspace: React.FC<{ algo: Algorithm }> = ({ algo }) => {
         />
       </div>
 
+      </div>
+
       {/* ══ Code panel ════════════════════════════════════════════════ */}
-      {(algo.javaSource || algo.pythonSource) && (
+      {(algo.javaSource || algo.pythonSource) && (tab === 'Visualization' || tab === 'Code') && (
+        <div role={tab === 'Code' ? 'tabpanel' : undefined} id="workspace-panel-Code" aria-labelledby="workspace-tab-Code">
         <CodePanel
           algo={algo}
           lang={lang}
@@ -335,6 +361,7 @@ const AlgorithmWorkspace: React.FC<{ algo: Algorithm }> = ({ algo }) => {
           collapsed={codeCollapsed}
           setCollapsed={setCodeCollapsed}
         />
+        </div>
       )}
     </div>
   );
@@ -351,16 +378,15 @@ const GridPanel: React.FC<{
   const wrapRef = useRef<HTMLDivElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [size, setSize] = useState({ w: 480, h: 420 });
+  const { theme } = useTheme();
   const resolvedTheme = useMemo(
-    () =>
-      resolveTheme({
-        background: '#0F172A',
-        elementFill: '#16232E',
-        elementStroke: '#2B3A49',
-        textColor: '#F1F5F9',
-        styleColors: { VISIT: '#3288F5', ACTIVE: '#22C55E' },
-      }),
-    []
+    () => resolveTheme({
+      ...visualizationPalette(theme),
+      styleColors: theme === 'light'
+        ? { VISIT: '#BFDBFE', ACTIVE: '#86EFAC' }
+        : { VISIT: '#3288F5', ACTIVE: '#22C55E' },
+    }),
+    [theme]
   );
 
   // Observe container width → keep the canvas square-ish & overflow-free.
@@ -413,7 +439,7 @@ const GridPanel: React.FC<{
   return (
     <section
       className="rounded-2xl border border-border overflow-hidden flex flex-col"
-      style={{ background: '#0F172A' }}
+      style={{ background: 'var(--ua-surface)' }}
       aria-label="Algorithm grid visualization"
     >
       <div
@@ -433,15 +459,15 @@ const GridPanel: React.FC<{
 };
 
 const LEGEND_ITEMS = [
-  { label: 'Unvisited', color: '#16232E', border: '#2B3A49' },
-  { label: 'Blocked', color: '#0C1522', border: '#2B3A49' },
-  { label: 'Visited', color: '#3288F5' },
-  { label: 'Active', color: '#22C55E' },
+  { label: 'Unvisited', color: 'var(--ua-surface-soft)', border: 'var(--ua-border-strong)' },
+  { label: 'Blocked', color: 'var(--ua-surface-soft)', border: 'var(--ua-border-strong)' },
+  { label: 'Visited', color: 'var(--ua-viz-visited)' },
+  { label: 'Active', color: 'var(--ua-viz-active)' },
 ];
 
 const ARRAY_LEGEND_ITEMS = [
   { label: 'Compare', color: '#f59e0b' },
-  { label: 'Active', color: '#22C55E' },
+  { label: 'Active', color: 'var(--ua-viz-active)' },
   { label: 'Swap', color: '#ef4444' },
   { label: 'Final', color: '#64748b' },
 ];
@@ -460,7 +486,7 @@ const Legend: React.FC<{ isArray: boolean }> = ({ isArray }) => (
             border: `1px solid ${item.border ?? item.color}`,
           }}
         />
-        <span style={{ color: '#9AAABD' }}>{item.label}</span>
+        <span style={{ color: 'var(--ua-text-secondary)' }}>{item.label}</span>
       </span>
     ))}
   </div>
@@ -500,11 +526,15 @@ const StepInspector: React.FC<{
   const { t } = useTranslation();
   return (
     <aside
-      className="ua-step-inspector rounded-2xl border border-border p-3 sm:p-4 flex flex-col gap-3 max-h-[300px] xl:max-h-[520px] overflow-y-auto overscroll-contain [overflow-anchor:none]"
+      className="ua-step-inspector rounded-2xl border border-border p-3 sm:p-4 flex flex-col gap-3 overflow-y-auto overscroll-contain [overflow-anchor:none]"
       style={{ background: 'var(--ua-surface)' }}
       aria-label="Step inspector"
       aria-live="polite"
     >
+      <div className="flex items-center justify-between gap-2 border-b border-border pb-3">
+        <h2 className="text-sm font-semibold text-text-primary">Walkthrough</h2>
+        <span className="text-xs text-text-muted">{index + 1} / {total}</span>
+      </div>
       {/* current action */}
       <div>
         <div className="flex items-center gap-2 mb-1">
@@ -831,114 +861,35 @@ const CodePanel: React.FC<{
   collapsed: boolean;
   setCollapsed: (v: boolean) => void;
 }> = ({ algo, lang, setLang, sourceLines, activeLine, collapsed, setCollapsed }) => {
-  const activeRef = useRef<HTMLDivElement | null>(null);
-  const codeRef = useRef<HTMLPreElement | null>(null);
-
-  // Follow execution inside the code viewport only. scrollIntoView also
-  // scrolls ancestors, stealing the learner's position on the page.
-  useLayoutEffect(() => {
-    if (collapsed || activeLine == null) return;
-    const viewport = codeRef.current;
-    const line = activeRef.current;
-    if (!viewport || !line) return;
-    const bounds = viewport.getBoundingClientRect();
-    const lineBounds = line.getBoundingClientRect();
-    const top = bounds.top + viewport.clientTop;
-    const bottom = top + viewport.clientHeight;
-    if (lineBounds.top < top) {
-      viewport.scrollTop += lineBounds.top - top;
-    } else if (lineBounds.bottom > bottom) {
-      viewport.scrollTop += lineBounds.bottom - bottom;
-    }
-  }, [activeLine, collapsed, lang]);
-
+  const [editorVersion, setEditorVersion] = useState(0);
+  const source = sourceLines.join('\n');
+  const copy = async () => {
+    try { await navigator.clipboard.writeText(source); toast.success('Source copied'); }
+    catch { toast.error('Could not copy source. Select the code and copy manually.'); }
+  };
   return (
-    <section
-      className="rounded-2xl border border-border overflow-hidden"
-      style={{ background: '#0F172A' }}
-      aria-label="Source code"
-    >
-      <div className="flex items-center justify-between border-b border-border">
-        <div className="flex items-center">
-          <span className="flex items-center gap-1.5 px-4 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-text-muted">
-            <Code2 size={13} /> Source
-          </span>
-          {!collapsed && (
-            <div className="flex">
-              {algo.javaSource && (
-                <TabBtn active={lang === 'java'} onClick={() => setLang('java')}>
-                  Java
-                </TabBtn>
-              )}
-              {algo.pythonSource && (
-                <TabBtn active={lang === 'python'} onClick={() => setLang('python')}>
-                  Python
-                </TabBtn>
-              )}
-            </div>
-          )}
+    <section className="ua-source-panel rounded-2xl border border-border overflow-hidden" aria-label="Source code">
+      <div className="ua-editor-toolbar">
+        <span className="flex items-center gap-2 text-sm font-semibold"><Code2 size={16} /> Source</span>
+        <div className="ua-language-tabs" role="group" aria-label="Source language">
+          {algo.javaSource && <TabBtn active={lang === 'java'} onClick={() => setLang('java')}>Java</TabBtn>}
+          {algo.pythonSource && <TabBtn active={lang === 'python'} onClick={() => setLang('python')}>Python</TabBtn>}
         </div>
-        <button
-          type="button"
-          onClick={() => setCollapsed(!collapsed)}
-          aria-expanded={!collapsed}
-          className="flex items-center gap-1 px-4 py-2.5 text-[12px] font-medium text-text-secondary hover:text-text-primary transition"
-        >
-          {collapsed ? 'Show code' : 'Hide code'}
-          <ChevronDown
-            size={15}
-            className={`transition-transform duration-200 ${
-              collapsed ? '' : 'rotate-180'
-            }`}
-          />
-        </button>
+        <div className="ua-editor-actions">
+          <button type="button" onClick={copy} aria-label="Copy source" title="Copy source"><Copy size={15} /></button>
+          <button type="button" onClick={() => { setEditorVersion(v => v + 1); setCollapsed(false); }} aria-label="Reset source view" title="Reset source view"><RotateCcw size={15} /></button>
+          <button type="button" onClick={() => setCollapsed(!collapsed)} aria-expanded={!collapsed}>
+            {collapsed ? 'Show code' : 'Hide code'}<ChevronDown size={15} className={collapsed ? '' : 'rotate-180'} />
+          </button>
+        </div>
       </div>
-
-      {!collapsed && (
-        <pre
-          ref={codeRef}
-          tabIndex={0}
-          aria-label="Source code listing"
-          className="m-0 py-2 overflow-auto overscroll-contain font-mono text-[12.5px] leading-[1.75]"
-          style={{ height: 320, overflowAnchor: 'none' }}
-        >
-          {sourceLines.map((ln, i) => {
-            const active = activeLine === i + 1;
-            return (
-              <div
-                key={i}
-                ref={active ? activeRef : undefined}
-                className="flex gap-3.5 px-4"
-                style={{
-                  background: active ? 'rgba(50,136,245,0.16)' : 'transparent',
-                  borderLeft: active
-                    ? '3px solid var(--ua-primary-500)'
-                    : '3px solid transparent',
-                }}
-                aria-current={active ? 'true' : undefined}
-              >
-                <span
-                  className="select-none text-right shrink-0"
-                  style={{
-                    minWidth: 26,
-                    color: active ? 'var(--ua-primary-600)' : '#51657C',
-                  }}
-                >
-                  {i + 1}
-                </span>
-                <code
-                  style={{
-                    color: active ? '#F1F5F9' : '#C9D4E8',
-                    whiteSpace: 'pre',
-                  }}
-                >
-                  {ln || ' '}
-                </code>
-              </div>
-            );
-          })}
-        </pre>
-      )}
+      {!collapsed && <AnimationFocus title={`${algo.title} source code`}>
+        <div className="ua-code-viewport" role="region" aria-label="Source code listing">
+          <CodeEditor key={editorVersion} value={source} onChange={() => {}} language={lang} dark readOnly
+            activeLine={activeLine} minHeight="20rem" />
+        </div>
+      </AnimationFocus>}
+      {!collapsed && <p className="ua-source-note">Read-only reference · {activeLine ? `Execution line ${activeLine}` : 'Equivalent implementation'} · Playback follows the recorded algorithm trace, not edited code.</p>}
     </section>
   );
 };
@@ -948,17 +899,7 @@ const TabBtn: React.FC<{
   onClick: () => void;
   children: React.ReactNode;
 }> = ({ active, onClick, children }) => (
-  <button
-    onClick={onClick}
-    className="px-4 py-2.5 text-[13px] font-semibold transition"
-    style={{
-      color: active ? '#F1F5F9' : '#9AAABD',
-      borderBottom: active
-        ? '2px solid var(--ua-primary-500)'
-        : '2px solid transparent',
-      background: active ? 'rgba(50,136,245,0.10)' : 'transparent',
-    }}
-  >
+  <button type="button" onClick={onClick} aria-pressed={active} className={active ? 'is-active' : ''}>
     {children}
   </button>
 );

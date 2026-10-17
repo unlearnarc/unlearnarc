@@ -28,13 +28,10 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (res) => res,
   (err) => {
-    // TEST-ONLY: contest routes are auth-less, so a 401 on a contest call must
-    // NOT bounce the user to /login (that caused the Google-login → localhost
-    // redirect loop). TODO: remove the isContest guard when auth is restored.
-    const url = err.config?.url ?? '';
-    const isContest = url.includes('/contests');
-    if (err.response?.status === 401 && !isContest) {
+    // Expired sessions must leave protected pages, including contests.
+    if (err.response?.status === 401 && localStorage.getItem('ua_user_token')) {
       localStorage.removeItem('ua_user_token');
+      localStorage.removeItem('ua_user_refresh');
       localStorage.removeItem('ua_user');
       window.location.href = '/login';
     }

@@ -1,7 +1,8 @@
 import { test, expect } from '@playwright/test';
 
 test.beforeEach(async ({ page }) => {
-  await page.route('**/api/v1/**', route => route.fulfill({ status: 401, body: '{}' }));
+  await page.addInitScript(() => localStorage.setItem('ua_user_token', 'mascot-test-session'));
+  await page.route('**/api/v1/**', route => route.fulfill({ json: { data: {} } }));
   await page.goto('/mascot-preview');
 });
 

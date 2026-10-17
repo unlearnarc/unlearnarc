@@ -1,178 +1,59 @@
 package com.unlearnarc.common;
 
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.safety.Cleaner;
+import org.jsoup.safety.Safelist;
 import org.springframework.stereotype.Component;
 
-import java.util.Map;
-import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.Locale;
 
-/**
- * Server-side allow-list HTML sanitizer for user-authored rich text
- * (interview experience stories).
- *
- * <p>The browser already sanitizes before sending, but the backend must never
- * trust the client — a request can be forged with curl/Postman. This is the
- * authoritative sanitization layer: whatever it returns is what gets persisted
- * and later served to every reader.
- *
- * <p>Implementation note: this is intentionally a small, dependency-free
- * regex/allow-list pass rather than pulling in an HTML-parsing library, to keep
- * the backend footprint unchanged. It strips the high-risk vectors
- * (script/style/iframe blocks, inline event handlers, javascript: URLs) and
- * drops any tag not on the allow-list while keeping its text content.
- */
+/** Authoritative server-side rich-text allow-list, parsed as HTML rather than regex. */
 @Component
 public class HtmlSanitizer {
+    private static final Safelist POLICY = new Safelist()
+            .addTags("p", "br", "b", "strong", "i", "em", "u", "s", "strike",
+                    "ul", "ol", "li", "blockquote", "code", "pre", "h1", "h2", "h3", "h4",
+                    "a", "span", "div", "img", "figure", "figcaption", "hr")
+            .addAttributes("a", "href", "title")
+            .addAttributes("img", "src", "alt", "title", "width", "height");
 
-    /** Tags permitted in a story / note. Case-insensitive match. */
-    private static final Set<String> ALLOWED_TAGS = Set.of(
-            "p", "br", "b", "strong", "i", "em", "u", "s", "strike",
-            "ul", "ol", "li", "blockquote", "code", "pre",
-            "h1", "h2", "h3", "h4", "a", "span", "div",
-            // Media/structure for book-style notes (images, captions, dividers).
-            "img", "figure", "figcaption", "hr");
-
-    /** Attributes permitted per tag. Anything else is removed. */
-    private static final Map<String, Set<String>> ALLOWED_ATTRS = Map.of(
-            "a", Set.of("href", "title"),
-            "img", Set.of("src", "alt", "title", "width", "height"));
-
-    /** Safe URLs for <a href>: http(s), mailto, root-relative, or anchors. */
-    private static final Pattern SAFE_URL =
-            Pattern.compile("^(https?:|mailto:|/|#).*", Pattern.CASE_INSENSITIVE);
-
-    /**
-     * Safe URLs for <img src>: http(s), root-relative, or an inline
-     * {@code data:image/...} URI (how the editor embeds pasted/dropped images).
-     * Notably this does NOT allow {@code javascript:} or non-image data URIs.
-     */
-    private static final Pattern SAFE_IMG_SRC =
-            Pattern.compile("^(https?:|/|data:image/)[^\\s]*", Pattern.CASE_INSENSITIVE);
-
-    // Remove whole dangerous element blocks (open..close) including content.
-    private static final Pattern DANGEROUS_BLOCKS = Pattern.compile(
-            "(?is)<\\s*(script|style|iframe|object|embed|form|textarea|svg|math)\\b[^>]*>.*?<\\s*/\\s*\\1\\s*>");
-
-    // Remove self-closing / void dangerous or disallowed structural tags.
-    private static final Pattern DANGEROUS_VOID = Pattern.compile(
-            "(?is)<\\s*/?\\s*(link|meta|input|button|base|frame|frameset)\\b[^>]*>");
-
-    // Matches any tag so we can filter it against the allow-list.
-    private static final Pattern ANY_TAG = Pattern.compile("(?is)<\\s*(/?)\\s*([a-z0-9]+)((?:[^>\"']|\"[^\"]*\"|'[^']*')*)>");
-
-    // Attribute parser: name="value" | name='value' | name=value | name
-    private static final Pattern ATTR = Pattern.compile(
-            "(?is)([a-z_:][a-z0-9_:.-]*)\\s*(?:=\\s*(\"[^\"]*\"|'[^']*'|[^\\s>]+))?");
-
-    /**
-     * Sanitize an untrusted HTML string into the permitted subset.
-     * Returns {@code null} for {@code null} input and "" for blank input.
-     */
     public String sanitize(String dirty) {
         if (dirty == null) return null;
         if (dirty.isBlank()) return "";
-
-        String html = dirty;
-        html = DANGEROUS_BLOCKS.matcher(html).replaceAll("");
-        html = DANGEROUS_VOID.matcher(html).replaceAll("");
-
-        StringBuilder out = new StringBuilder(html.length());
-        Matcher m = ANY_TAG.matcher(html);
-        int last = 0;
-        while (m.find()) {
-            out.append(html, last, m.start());
-            last = m.end();
-
-            boolean closing = !m.group(1).isEmpty();
-            String tag = m.group(2).toLowerCase();
-            String rawAttrs = m.group(3) == null ? "" : m.group(3);
-
-            if (!ALLOWED_TAGS.contains(tag)) {
-                // Disallowed tag: drop the tag, keep the text that follows.
-                continue;
-            }
-            if (closing) {
-                out.append("</").append(tag).append('>');
+        Document parsed = Jsoup.parseBodyFragment(dirty);
+        // Remove active contents as well as their wrapper elements.
+        parsed.select("script,style,iframe,object,embed,form,textarea,svg,math").remove();
+        Document safe = new Cleaner(POLICY).clean(parsed);
+        safe.outputSettings().prettyPrint(false);
+        for (Element link : safe.select("a[href]")) {
+            if (safeUrl(link.attr("href"), false)) {
+                link.attr("rel", "noopener noreferrer nofollow").attr("target", "_blank");
             } else {
-                out.append('<').append(tag).append(scrubAttributes(tag, rawAttrs)).append('>');
+                link.removeAttr("href");
             }
         }
-        out.append(html, last, html.length());
-        return out.toString();
-    }
-
-    private String scrubAttributes(String tag, String rawAttrs) {
-        Set<String> allowed = ALLOWED_ATTRS.getOrDefault(tag, Set.of());
-        if (allowed.isEmpty() || rawAttrs.isBlank()) {
-            return "";
-        }
-
-        boolean isImg = tag.equals("img");
-        StringBuilder kept = new StringBuilder();
-        boolean hasHref = false;
-        boolean imgHasValidSrc = false;
-        Matcher am = ATTR.matcher(rawAttrs);
-        while (am.find()) {
-            String name = am.group(1).toLowerCase();
-            String rawVal = am.group(2);
-            String value = stripQuotes(rawVal);
-
-            // Block event handlers, inline styles and non-allow-listed attrs.
-            if (name.startsWith("on") || name.equals("style") || !allowed.contains(name)) {
+        for (Element image : safe.select("img")) {
+            if (!safeUrl(image.attr("src"), true)) {
+                image.remove();
                 continue;
             }
-            if (name.equals("href")) {
-                if (value == null || !SAFE_URL.matcher(value.trim()).matches()) {
-                    continue;
-                }
-                hasHref = true;
-            }
-            if (isImg && name.equals("src")) {
-                if (value == null || !SAFE_IMG_SRC.matcher(value.trim()).matches()) {
-                    // An <img> with an unsafe/missing src is useless and risky — drop it.
-                    continue;
-                }
-                imgHasValidSrc = true;
-            }
-            // width/height must be plain integers (strip px/units/expressions).
-            if (isImg && (name.equals("width") || name.equals("height"))) {
-                if (value == null || !value.trim().matches("\\d{1,5}")) {
-                    continue;
-                }
-            }
-            kept.append(' ').append(name);
-            if (value != null) {
-                kept.append("=\"").append(escapeAttr(value)).append('"');
+            for (String dimension : new String[]{"width", "height"}) {
+                if (!image.attr(dimension).matches("[0-9]{1,5}")) image.removeAttr(dimension);
             }
         }
-
-        // An image without a valid src is dropped entirely (signal to caller via
-        // a sentinel the caller can't easily act on, so instead emit nothing here
-        // and let the empty <img> be harmless). Keep behaviour simple: if no
-        // valid src, return a marker attribute-free tag that renders nothing.
-        if (isImg && !imgHasValidSrc) {
-            return " data-dropped=\"1\"";
-        }
-
-        // Harden links against reverse-tabnabbing.
-        if (tag.equals("a") && hasHref) {
-            kept.append(" rel=\"noopener noreferrer nofollow\" target=\"_blank\"");
-        }
-        return kept.toString();
+        return safe.body().html();
     }
 
-    private static String stripQuotes(String v) {
-        if (v == null) return null;
-        if (v.length() >= 2
-                && ((v.charAt(0) == '"' && v.charAt(v.length() - 1) == '"')
-                 || (v.charAt(0) == '\'' && v.charAt(v.length() - 1) == '\''))) {
-            return v.substring(1, v.length() - 1);
-        }
-        return v;
-    }
-
-    private static String escapeAttr(String v) {
-        return v.replace("&", "&amp;").replace("\"", "&quot;").replace("<", "&lt;").replace(">", "&gt;");
+    private static boolean safeUrl(String value, boolean image) {
+        String url = value.trim().toLowerCase(Locale.ROOT);
+        if (url.isEmpty() || url.codePoints().anyMatch(Character::isISOControl)) return false;
+        if (url.startsWith("https:") || url.startsWith("http:") || url.startsWith("/")) return true;
+        if (!image) return url.startsWith("mailto:") || url.startsWith("#");
+        // Only raster images: data:image/svg+xml can contain active content.
+        return url.startsWith("data:image/png;base64,") || url.startsWith("data:image/jpeg;base64,")
+                || url.startsWith("data:image/gif;base64,") || url.startsWith("data:image/webp;base64,")
+                || url.startsWith("data:image/avif;base64,");
     }
 }

@@ -55,7 +55,7 @@ export const AnimationToolbar: React.FC<AnimationToolbarProps> = ({
       className={`rounded-2xl border border-border p-2.5 md:p-3 flex flex-wrap items-center gap-2 md:gap-3 ${
         className ?? ''
       }`}
-      style={{ background: '#16232E' }}
+      style={{ background: 'var(--ua-surface-soft)' }}
       role="group"
       aria-label="Animation playback controls"
     >

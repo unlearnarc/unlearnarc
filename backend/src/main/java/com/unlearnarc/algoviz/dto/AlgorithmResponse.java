@@ -17,6 +17,7 @@ public class AlgorithmResponse {
     private String slug;
     private String title;
     private String summary;
+    private String thumbnailUrl;
     private String usage;
     private String category;
     private Difficulty difficulty;

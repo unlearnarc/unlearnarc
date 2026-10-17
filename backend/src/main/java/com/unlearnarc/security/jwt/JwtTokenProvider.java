@@ -106,16 +106,9 @@ public class JwtTokenProvider {
         try {
             parseClaims(token);
             return true;
-        } catch (ExpiredJwtException e) {
-            log.warn("JWT expired: {}", e.getMessage());
-        } catch (UnsupportedJwtException e) {
-            log.warn("JWT unsupported: {}", e.getMessage());
-        } catch (MalformedJwtException e) {
-            log.warn("JWT malformed: {}", e.getMessage());
-        } catch (SecurityException e) {
-            log.warn("JWT signature invalid: {}", e.getMessage());
-        } catch (IllegalArgumentException e) {
-            log.warn("JWT claims empty: {}", e.getMessage());
+        } catch (JwtException | IllegalArgumentException e) {
+            // Parser messages can contain attacker-controlled claims or token material.
+            log.warn("JWT validation failed");
         }
         return false;
     }

@@ -1,66 +1,35 @@
 package com.unlearnarc.security.interceptor;
 
+import com.unlearnarc.common.SafeLog;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.lang.NonNull;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
+import org.springframework.web.servlet.HandlerMapping;
 
-/**
- * Structured audit log for every admin API call.
- *
- * Format:
- *   [AUDIT] METHOD /path | principal=email | ip=x.x.x.x | status=200 | 42ms
- */
+/** Audit route patterns and outcomes, never identities, IPs, query strings or tokens. */
 @Slf4j
 @Component
 public class RequestLoggingInterceptor implements HandlerInterceptor {
-
-    private static final String START_TIME_ATTR = "reqStartTime";
+    private static final String START_TIME_ATTR = RequestLoggingInterceptor.class.getName() + ".start";
 
     @Override
-    public boolean preHandle(
-            @NonNull HttpServletRequest request,
-            @NonNull HttpServletResponse response,
-            @NonNull Object handler) {
-
-        request.setAttribute(START_TIME_ATTR, System.currentTimeMillis());
+    public boolean preHandle(@NonNull HttpServletRequest request,
+            @NonNull HttpServletResponse response, @NonNull Object handler) {
+        request.setAttribute(START_TIME_ATTR, System.nanoTime());
         return true;
     }
 
     @Override
-    public void afterCompletion(
-            @NonNull HttpServletRequest request,
-            @NonNull HttpServletResponse response,
-            @NonNull Object handler,
-            Exception ex) {
-
-        long startTime = (Long) request.getAttribute(START_TIME_ATTR);
-        long elapsed   = System.currentTimeMillis() - startTime;
-
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String principal = (auth != null && auth.isAuthenticated()) ? auth.getName() : "anonymous";
-        String ip        = resolveClientIp(request);
-
-        if (ex != null) {
-            log.error("[AUDIT] {} {} | principal={} | ip={} | status={} | {}ms | error={}",
-                    request.getMethod(), request.getRequestURI(),
-                    principal, ip, response.getStatus(), elapsed, ex.getMessage());
-        } else {
-            log.info("[AUDIT] {} {} | principal={} | ip={} | status={} | {}ms",
-                    request.getMethod(), request.getRequestURI(),
-                    principal, ip, response.getStatus(), elapsed);
-        }
-    }
-
-    private String resolveClientIp(HttpServletRequest request) {
-        String forwarded = request.getHeader("X-Forwarded-For");
-        if (forwarded != null && !forwarded.isBlank()) {
-            return forwarded.split(",")[0].trim();
-        }
-        return request.getRemoteAddr();
+    public void afterCompletion(@NonNull HttpServletRequest request,
+            @NonNull HttpServletResponse response, @NonNull Object handler, Exception ex) {
+        Object start = request.getAttribute(START_TIME_ATTR);
+        long elapsed = start instanceof Long time ? Math.max(0, (System.nanoTime() - time) / 1_000_000) : 0;
+        Object route = request.getAttribute(HandlerMapping.BEST_MATCHING_PATTERN_ATTRIBUTE);
+        log.info("[AUDIT] method={} route={} status={} elapsedMs={} outcome={}",
+                SafeLog.field(request.getMethod()), SafeLog.field(route), response.getStatus(), elapsed,
+                ex == null ? "completed" : "failed");
     }
 }

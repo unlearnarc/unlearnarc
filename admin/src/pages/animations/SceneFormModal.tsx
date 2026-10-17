@@ -26,6 +26,7 @@ interface FormState {
   slug: string;
   title: string;
   description: string;
+  thumbnailUrl: string;
   category: AnimationCategory;
   source: SceneSource;
   kind: string;
@@ -37,6 +38,7 @@ const emptyForm: FormState = {
   slug: '',
   title: '',
   description: '',
+  thumbnailUrl: '',
   category: 'OTHER',
   source: 'GENERATED',
   kind: '',
@@ -64,6 +66,7 @@ export const SceneFormModal: React.FC<Props> = ({ open, editing, onClose, onSave
         slug: editing.slug,
         title: editing.title,
         description: editing.description ?? '',
+        thumbnailUrl: editing.thumbnailUrl ?? '',
         category: editing.category ?? 'OTHER',
         source: editing.source,
         kind: editing.kind ?? '',
@@ -99,6 +102,7 @@ export const SceneFormModal: React.FC<Props> = ({ open, editing, onClose, onSave
       slug: form.slug || slugify(form.title),
       title: form.title,
       description: form.description || undefined,
+      thumbnailUrl: form.thumbnailUrl.trim() || null,
       category: form.category,
       source: form.source,
     };
@@ -208,6 +212,11 @@ export const SceneFormModal: React.FC<Props> = ({ open, editing, onClose, onSave
             />
           </FormField>
         </div>
+
+        <FormField label="Thumbnail URL">
+          <Input value={form.thumbnailUrl} onChange={e => setForm({ ...form, thumbnailUrl: e.target.value })} maxLength={1024} placeholder="/images/animations/lesson.svg or https://…" />
+          <p className="text-xs text-slate-400 mt-1">Optional public image reference. Leave blank to use the automatic preview.</p>
+        </FormField>
 
         <FormField label="Description">
           <textarea

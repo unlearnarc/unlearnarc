@@ -57,6 +57,8 @@
   --ua-navy-700: #24313B;
   --ua-navy-600: #35434F;
 
+  --ua-viz-visited: #BFDBFE;
+  --ua-viz-active: #86EFAC;
   --ua-background:      #F6F8FB;
   --ua-surface:         #FFFFFF;
   --ua-surface-soft:    #EEF2F7;
@@ -142,6 +144,8 @@
   --ua-tier-bronze:    #D99A68;
 
   /* ---- Neutral surfaces: charcoal dark ------------------------------- */
+  --ua-viz-visited: #3288F5;
+  --ua-viz-active: #22C55E;
   --ua-background:       #111820;
   --ua-surface:          #18212B;
   --ua-surface-soft:     #202B36;

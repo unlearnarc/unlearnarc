@@ -29,7 +29,7 @@ export const AnimationNotesPanel: React.FC<AnimationNotesPanelProps> = ({
   return (
     <div
       className={`rounded-2xl border border-border p-4 space-y-4 ${className ?? ''}`}
-      style={{ background: '#16232E' }}
+      style={{ background: 'var(--ua-surface-soft)' }}
       aria-label="About this animation"
     >
       <header className="flex items-center gap-2">

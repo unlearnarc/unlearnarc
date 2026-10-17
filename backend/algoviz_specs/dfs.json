@@ -1,4 +1,5 @@
 {
+  "thumbnailUrl": "/images/algorithms/dfs.svg",
   "slug": "dfs",
   "title": "Depth-First Search",
   "summary": "Explores as far as possible along each branch before backtracking.",

@@ -1,7 +1,10 @@
 import { expect, test, type Page } from '@playwright/test';
 
 async function mockAnimation(page: Page) {
-  await page.addInitScript(() => localStorage.setItem('ua_lang', 'en'));
+  await page.addInitScript(() => {
+    localStorage.setItem('ua_lang', 'en');
+    localStorage.setItem('ua_user_token', 'animation-test-session');
+  });
   await page.route('**/api/v1/**', route => route.fulfill({ json: { data: [] } }));
   const trace = {
     id: 'focus-scene', title: 'Focus scene', duration: 5000,
@@ -17,6 +20,7 @@ async function mockAnimation(page: Page) {
   ] } }));
   await page.route('**/api/v1/animation-scenes/focus-scene', route => route.fulfill({ json: { data: { ...trace, trace } } }));
   await page.goto('/animations');
+  await page.getByRole('link', { name: 'Watch Focus scene', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Full screen', exact: false })).toBeVisible();
 }
 

@@ -189,7 +189,8 @@ fi
 
 if [ "$START_BACKEND" = true ]; then
   # shellcheck disable=SC2086
-  start_proc "backend" "$CYAN" "$BACKEND_DIR" $MVN_CMD spring-boot:run
+  # Rebuild from source so IDE-generated/stale classes cannot break startup.
+  start_proc "backend" "$CYAN" "$BACKEND_DIR" $MVN_CMD clean spring-boot:run
 fi
 
 start_proc "admin"   "$GREEN"  "$ADMIN_DIR"   npm run dev

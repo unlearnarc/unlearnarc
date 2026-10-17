@@ -55,6 +55,7 @@ interface Algorithm {
     slug: string;
     title: string;
     summary?: string;
+    thumbnailUrl?: string | null;
     usage?: string;
     category?: string;
     difficulty?: Difficulty;
@@ -185,15 +186,17 @@ interface RenderContext {
     ctx: CanvasRenderingContext2D;
     width: number;
     height: number;
-    theme: Required<Pick<PlayerTheme, "background" | "elementFill" | "elementStroke" | "textColor" | "font">> & {
+    theme: Required<Pick<PlayerTheme, 'background' | 'elementFill' | 'elementStroke' | 'textColor' | 'font'>> & {
         styleColors: Record<string, string>;
     };
 }
 type Renderer = (rc: RenderContext, step: Step, spec: VisualizationSpec) => void;
-declare function resolveTheme(theme?: PlayerTheme): RenderContext["theme"];
+declare function resolveTheme(theme?: PlayerTheme): RenderContext['theme'];
 /** Collect index -> colour from the step's highlights for a given target. */
 declare function highlightMap(step: Step, target: string, styleColors: Record<string, string>): Map<string, string>;
+
 declare const RENDERERS: Partial<Record<VisualizerType, Renderer>>;
 declare function getRenderer(type: VisualizerType): Renderer;
 
-export { type Algorithm, AlgorithmVisualizer, type AlgorithmVisualizerProps, DEFAULT_STYLE_COLORS, type Difficulty, type EngineListener, type EngineState, type Highlight, type HighlightStyle, type InputOption, type InputType, type PlayerTheme, RENDERERS, type RenderContext, type Renderer, type Step, type UserInputRequest, type Variable, VisualizationEngine, type VisualizationSpec, type VisualizerType, getRenderer, highlightMap, resolveTheme, useVisualization };
+export { AlgorithmVisualizer, DEFAULT_STYLE_COLORS, RENDERERS, VisualizationEngine, getRenderer, highlightMap, resolveTheme, useVisualization };
+export type { Algorithm, AlgorithmVisualizerProps, Difficulty, EngineListener, EngineState, Highlight, HighlightStyle, InputOption, InputType, PlayerTheme, RenderContext, Renderer, Step, UserInputRequest, Variable, VisualizationSpec, VisualizerType };

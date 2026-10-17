@@ -73,7 +73,8 @@ public class AuthoringService {
         }
         job.setProposal(proposal.toString());
         job = jobs.save(job);
-        log.info("[AI-AUTHORING] Draft generated job={} owner={} kind={}", job.getId(), owner, job.getKind());
+        log.info("[AI-AUTHORING] Draft generated job={} kind={}",
+                com.unlearnarc.common.SafeLog.field(job.getId()), job.getKind());
         return view(job);
     }
 
@@ -110,7 +111,8 @@ public class AuthoringService {
         job.setStatus("SAVED");
         job.setSavedAt(Instant.now());
         jobs.save(job);
-        log.info("[AI-AUTHORING] Approved and saved job={} owner={} kind={}", id, owner, job.getKind());
+        log.info("[AI-AUTHORING] Approved and saved job={} kind={}",
+                com.unlearnarc.common.SafeLog.field(id), job.getKind());
         return view(job);
     }
 

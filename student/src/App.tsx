@@ -47,28 +47,18 @@ function App() {
             {/* Public (no layout) */}
             <Route path="/"               element={<LandingPage />} />
             <Route path="/login"          element={<LoginPage />} />
-            <Route path="/mascot-preview" element={<MascotPreviewPage />} />
             <Route path="/auth/callback"  element={<AuthCallbackPage />} />
 
-            {/* Public, but inside the shared sidebar layout.
-                The sidebar renders a sign-in prompt when unauthenticated. */}
-            <Route element={<AppLayout />}>
-              <Route path="/explore"          element={<ExplorePage />} />
-              <Route path="/algorithms"       element={<AlgorithmsPage />} />
-              <Route path="/algorithms/:slug" element={<AlgorithmDetailPage />} />
-              <Route path="/animations"       element={<AnimationsPage />} />
-
-              {/* TEMP: contest is auth-less in the frontend while debugging the
-                  WASM sandbox (Google login redirects back to localhost and blocks
-                  testing). Move these two routes back under <ProtectedRoute> below
-                  once auth/redirect is sorted. */}
-              <Route path="/contests"     element={<ContestsPage />} />
-              <Route path="/contests/:id" element={<ContestDetailPage />} />
-            </Route>
-
-            {/* Protected — authenticated users */}
+            {/* All app pages require a session, including direct/deep links. */}
             <Route element={<ProtectedRoute />}>
+              <Route path="/mascot-preview" element={<MascotPreviewPage />} />
               <Route element={<AppLayout />}>
+                <Route path="/explore"          element={<ExplorePage />} />
+                <Route path="/algorithms"       element={<AlgorithmsPage />} />
+                <Route path="/algorithms/:slug" element={<AlgorithmDetailPage />} />
+                <Route path="/animations"       element={<AnimationsPage />} />
+                <Route path="/contests"         element={<ContestsPage />} />
+                <Route path="/contests/:id"     element={<ContestDetailPage />} />
                 <Route path="/dashboard"            element={<DashboardPage />} />
                 <Route path="/courses/:id"          element={<CourseDetailPage />} />
                 <Route path="/my-courses"           element={<MyCoursesPage />} />
@@ -80,7 +70,9 @@ function App() {
               </Route>
             </Route>
 
-            <Route path="*" element={<Navigate to="/" replace />} />
+            <Route element={<ProtectedRoute />}>
+              <Route path="*" element={<Navigate to="/dashboard" replace />} />
+            </Route>
           </Routes>
           <RoutedStudyBuddy />
         </BrowserRouter>

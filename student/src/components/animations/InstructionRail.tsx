@@ -33,7 +33,7 @@ export const InstructionRail: React.FC<InstructionRailProps> = ({
   return (
     <div
       className={`rounded-2xl border border-border p-3.5 ${className ?? ''}`}
-      style={{ background: '#16232E' }}
+      style={{ background: 'var(--ua-surface-soft)' }}
       aria-label="Step-by-step instructions"
     >
       <header className="flex items-center gap-2 mb-3">

@@ -13,6 +13,8 @@ public class AnimationSceneSummaryResponse {
     private String slug;
     private String title;
     private String description;
+    private String thumbnailUrl;
+    private java.time.Instant createdAt;
     private Category category;
     private Source source;
     private String kind;

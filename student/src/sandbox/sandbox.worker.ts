@@ -216,7 +216,9 @@ function runJavaScript(code: string, runId: string) {
     const fn = new Function(
       'console',
       ...blocked,
-      `"use strict";\n${code}`,
+      // `eval` may be shadowed in the outer, non-strict parameter list,
+      // but is an illegal parameter name on a strict-mode function itself.
+      `return (function () { "use strict";\n${code}\n}).call(undefined);`,
     );
     returnValue = fn(sandboxConsole, ...blocked.map(() => undefined));
     return { ok: true, stdout, stderr, returnValue };

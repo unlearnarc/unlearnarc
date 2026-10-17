@@ -1,14 +1,57 @@
 .ua-visualizer { min-width: 0; }
+.ua-algorithm-header { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; gap: 20px; }
 .ua-visualizer > header h1 { font-size: clamp(1.05rem, 3vw, 1.5rem); }
+.ua-algorithm-header > div:last-child { max-width: 100%; }
+.ua-algorithm-header p { overflow-wrap: anywhere; }
+.ua-workspace-nav { display: flex; align-items: center; gap: 12px; border-bottom: 1px solid var(--ua-border); }
+.ua-workspace-tabs { display: flex; overflow-x: auto; min-width: 0; flex: 1; }
+.ua-workspace-tabs button { padding: 12px 16px; white-space: nowrap; font-size: 13px; font-weight: 600; color: var(--ua-text-secondary); border-bottom: 2px solid transparent; }
+.ua-workspace-tabs button[aria-selected="true"] { color: var(--ua-primary); border-color: var(--ua-primary); }
+.ua-bookmark { padding: 12px; color: var(--ua-primary); }
+.ua-visualizer button:focus-visible { outline: 2px solid var(--ua-focus-ring); outline-offset: 2px; }
+.ua-visualizer [hidden] { display: none !important; }
+.ua-workspace-grid { display: grid; grid-template-columns: minmax(0, 2fr) minmax(250px, 1fr); gap: 16px; align-items: start; }
+.ua-workspace-grid > .ua-animation-focus { position: relative; border: 1px solid var(--ua-border); border-radius: 16px; background: var(--ua-surface); overflow: hidden; }
+.ua-workspace-grid > .ua-animation-focus > .ua-focus-launch { position: absolute; right: 10px; top: 3px; z-index: 1; width: auto; margin: 0; background: transparent; color: var(--ua-text-secondary); font-size: 12px; padding: 8px; }
+.ua-visualizer .ua-focus-launch span { display: none; }
+.ua-animation-panel-title { min-height: 50px; padding: 12px 130px 12px 16px; display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; text-transform: capitalize; border-bottom: 1px solid var(--ua-border); color: var(--ua-text-primary); }
+.ua-animation-panel > section { border: 0; border-radius: 0; }
+.ua-animation-panel > [aria-label="Playback controls"] { border-width: 1px 0 0; border-radius: 0; }
 .ua-visualizer [aria-label="Playback controls"] { scroll-margin-block: 80px; }
 .ua-visualizer [aria-label="Playback controls"] button { min-height: 44px; }
 .ua-visualizer [aria-label="Playback controls"] input[type="range"] { min-width: 0; min-height: 32px; }
-.ua-step-inspector { scrollbar-width: thin; }
+.ua-step-inspector { scrollbar-width: thin; max-height: 540px; overflow-wrap: anywhere; }
+.ua-practice-question { display: flex; align-items: center; gap: 12px; width: 100%; text-align: start; padding: 14px; border: 1px solid var(--ua-border); border-radius: 10px; color: var(--ua-text-primary); }
+.ua-practice-question span { color: var(--ua-text-secondary); font-size: 12px; flex-shrink: 0; }
+.ua-practice-question strong { flex: 1; font-size: 13px; }
+.ua-source-panel { position: relative; background: var(--ua-surface); color: var(--ua-text-primary); min-width: 0; }
+.ua-editor-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 8px 14px; border-bottom: 1px solid var(--ua-border); padding-inline-end: 130px; min-height: 52px; }
+.ua-language-tabs { display: flex; overflow-x: auto; max-width: 100%; }
+.ua-language-tabs button { padding: 8px 12px; font-size: 12px; font-weight: 600; color: var(--ua-text-secondary); border-bottom: 2px solid transparent; }
+.ua-language-tabs button.is-active { color: var(--ua-primary); border-color: var(--ua-primary); background: var(--ua-primary-soft); }
+.ua-editor-actions { display: flex; align-items: center; gap: 4px; margin-inline-start: auto; }
+.ua-editor-actions button { min-width: 36px; min-height: 36px; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 6px; font-size: 12px; border-radius: 8px; }
+.ua-source-panel > .ua-animation-focus > .ua-focus-launch { position: absolute; right: 10px; top: 5px; width: auto; margin: 0; padding: 8px; font-size: 12px; background: transparent; color: var(--ua-text-secondary); }
+.ua-code-viewport { min-width: 0; background: #282c34; }
+.ua-code-viewport .cm-editor { height: 320px; }
+.ua-code-viewport .cm-scroller { overflow: auto; overscroll-behavior: contain; overflow-anchor: none; }
+.ua-source-panel .is-expanded .cm-editor { height: calc(100dvh - 100px); }
+.ua-source-note { padding: 8px 14px; border-top: 1px solid var(--ua-border); font-size: 11px; color: var(--ua-text-secondary); }
+@media (max-width: 1100px) {
+  .ua-algorithm-header { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+  .ua-workspace-grid { gap: 12px; grid-template-columns: minmax(0, 1.8fr) minmax(230px, 1fr); }
+}
+@media (max-width: 900px) {
+  .ua-workspace-grid { grid-template-columns: minmax(0, 1fr); }
+  .ua-step-inspector { max-height: 360px; }
+}
 @media (max-width: 640px) {
   .ua-visualizer > nav { font-size: 11px; }
   .ua-visualizer > nav > span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .ua-visualizer > header { gap: 10px; }
   .ua-visualizer > header p { font-size: 12px; }
+  .ua-workspace-tabs button { padding: 12px 10px; font-size: 12px; }
+  .ua-workspace-nav { gap: 0; }
+  .ua-bookmark { padding: 8px; }
   .ua-visualizer [aria-label="Playback controls"] { gap: 8px; }
   .ua-visualizer [aria-label="Playback controls"] > div:nth-child(2) { order: 3; flex-basis: 100%; min-width: 0; }
   .ua-visualizer [aria-label="Playback controls"] > label { margin-inline-start: auto; }
@@ -16,9 +59,10 @@
   .ua-visualizer [aria-label="Playback controls"] select { min-height: 44px; padding-inline: 4px; }
   .ua-visualizer [aria-label="Playback controls"] > div:nth-child(2) input { width: 0; }
   .ua-visualizer .ua-step-inspector h2 { font-size: 14px; }
-  .ua-visualizer .ua-step-inspector p { overflow-wrap: anywhere; }
   .ua-visualizer [aria-label="Playback controls"] button { min-width: 36px; }
   .ua-visualizer [aria-label="Playback controls"] button[aria-label="Play"],
   .ua-visualizer [aria-label="Playback controls"] button[aria-label="Pause"] { min-width: 72px; padding-inline: 10px; }
-  .ua-visualizer [aria-label="Source code"] > div:first-child { flex-wrap: wrap; }
+  .ua-editor-toolbar { gap: 6px; padding: 8px 12px; padding-top: 48px; }
+  .ua-editor-actions { width: 100%; justify-content: flex-end; }
+  .ua-editor-actions button, .ua-language-tabs button { min-height: 44px; }
 }

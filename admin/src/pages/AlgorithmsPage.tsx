@@ -20,6 +20,7 @@ interface FormState {
   slug: string;
   title: string;
   summary: string;
+  thumbnailUrl: string;
   usage: string;
   category: string;
   difficulty: string;
@@ -57,6 +58,7 @@ const emptyForm: FormState = {
   slug: '',
   title: '',
   summary: '',
+  thumbnailUrl: '',
   usage: '',
   category: '',
   difficulty: 'EASY',
@@ -100,6 +102,7 @@ export const AlgorithmsPage: React.FC = () => {
       slug: form.slug || slugify(form.title),
       title: form.title,
       summary: form.summary || undefined,
+      thumbnailUrl: form.thumbnailUrl.trim() || null,
       usage: form.usage || undefined,
       category: form.category || undefined,
       difficulty: form.difficulty,
@@ -187,12 +190,20 @@ export const AlgorithmsPage: React.FC = () => {
     setModalOpen(true);
   };
 
-  const openEdit = (a: Algorithm) => {
+  const openEdit = async (summary: Algorithm) => {
+    let a: Algorithm;
+    try {
+      a = (await algorithmAPI.getById(summary.id)).data.data;
+    } catch {
+      toast.error('Could not load algorithm for editing');
+      return;
+    }
     setEditing(a);
     setForm({
       slug: a.slug,
       title: a.title,
       summary: a.summary ?? '',
+      thumbnailUrl: a.thumbnailUrl ?? '',
       usage: a.usage ?? '',
       category: a.category ?? '',
       difficulty: a.difficulty ?? 'EASY',
@@ -383,6 +394,13 @@ export const AlgorithmsPage: React.FC = () => {
               onChange={(e) => setForm({ ...form, summary: e.target.value })}
               placeholder="A short one-liner"
             />
+          </FormField>
+
+          <FormField label="Thumbnail URL (optional)">
+            <Input value={form.thumbnailUrl} maxLength={1024}
+              onChange={(e) => setForm({ ...form, thumbnailUrl: e.target.value })}
+              placeholder="HTTPS URL or /images/algorithms/bubble-sort.svg" />
+            <p className="text-xs text-slate-400 mt-1">Public HTTPS image or bundled preview path. Leave blank for the built-in preview.</p>
           </FormField>
 
           <FormField label="Usage / When to use">

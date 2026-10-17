@@ -256,6 +256,10 @@ export interface AnimationTheme {
   statusColors?: Partial<Record<EntityStatus, string>>;
   /** Maps semantic token (e.g. 'primary') → color. */
   tokens?: Record<string, string>;
+  /** Neutral canvas surfaces (host theme can override these). */
+  surface?: string;
+  border?: string;
+  caption?: string;
 }
 
 /**

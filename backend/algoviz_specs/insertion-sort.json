@@ -2,12 +2,12 @@
   "slug": "insertion-sort",
   "title": "Insertion Sort",
   "summary": "Grow a sorted prefix by shifting larger values and inserting the saved key.",
-  "usage": "How it works\nSave the next key, shift larger prefix elements one position right, then fill the gap. Temporary duplicate bars during shifts are expected: the key remains in a separate variable. Useful for small or nearly sorted inputs and as a base case in hybrid sorting.\n\nProperties and prerequisites\nStable: yes (shift only strictly greater values). In-place: yes.\n\nComplexity\nTime: O(n\u00b2) average/worst; O(n) best. Space: O(1).\n\nExample\nInput: [5, 2, 4, 1, 3]. Output: [1, 2, 3, 4, 5].\n\nTry it\nUse Play/Pause, Previous/Next, the timeline, and playback speed. Answer the prediction checkpoints to continue; feedback reveals the expected answer. Python is the line-synchronized walkthrough; Java is an equivalent complete implementation. Sorting functions accept empty arrays, duplicates, negative values, and already sorted inputs. Java methods belong inside a class; Python functions can be called directly.",
+  "usage": "How it works\nSave the next key, shift larger prefix elements one position right, then fill the gap. Temporary duplicate bars during shifts are expected: the key remains in a separate variable. Useful for small or nearly sorted inputs and as a base case in hybrid sorting.\n\nProperties and prerequisites\nStable: yes (shift only strictly greater values). In-place: yes.\n\nComplexity\nTime: O(n²) average/worst; O(n) best. Space: O(1).\n\nExample\nInput: [5, 2, 4, 1, 3]. Output: [1, 2, 3, 4, 5].\n\nTry it\nUse Play/Pause, Previous/Next, the timeline, and playback speed. Answer the prediction checkpoints to continue; feedback reveals the expected answer. Python is the line-synchronized walkthrough; Java is an equivalent complete implementation. Sorting functions accept empty arrays, duplicates, negative values, and already sorted inputs. Java methods belong inside a class; Python functions can be called directly.",
   "category": "Sorting",
   "difficulty": "EASY",
   "visualizer": "ARRAY",
   "complexity": {
-    "time": "O(n\u00b2) average/worst; O(n) best",
+    "time": "O(n²) average/worst; O(n) best",
     "space": "O(1)"
   },
   "pythonSource": "def insertion_sort(a):\n    for i in range(1, len(a)):\n        key = a[i]  # Save the value to insert into the sorted prefix.\n        j = i - 1\n        while j >= 0 and a[j] > key:\n            a[j + 1] = a[j]  # Shift a larger value right; key is saved separately.\n            j -= 1\n        a[j + 1] = key  # Fill the gap with the saved key.\n    return a\n",
@@ -1517,5 +1517,6 @@
         ]
       }
     ]
-  }
+  },
+  "thumbnailUrl": "/images/algorithms/insertion-sort.svg"
 }

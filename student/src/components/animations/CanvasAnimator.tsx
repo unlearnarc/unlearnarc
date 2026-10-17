@@ -25,6 +25,9 @@ import { InstructionRail } from './InstructionRail';
 import { AnimationNotesPanel } from './AnimationNotesPanel';
 import { CodeProgramPanel } from './CodeProgramPanel';
 import { AnimationFocus } from '../ui/AnimationFocus';
+import { useTheme } from '../../context/ThemeContext';
+import { Lightbulb } from 'lucide-react';
+import { visualizationPalette } from '../../styles/visualizationTheme';
 
 /* =============================================================================
    CanvasAnimator — declarative React wrapper around an HTML5 <canvas> driven by
@@ -70,6 +73,9 @@ export interface CanvasAnimatorProps {
   ) => void;
   /** Exposes the playback controller so a parent can mount external controls. */
   onReady?: (handle: PlaybackHandle) => void;
+  /** Presentation-only workspace mode; the existing controller remains the owner. */
+  workspaceTab?: 'visualizer' | 'code' | 'explanation';
+  takeaway?: string;
 }
 
 export const CanvasAnimator: React.FC<CanvasAnimatorProps> = ({
@@ -88,11 +94,19 @@ export const CanvasAnimator: React.FC<CanvasAnimatorProps> = ({
   className,
   renderFn,
   onReady,
+  workspaceTab,
+  takeaway,
 }) => {
   const wrapRef = useRef<HTMLDivElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
-  const theme = useMemo(() => resolveTheme(traceData.theme), [traceData.theme]);
+  const { theme: mode } = useTheme();
+  // The learner's mode owns neutral surfaces, even for older dark-authored traces.
+  // Keep authored status/token colors and fonts intact.
+  const theme = useMemo(() => resolveTheme({
+    ...traceData.theme,
+    ...visualizationPalette(mode),
+  }), [traceData.theme, mode]);
   const playback = usePlaybackController(traceData, { autoPlay, initialSpeed });
   const { timeRef, seekTick } = playback;
 
@@ -193,10 +207,13 @@ export const CanvasAnimator: React.FC<CanvasAnimatorProps> = ({
   const hasCode = showCode && !!traceData.programs?.length;
   const activeCp = enableCheckpoints ? playback.state.activeCheckpoint : null;
 
+  const workspaceCode = !!workspaceTab && hasCode;
+
   return (
-    <div className={`ua-animation-player ${className ?? ''}`}>
+    <div className={`ua-animation-player ${workspaceTab ? 'animation-detail-workspace' : ''} ${workspaceCode && workspaceTab === 'visualizer' ? 'has-code' : ''} ${className ?? ''}`}>
+      <div className="animation-detail-visual" hidden={!!workspaceTab && workspaceTab !== 'visualizer'}>
       <AnimationFocus title={traceData.title}>
-      <div className={`ua-animation-layout ${hasInstructions ? 'grid gap-3 lg:grid-cols-[minmax(0,1fr)_260px]' : ''}`}>
+      <div className={`ua-animation-layout ${hasInstructions ? (workspaceTab ? 'grid gap-3' : 'grid gap-3 lg:grid-cols-[minmax(0,1fr)_260px]') : ''}`}>
         <div className="min-w-0">
           <div
             ref={wrapRef}
@@ -225,7 +242,7 @@ export const CanvasAnimator: React.FC<CanvasAnimatorProps> = ({
             />
           )}
 
-          {hasCode && (
+          {hasCode && !workspaceTab && (
             <CodeProgramPanel
               programs={traceData.programs!}
               time={playback.state.time}
@@ -246,6 +263,13 @@ export const CanvasAnimator: React.FC<CanvasAnimatorProps> = ({
 
       {hasNotes && <AnimationNotesPanel notes={traceData.notes!} className="ua-animation-secondary mt-3" />}
       </AnimationFocus>
+      </div>
+      {workspaceCode && <aside className="animation-detail-code" hidden={workspaceTab === 'explanation'} aria-label="Code example and key takeaway">
+        <CodeProgramPanel programs={traceData.programs!} time={playback.state.time} />
+        {takeaway && <div className="animation-detail-takeaway"><Lightbulb size={18} aria-hidden="true" /><div><h2>Key takeaway</h2><p>{takeaway}</p></div></div>}
+      </aside>}
+      {workspaceTab === 'code' && !hasCode && <p className="animation-detail-no-code">This lesson is taught visually and has no code example. Explore the Visualizer or Explanation tab.</p>}
+      {workspaceTab === 'visualizer' && !hasCode && takeaway && <div className="animation-detail-takeaway"><Lightbulb size={18} aria-hidden="true" /><div><h2>Key takeaway</h2><p>{takeaway}</p></div></div>}
     </div>
   );
 };

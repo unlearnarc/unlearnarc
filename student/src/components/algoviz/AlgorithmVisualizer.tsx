@@ -10,6 +10,8 @@ import {
 import type { Algorithm, PlayerTheme } from "./core/types";
 import { getRenderer, resolveTheme } from "./renderers";
 import { useVisualization } from "./useVisualization";
+import { useTheme } from '../../context/ThemeContext';
+import { visualizationPalette } from '../../styles/visualizationTheme';
 
 export interface AlgorithmVisualizerProps {
   algorithm: Algorithm;
@@ -47,7 +49,10 @@ export function AlgorithmVisualizer({
   const { state, controls } = useVisualization(algorithm.spec);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   // Re-resolve whenever the theme prop changes so host-driven theming updates live.
-  const resolvedTheme = useMemo(() => resolveTheme(theme), [theme]);
+  const { theme: mode } = useTheme();
+  const resolvedTheme = useMemo(() => resolveTheme({
+    ...visualizationPalette(mode), ...theme,
+  }), [theme, mode]);
   const [lang, setLang] = useState<"java" | "python">(
     algorithm.javaSource ? "java" : "python"
   );
@@ -278,7 +283,7 @@ export function AlgorithmVisualizer({
         </div>
 
         <label style={styles.speedWrap} title="Animation speed">
-          <Gauge size={15} aria-hidden style={{ color: "#94a3b8" }} />
+          <Gauge size={15} aria-hidden style={{ color: "var(--ua-text-secondary)" }} />
           <select
             style={styles.speedSelect}
             value={speed}
@@ -343,14 +348,14 @@ const styles: Record<string, React.CSSProperties> = {
     display: "flex",
     flexDirection: "column",
     gap: 14,
-    color: "var(--ua-text-on-dark, #e2e8f0)",
+    color: "var(--ua-text-primary)",
     fontFamily: "var(--ua-font-sans, ui-sans-serif, system-ui, sans-serif)",
   },
   main: { display: "flex", gap: 18, flexWrap: "wrap" },
   canvas: {
     borderRadius: "var(--ua-radius-lg, 14px)",
-    border: "1px solid var(--ua-navy-700, #17345F)",
-    background: "var(--ua-navy-900, #0B1B3A)",
+    border: "1px solid var(--ua-border)",
+    background: "var(--ua-surface)",
     boxShadow: "0 8px 24px rgba(0,0,0,0.25)",
   },
   side: { flex: 1, minWidth: 240, display: "flex", flexDirection: "column", gap: 12 },
@@ -358,9 +363,9 @@ const styles: Record<string, React.CSSProperties> = {
     fontSize: 16,
     fontWeight: 700,
     letterSpacing: "-0.01em",
-    color: "#f1f5f9",
+    color: "var(--ua-text-primary)",
   },
-  explanation: { fontSize: 13.5, lineHeight: 1.6, color: "var(--ua-text-on-dark, #cbd5e1)", margin: 0 },
+  explanation: { fontSize: 13.5, lineHeight: 1.6, color: "var(--ua-text-secondary)", margin: 0 },
   vars: {
     display: "flex",
     flexDirection: "column",
@@ -368,13 +373,13 @@ const styles: Record<string, React.CSSProperties> = {
     marginTop: 4,
     padding: 12,
     borderRadius: "var(--ua-radius-md, 10px)",
-    background: "rgba(255,255,255,0.04)",
-    border: "1px solid rgba(255,255,255,0.08)",
+    background: "var(--ua-surface-soft)",
+    border: "1px solid var(--ua-border)",
   },
   varRow: { display: "flex", alignItems: "center", gap: 8, fontSize: 13 },
   varDot: { width: 9, height: 9, borderRadius: "50%", flexShrink: 0 },
-  varName: { color: "#94a3b8", minWidth: 64 },
-  varVal: { fontWeight: 700, fontFamily: "var(--ua-font-mono, ui-monospace, monospace)", color: "#e2e8f0" },
+  varName: { color: "var(--ua-text-secondary)", minWidth: 64 },
+  varVal: { fontWeight: 700, fontFamily: "var(--ua-font-mono, ui-monospace, monospace)", color: "var(--ua-text-primary)" },
   inputBox: {
     marginTop: 4,
     padding: 14,
@@ -382,7 +387,7 @@ const styles: Record<string, React.CSSProperties> = {
     border: "1px solid var(--ua-primary-600, #3157D5)",
     background: "rgba(65,105,225,0.10)",
   },
-  prompt: { fontSize: 13.5, fontWeight: 600, marginBottom: 10, color: "#e2e8f0" },
+  prompt: { fontSize: 13.5, fontWeight: 600, marginBottom: 10, color: "var(--ua-text-primary)" },
   choices: { display: "flex", gap: 8, flexWrap: "wrap" },
   choiceBtn: {
     padding: "7px 14px",
@@ -399,9 +404,9 @@ const styles: Record<string, React.CSSProperties> = {
     flex: 1,
     padding: "7px 12px",
     borderRadius: "var(--ua-radius-sm, 8px)",
-    border: "1px solid var(--ua-navy-600, #214776)",
-    background: "var(--ua-navy-900, #0B1B3A)",
-    color: "#e2e8f0",
+    border: "1px solid var(--ua-border-strong)",
+    background: "var(--ua-surface)",
+    color: "var(--ua-text-primary)",
     fontSize: 13,
   },
   controls: {
@@ -410,8 +415,8 @@ const styles: Record<string, React.CSSProperties> = {
     gap: 8,
     padding: 10,
     borderRadius: "var(--ua-radius-md, 10px)",
-    background: "rgba(255,255,255,0.04)",
-    border: "1px solid rgba(255,255,255,0.08)",
+    background: "var(--ua-surface-soft)",
+    border: "1px solid var(--ua-border)",
     flexWrap: "wrap",
   },
   btn: {
@@ -422,9 +427,9 @@ const styles: Record<string, React.CSSProperties> = {
     minWidth: 38,
     padding: "7px 12px",
     borderRadius: "var(--ua-radius-sm, 8px)",
-    border: "1px solid rgba(255,255,255,0.12)",
-    background: "rgba(255,255,255,0.06)",
-    color: "#e2e8f0",
+    border: "1px solid var(--ua-border)",
+    background: "var(--ua-surface-soft)",
+    color: "var(--ua-text-primary)",
     fontSize: 13,
     fontWeight: 600,
     cursor: "pointer",
@@ -448,7 +453,7 @@ const styles: Record<string, React.CSSProperties> = {
   counter: {
     fontSize: 12.5,
     fontWeight: 600,
-    color: "#94a3b8",
+    color: "var(--ua-text-secondary)",
     minWidth: 92,
     textAlign: "right",
     fontFamily: "var(--ua-font-mono, ui-monospace, monospace)",
@@ -462,24 +467,24 @@ const styles: Record<string, React.CSSProperties> = {
   speedSelect: {
     padding: "6px 8px",
     borderRadius: "var(--ua-radius-sm, 8px)",
-    border: "1px solid rgba(255,255,255,0.12)",
-    background: "rgba(255,255,255,0.06)",
-    color: "#e2e8f0",
+    border: "1px solid var(--ua-border)",
+    background: "var(--ua-surface-soft)",
+    color: "var(--ua-text-primary)",
     fontSize: 12.5,
     fontWeight: 600,
     cursor: "pointer",
   },
   codeWrap: {
     borderRadius: "var(--ua-radius-md, 10px)",
-    border: "1px solid var(--ua-navy-700, #17345F)",
+    border: "1px solid var(--ua-border)",
     overflow: "hidden",
-    background: "var(--ua-navy-900, #0B1B3A)",
+    background: "var(--ua-surface)",
   },
-  tabs: { display: "flex", borderBottom: "1px solid var(--ua-navy-700, #17345F)" },
+  tabs: { display: "flex", borderBottom: "1px solid var(--ua-border)" },
   tab: {
     padding: "9px 18px",
     background: "transparent",
-    color: "#94a3b8",
+    color: "var(--ua-text-secondary)",
     border: "none",
     fontSize: 13,
     fontWeight: 600,
@@ -487,8 +492,8 @@ const styles: Record<string, React.CSSProperties> = {
   },
   tabActive: {
     padding: "9px 18px",
-    background: "rgba(65,105,225,0.14)",
-    color: "#fff",
+    background: "var(--ua-primary-soft)",
+    color: "var(--ua-text-primary)",
     border: "none",
     borderBottom: "2px solid var(--ua-primary-500, #4169E1)",
     fontSize: 13,
@@ -505,5 +510,5 @@ const styles: Record<string, React.CSSProperties> = {
     overflow: "auto",
   },
   codeLine: { display: "flex", gap: 14, padding: "0 14px" },
-  lineNo: { color: "#475569", userSelect: "none", minWidth: 26, textAlign: "right" },
+  lineNo: { color: "var(--ua-text-secondary)", userSelect: "none", minWidth: 26, textAlign: "right" },
 };

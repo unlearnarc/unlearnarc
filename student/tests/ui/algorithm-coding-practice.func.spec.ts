@@ -1,0 +1,45 @@
+import { expect, test } from '@playwright/test';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+
+test('practice supports learner code, execution, language drafts and fullscreen', async ({ page }) => {
+  const algorithm = JSON.parse(readFileSync(resolve('../backend/algoviz_specs/binary-search.json'), 'utf8'));
+  await page.addInitScript(() => {
+    localStorage.setItem('ua_lang', 'en');
+    localStorage.setItem('ua_user_token', 'practice-test');
+  });
+  await page.route('**/api/v1/**', route => route.fulfill({ json: { data: [] } }));
+  await page.route('**/api/v1/algorithms/slug/binary-search', route => route.fulfill({ json: { data: { id: 'binary-search', ...algorithm } } }));
+  await page.goto('/algorithms/binary-search');
+  const question = page.getByRole('dialog', { name: 'Animation checkpoint question' });
+  await question.locator('input').fill(String(algorithm.spec.steps[0].input.expected));
+  await question.getByRole('button', { name: 'Submit', exact: true }).click();
+  await page.getByRole('tab', { name: 'Practice', exact: true }).click();
+  const practice = page.getByRole('region', { name: 'Coding practice', exact: true });
+  await expect(practice.getByLabel('Practice standard input')).toHaveCount(0);
+  const editor = practice.locator('.cm-content');
+  await editor.click();
+  await page.keyboard.press('ControlOrMeta+a');
+  await page.keyboard.type('print(6 * 7)');
+  await page.getByRole('tab', { name: 'Code', exact: true }).click();
+  await page.getByRole('tab', { name: 'Practice', exact: true }).click();
+  await expect(editor).toContainText('print(6 * 7)');
+  await page.getByLabel('Practice language').selectOption('javascript');
+  await editor.click();
+  await page.keyboard.press('ControlOrMeta+a');
+  await page.keyboard.type('console.log(6 * 7);');
+  await page.getByRole('button', { name: 'Run code', exact: true }).click();
+  await expect(page.getByLabel('Practice output')).toHaveText('42\n');
+  await page.getByLabel('Practice language').selectOption('python');
+  await expect(editor).toContainText('print(6 * 7)');
+  await page.getByRole('button', { name: 'Run code', exact: true }).click();
+  await expect(page.getByLabel('Practice output')).toHaveText('42\n', { timeout: 60_000 });
+  await practice.getByRole('button', { name: /Full screen/ }).click();
+  await expect(practice.getByRole('dialog')).toBeVisible();
+  await page.keyboard.press('Escape');
+  page.once('dialog', dialog => dialog.accept());
+  await page.getByRole('button', { name: 'Reset practice code' }).click();
+  await expect(editor).not.toContainText('print(6 * 7)');
+  await page.setViewportSize({ width: 320, height: 800 });
+  await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+});

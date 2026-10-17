@@ -294,8 +294,6 @@
   "animations": {
     "title": "इंटरैक्टिव एनिमेशन",
     "subtitle": "High-performance canvas animations for every domain — concurrency, system design, DSA, SQL and AI/ML — all driven by one engine. Scrub the timeline, follow the steps, and answer checkpoint questions as you go.",
-    "noteBefore": "Scenes are published from the admin console and served by the ",
-    "noteAfter": " API — authored once, replayed identically here.",
     "empty": "अभी कोई एनिमेशन प्रकाशित नहीं",
     "emptyDesc": "जल्द ही फिर देखें — इंटरैक्टिव दृश्य नियमित रूप से जोड़े जाते हैं।",
     "frames_one": "{{count}} फ्रेम",

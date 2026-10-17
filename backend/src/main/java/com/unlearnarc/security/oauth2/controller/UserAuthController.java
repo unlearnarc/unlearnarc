@@ -53,7 +53,7 @@ public class UserAuthController {
         String newAccessToken  = jwtTokenProvider.generateUserAccessToken(user);
         String newRefreshToken = jwtTokenProvider.generateUserRefreshToken(user);
 
-        log.info("[USER-AUTH] Token refreshed for: {}", email);
+        log.info("[USER-AUTH] Session refreshed");
 
         AuthResponse response = AuthResponse.builder()
                 .accessToken(newAccessToken)
@@ -100,7 +100,7 @@ public class UserAuthController {
         user.setRegion(region);
         userRepository.save(user);
 
-        log.info("[USER-AUTH] Region updated to '{}' for: {}", region, email);
+        log.info("[USER-AUTH] Region updated");
 
         return ResponseEntity.ok(ApiResponse.ok(
                 UserProfileResponse.from(user), "Region updated"));
@@ -141,8 +141,7 @@ public class UserAuthController {
         }
         userRepository.save(user);
 
-        log.info("[USER-AUTH] Mascot prefs updated for {}: character={} vibe={} muted={}",
-                email, user.getMascotCharacter(), user.getMascotVibe(), user.getMascotMuted());
+        log.info("[USER-AUTH] Mascot preferences updated");
 
         return ResponseEntity.ok(ApiResponse.ok(
                 UserProfileResponse.from(user), "Mascot preferences updated"));

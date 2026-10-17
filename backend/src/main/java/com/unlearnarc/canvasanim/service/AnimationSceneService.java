@@ -109,6 +109,16 @@ public class AnimationSceneService {
         return mapper.toResponse(saved, resolveStoredTrace(saved));
     }
 
+    /** Never regenerate a trace or reset simulator parameters for a media edit. */
+    public AnimationSceneSummaryResponse updateThumbnail(String id, String thumbnailUrl) {
+        AnimationScene entity = getOrThrow(id);
+        if (!java.util.Objects.equals(entity.getThumbnailUrl(), thumbnailUrl)) {
+            entity.setThumbnailUrl(thumbnailUrl);
+            repository.save(entity);
+        }
+        return mapper.toSummary(entity);
+    }
+
     public void delete(String id) {
         getOrThrow(id);
         repository.deleteById(id);

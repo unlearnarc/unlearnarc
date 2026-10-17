@@ -32,7 +32,7 @@ public class AuthService {
             String accessToken  = jwtTokenProvider.generateAccessToken(auth);
             String refreshToken = jwtTokenProvider.generateRefreshToken(auth);
 
-            log.info("[AUTH] Admin login successful: {}", request.getEmail());
+            log.info("[AUTH] Admin login successful");
 
             return AuthResponse.builder()
                     .accessToken(accessToken)
@@ -44,7 +44,7 @@ public class AuthService {
                     .build();
 
         } catch (BadCredentialsException ex) {
-            log.warn("[AUTH] Failed login attempt for email: {}", request.getEmail());
+            log.warn("[AUTH] Failed login attempt");
             throw new BadCredentialsException("Invalid email or password.");
         }
     }
@@ -61,7 +61,7 @@ public class AuthService {
         String accessToken = jwtTokenProvider.generateAccessTokenFromEmail(email);
         String newRefresh  = jwtTokenProvider.generateAccessTokenFromEmail(email); // rotate
 
-        log.info("[AUTH] Token refreshed for: {}", email);
+        log.info("[AUTH] Admin session refreshed");
 
         return AuthResponse.builder()
                 .accessToken(accessToken)

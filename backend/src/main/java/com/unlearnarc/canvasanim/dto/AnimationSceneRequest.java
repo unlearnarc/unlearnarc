@@ -34,6 +34,19 @@ public class AnimationSceneRequest {
     @Size(max = 1000)
     private String description;
 
+    @Size(max = 1024)
+    @Pattern(regexp = "^(?:https://[^\\s@]+|/images/[a-zA-Z0-9/_-]+\\.(?:svg|png|webp|jpe?g))$",
+             message = "thumbnailUrl must be an HTTPS URL or a public image path")
+    private String thumbnailUrl;
+
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    private boolean thumbnailUrlSupplied;
+
+    public void setThumbnailUrl(String thumbnailUrl) {
+        this.thumbnailUrl = thumbnailUrl;
+        this.thumbnailUrlSupplied = true;
+    }
+
     private Category category;
 
     @NotNull(message = "source is required (AUTHORED or GENERATED)")

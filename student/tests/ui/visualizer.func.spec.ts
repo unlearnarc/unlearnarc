@@ -24,6 +24,7 @@ async function openVisualizer(page: Page, language = 'en') {
   await page.addInitScript((lang) => {
     localStorage.setItem('ua_lang', lang);
     localStorage.setItem('ua_algo_code_collapsed', '0');
+    localStorage.setItem('ua_user_token', 'visualizer-test-session');
   }, language);
   await page.route('**/api/v1/**', route => route.fulfill({
     contentType: 'application/json', body: JSON.stringify({ data: [] }),
@@ -100,7 +101,7 @@ test('questions are centered, keyboard-contained and responsive', async ({ page 
 
 test('fullscreen keeps algorithm playback and checkpoint questions accessible', async ({ page }) => {
   await openVisualizer(page);
-  await page.getByRole('button', { name: /Full screen/ }).click();
+  await page.getByRole('button', { name: /Full screen/ }).first().click();
   const focus = page.getByRole('dialog', { name: 'Test sort animation', exact: true });
   await expect(focus).toBeVisible();
   await page.getByRole('button', { name: 'Next step', exact: true }).click();
@@ -145,7 +146,7 @@ test('stepping, checkpoints, restart and language changes preserve page position
   const next = page.getByRole('button', { name: 'Next step', exact: true });
   await next.scrollIntoViewIfNeeded();
   await assertStableAfter(page, () => next.click());
-  const listing = page.getByLabel('Source code listing');
+  const listing = page.getByLabel('Source code listing').locator('.cm-scroller');
   expect(await listing.evaluate(el => el.scrollTop)).toBeGreaterThan(0);
   // The long explanation must remain accessible inside the inspector.
   await page.getByLabel('Step inspector').evaluate(el => { el.scrollTop = el.scrollHeight; });
@@ -153,7 +154,9 @@ test('stepping, checkpoints, restart and language changes preserve page position
   await assertStableAfter(page, () => page.getByRole('button', { name: 'True', exact: true }).click());
   await next.scrollIntoViewIfNeeded();
   await assertStableAfter(page, () => next.click());
-  await expect(page.getByLabel('Source code').locator('[aria-current="true"]')).toContainText('80');
+  // CodeMirror virtualizes off-screen content; reveal its viewport before checking the marker.
+  await listing.scrollIntoViewIfNeeded();
+  await expect(page.getByLabel('Source code').locator('[aria-current="true"]')).toContainText('Python line 80');
   await page.getByRole('button', { name: 'Java', exact: true }).scrollIntoViewIfNeeded();
   await assertStableAfter(page, () => page.getByRole('button', { name: 'Java', exact: true }).click());
   await assertStableAfter(page, () => page.getByRole('button', { name: 'Python', exact: true }).click());
@@ -186,5 +189,5 @@ test('collapsed code stays collapsed through playback and can be reopened', asyn
   await page.getByRole('dialog').getByRole('button', { name: 'True', exact: true }).click();
   await showCode.focus();
   await showCode.press('Enter');
-  expect(await page.getByLabel('Source code listing').evaluate(el => el.scrollTop)).toBeGreaterThan(0);
+  expect(await page.getByLabel('Source code listing').locator('.cm-scroller').evaluate(el => el.scrollTop)).toBeGreaterThan(0);
 });

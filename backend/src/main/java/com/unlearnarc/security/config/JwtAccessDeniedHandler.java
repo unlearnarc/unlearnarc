@@ -34,12 +34,7 @@ public class JwtAccessDeniedHandler implements AccessDeniedHandler {
             HttpServletResponse response,
             AccessDeniedException accessDeniedException) throws IOException {
 
-        log.warn("[SECURITY] 403 Access denied: {} {} | principal={}",
-                request.getMethod(),
-                request.getRequestURI(),
-                request.getUserPrincipal() != null
-                        ? request.getUserPrincipal().getName()
-                        : "unknown");
+        log.warn("[SECURITY] 403 Access denied");
 
         response.setStatus(HttpStatus.FORBIDDEN.value());
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);

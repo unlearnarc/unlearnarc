@@ -1,5 +1,5 @@
-import type { Renderer } from "./index";
-import { highlightMap } from "./index";
+import type { Renderer } from "./shared";
+import { highlightMap } from "./shared";
 
 /** Renders state.stack / state.queue as a vertical pile of cells. */
 export const renderStack: Renderer = (rc, step) => {

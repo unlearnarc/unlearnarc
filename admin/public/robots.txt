@@ -1,0 +1,3 @@
+# The authenticated administration console is not public content.
+User-agent: *
+Disallow: /

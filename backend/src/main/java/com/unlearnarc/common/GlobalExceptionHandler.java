@@ -93,22 +93,30 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<ApiResponse<Void>> handleBadCredentials(BadCredentialsException ex) {
-        log.warn("[SECURITY] Bad credentials: {}", ex.getMessage());
+        log.warn("[SECURITY] Bad credentials");
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .body(ApiResponse.error(ex.getMessage()));
     }
 
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ApiResponse<Void>> handleAuthorizationDenied(AccessDeniedException ex) {
-        log.warn("[SECURITY] Authorization denied: {}", ex.getMessage());
+        log.warn("[SECURITY] Authorization denied");
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
                 .body(ApiResponse.error("Forbidden – admin access required."));
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Void>> handleGeneric(Exception ex) {
-        log.error("[ERROR] Unhandled exception: {}", ex.getMessage(), ex);
+        // Exception messages and stack traces may embed SQL values, credentials or personal data.
+        Throwable cause = ex;
+        // Bound traversal in case a third-party exception has a cyclic cause chain.
+        for (int depth = 0; depth < 16 && cause.getCause() != null && cause.getCause() != cause; depth++) {
+            cause = cause.getCause();
+        }
+        log.error("[ERROR] Unhandled exception type={} causeType={}",
+                SafeLog.field(ex.getClass().getSimpleName()),
+                SafeLog.field(cause.getClass().getSimpleName()));
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(ApiResponse.error("Internal server error: " + ex.getMessage()));
+                .body(ApiResponse.error("Internal server error."));
     }
 }

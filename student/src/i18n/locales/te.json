@@ -293,8 +293,6 @@
   "animations": {
     "title": "ఇంటరాక్టివ్ యానిమేషన్లు",
     "subtitle": "High-performance canvas animations for every domain — concurrency, system design, DSA, SQL and AI/ML — all driven by one engine. Scrub the timeline, follow the steps, and answer checkpoint questions as you go.",
-    "noteBefore": "Scenes are published from the admin console and served by the ",
-    "noteAfter": " API — authored once, replayed identically here.",
     "empty": "No animations published yet",
     "emptyDesc": "Check back soon — interactive scenes are added regularly.",
     "frames_one": "{{count}} frame",

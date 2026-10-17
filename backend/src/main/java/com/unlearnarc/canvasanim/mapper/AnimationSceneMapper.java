@@ -30,6 +30,7 @@ public class AnimationSceneMapper {
                 .slug(req.getSlug())
                 .title(req.getTitle())
                 .description(req.getDescription())
+                .thumbnailUrl(req.getThumbnailUrl())
                 .category(req.getCategory())
                 .source(req.getSource())
                 .kind(req.getKind())
@@ -45,6 +46,7 @@ public class AnimationSceneMapper {
         entity.setSlug(req.getSlug());
         entity.setTitle(req.getTitle());
         entity.setDescription(req.getDescription());
+        if (req.isThumbnailUrlSupplied()) entity.setThumbnailUrl(req.getThumbnailUrl());
         entity.setCategory(req.getCategory());
         entity.setSource(req.getSource());
         entity.setKind(req.getKind());
@@ -60,6 +62,7 @@ public class AnimationSceneMapper {
                 .slug(e.getSlug())
                 .title(e.getTitle())
                 .description(e.getDescription())
+                .thumbnailUrl(e.getThumbnailUrl())
                 .category(e.getCategory())
                 .source(e.getSource())
                 .kind(e.getKind())
@@ -79,12 +82,14 @@ public class AnimationSceneMapper {
                 .slug(e.getSlug())
                 .title(e.getTitle())
                 .description(e.getDescription())
+                .thumbnailUrl(e.getThumbnailUrl())
                 .category(e.getCategory())
                 .source(e.getSource())
                 .kind(e.getKind())
                 .isPublished(e.getIsPublished())
+                .createdAt(e.getCreatedAt())
                 .keyframeCount(trace != null && trace.getKeyframes() != null
-                        ? trace.getKeyframes().size() : 0)
+                        ? trace.getKeyframes().size() : null)
                 .duration(trace != null ? trace.getDuration() : null)
                 .build();
     }

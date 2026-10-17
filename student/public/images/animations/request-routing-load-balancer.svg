@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="480" height="270" viewBox="0 0 480 270">
+<style>
+:root { color-scheme:light dark; --bg:#f8faff; --surface:#fff; --soft:#eff6ff; --ink:#1e293b; --border:#94a3b8; --blue:#2563eb; }
+@media(prefers-color-scheme:dark) { :root { --bg:#111827; --surface:#1e293b; --soft:#172554; --ink:#e2e8f0; --border:#64748b; --blue:#60a5fa; } }
+text { fill:var(--ink); font-family:system-ui,sans-serif; stroke:none; }
+.box { fill:var(--surface); stroke:var(--border); }
+.active { fill:var(--soft); stroke:var(--blue); }
+.edge { fill:none; stroke:var(--border); }
+.path-active { fill:none; stroke:var(--blue); }
+rect,circle,path { stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round; }
+</style>
+<rect width="480" height="270" fill="var(--bg)"/>
+<path class="path-active" d="M114 134 L184 134"/><path class="edge" d="M296 134 L368 65"/><path class="path-active" d="M296 134 L368 200"/><rect class="box" x="20" y="115" width="94" height="38" rx="6"/><text x="67.0" y="138.0" font-size="13" text-anchor="middle">Client</text><rect class="active" x="184" y="115" width="112" height="38" rx="6"/><text x="240.0" y="138.0" font-size="13" text-anchor="middle">Balancer</text><rect class="box" x="368" y="46" width="94" height="38" rx="6"/><text x="415.0" y="69.0" font-size="13" text-anchor="middle">Primary</text><rect class="active" x="368" y="181" width="94" height="38" rx="6"/><text x="415.0" y="204.0" font-size="13" text-anchor="middle">Replica</text>
+</svg>

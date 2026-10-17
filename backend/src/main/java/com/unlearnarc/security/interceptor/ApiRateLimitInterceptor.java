@@ -44,7 +44,7 @@ public class ApiRateLimitInterceptor implements HandlerInterceptor {
         long remaining = rateLimitService.remainingApiTokens(principal);
 
         if (!rateLimitService.tryConsumeApi(principal)) {
-            log.warn("API rate-limit exceeded for principal: {}", principal);
+            log.warn("API rate-limit exceeded");
             response.setStatus(HttpStatus.TOO_MANY_REQUESTS.value());
             response.setContentType(MediaType.APPLICATION_JSON_VALUE);
             response.addHeader("X-RateLimit-Limit",     "200");

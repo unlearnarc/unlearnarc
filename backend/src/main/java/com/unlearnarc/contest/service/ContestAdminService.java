@@ -51,7 +51,7 @@ public class ContestAdminService {
                 .build();
 
         contest = contestRepo.save(contest);
-        log.info("[CONTEST] created id={} slug={} by={}", contest.getId(), slug, adminEmail);
+        log.info("[CONTEST] created id={}", com.unlearnarc.common.SafeLog.field(contest.getId()));
         return mapper.toContestResponse(contest, 0L, 0L);
     }
 

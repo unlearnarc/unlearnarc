@@ -2,12 +2,12 @@
   "slug": "selection-sort",
   "title": "Selection Sort",
   "summary": "Select the smallest remaining value and place it at the next sorted position.",
-  "usage": "How it works\nScan the unsorted suffix for its minimum, then swap it with the first unsorted value. The prefix grows by one final value per pass. Useful for teaching invariants and limiting writes, but still scans quadratically even on sorted input.\n\nProperties and prerequisites\nStable: no (a long-distance swap can reorder equal values). In-place: yes.\n\nComplexity\nTime: O(n\u00b2) best/average/worst. Space: O(1).\n\nExample\nInput: [5, 2, 4, 1, 3]. Output: [1, 2, 3, 4, 5].\n\nTry it\nUse Play/Pause, Previous/Next, the timeline, and playback speed. Answer the prediction checkpoints to continue; feedback reveals the expected answer. Python is the line-synchronized walkthrough; Java is an equivalent complete implementation. Sorting functions accept empty arrays, duplicates, negative values, and already sorted inputs. Java methods belong inside a class; Python functions can be called directly.",
+  "usage": "How it works\nScan the unsorted suffix for its minimum, then swap it with the first unsorted value. The prefix grows by one final value per pass. Useful for teaching invariants and limiting writes, but still scans quadratically even on sorted input.\n\nProperties and prerequisites\nStable: no (a long-distance swap can reorder equal values). In-place: yes.\n\nComplexity\nTime: O(n²) best/average/worst. Space: O(1).\n\nExample\nInput: [5, 2, 4, 1, 3]. Output: [1, 2, 3, 4, 5].\n\nTry it\nUse Play/Pause, Previous/Next, the timeline, and playback speed. Answer the prediction checkpoints to continue; feedback reveals the expected answer. Python is the line-synchronized walkthrough; Java is an equivalent complete implementation. Sorting functions accept empty arrays, duplicates, negative values, and already sorted inputs. Java methods belong inside a class; Python functions can be called directly.",
   "category": "Sorting",
   "difficulty": "EASY",
   "visualizer": "ARRAY",
   "complexity": {
-    "time": "O(n\u00b2) best/average/worst",
+    "time": "O(n²) best/average/worst",
     "space": "O(1)"
   },
   "pythonSource": "def selection_sort(a):\n    for i in range(len(a) - 1):\n        minimum = i  # The sorted prefix ends just before i.\n        for j in range(i + 1, len(a)):\n            if a[j] < a[minimum]:  # Find the minimum of the remaining suffix.\n                minimum = j\n        a[i], a[minimum] = a[minimum], a[i]  # Put the minimum into its final position.\n    return a\n",
@@ -1553,5 +1553,6 @@
         ]
       }
     ]
-  }
+  },
+  "thumbnailUrl": "/images/algorithms/selection-sort.svg"
 }

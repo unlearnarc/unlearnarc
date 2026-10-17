@@ -1,5 +1,7 @@
 package com.unlearnarc.search.core;
 
+import java.util.Locale;
+
 /**
  * Lightweight, dependency-free relevance scoring shared by all searchers so
  * cross-type ranking is consistent. Scores are in a 0..100+ range.
@@ -27,8 +29,8 @@ public final class SearchScoring {
         if (field == null || field.isBlank()) return NO_MATCH;
         if (query == null || query.isBlank()) return BROWSE_BASELINE;
 
-        String f = field.toLowerCase();
-        String q = query.trim().toLowerCase();
+        String f = field.toLowerCase(Locale.ROOT);
+        String q = query.trim().toLowerCase(Locale.ROOT);
 
         if (f.equals(q)) return 100d;
         if (f.startsWith(q)) return 80d;

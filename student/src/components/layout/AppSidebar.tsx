@@ -98,6 +98,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
           {/* Mobile close */}
           <button
             onClick={onCloseMobile}
+            aria-label="Close menu"
             className="lg:hidden p-1.5 rounded-[8px] text-text-muted hover:bg-surface-soft hover:text-text-primary transition"
           >
             <X size={20} />

@@ -48,6 +48,7 @@ public class AlgorithmService {
     /** Validate without persisting — powers the admin "Validate" button. */
     @Transactional(readOnly = true)
     public void validate(AlgorithmRequest request) {
+        com.unlearnarc.algoviz.validation.ThumbnailUrl.validate(request.getThumbnailUrl());
         boolean hasJava = StringUtils.hasText(request.getJavaSource());
         boolean hasPython = StringUtils.hasText(request.getPythonSource());
         if (!hasJava && !hasPython) {

@@ -332,6 +332,7 @@ def catalog():
                   'highlights': [{'target': 'array', 'indices': [answer] if search else list(range(len(final))), 'style': 'DONE'}]}
         result.append({
             'slug': slug, 'title': title, 'summary': summary,
+            'thumbnailUrl': f'/images/algorithms/{slug}.svg',
             'usage': f'How it works\n{explanation}\n\nProperties and prerequisites\n{properties}\n\nComplexity\nTime: {time}. Space: {space}.\n\nExample\nInput: {values}' +
                      (f'; target = {target}. Output: index {answer}.' if search else f'. Output: {final}.') +
                      '\n\nTry it\nUse Play/Pause, Previous/Next, the timeline, and playback speed. Answer the prediction checkpoints to continue; feedback reveals the expected answer. Python is the line-synchronized walkthrough; Java is an equivalent complete implementation. Sorting functions accept empty arrays, duplicates, negative values, and already sorted inputs. Java methods belong inside a class; Python functions can be called directly.',

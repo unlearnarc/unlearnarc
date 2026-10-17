@@ -63,7 +63,15 @@ const PAGES: Array<[string, string]> = [
 
 for (const [name, path] of PAGES) {
   test(`perf: ${name} (${path}) meets load budgets`, async ({ page }) => {
+    if (path !== '/') {
+      await seedAuth(page, { token: 'performance-test-session', refreshToken: '' });
+      await page.route('**/api/v1/**', route => route.fulfill({ json: { data: [] } }));
+      await page.route('**/api/v1/user-auth/me', route => route.fulfill({
+        json: { data: { id: 'learner', name: 'Alex' } },
+      }));
+    }
     const m = await measure(page, path);
+    await expect(page).toHaveURL(new RegExp(`${path}$`));
 
     console.log(
       `\n[perf:${name}] TTFB=${m.ttfb.toFixed(0)}ms  FCP=${m.fcp.toFixed(0)}ms  ` +

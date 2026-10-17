@@ -1,4 +1,5 @@
 {
+  "thumbnailUrl": "/images/algorithms/balanced-parentheses.svg",
   "slug": "balanced-parentheses",
   "title": "Balanced Parentheses",
   "summary": "Uses a stack to verify every opening bracket has a matching close in the right order.",

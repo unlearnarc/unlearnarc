@@ -51,7 +51,7 @@ export const TopBar: React.FC = () => {
           </kbd>
         </button>
 
-        <div className="flex-1 flex justify-end">
+        <div className="flex-1 flex justify-end items-center gap-2">
           <LanguageSwitcher />
         </div>
       </header>
