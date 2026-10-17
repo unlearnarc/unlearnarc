@@ -30,27 +30,30 @@ test.beforeEach(async ({ page }) => {
   });
 });
 
-test('compact profile uses real account, XP and learning/activity totals without duplicate sections', async ({ page }) => {
-  const calls: string[] = [];
-  page.on('request', request => calls.push(new URL(request.url()).pathname));
+test('compact profile retains points and streaks without rank or learning section', async ({ page }) => {
   await page.goto('/profile');
   const root = page.locator('.profile-page');
   await expect(root.getByRole('heading', { level: 1, name: 'Profile' })).toBeVisible();
+  await expect(root.locator('.profile-stat')).toHaveCount(3);
   await expect(root.locator('.profile-stats')).toContainText('320');
-  await expect(root.locator('.profile-stats')).toContainText('17');
+  await expect(root.locator('.profile-stats dt')).toHaveText(['Points', 'Current streak', 'Best streak']);
   await expect(root.locator('.profile-stats')).toContainText('3 days');
   await expect(root.locator('.profile-stats')).toContainText('12 days');
   await expect(root.getByText('Member since Jan 2025')).toBeVisible();
-  await expect(root.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '320');
-  await expect(root.locator('.profile-xp')).toContainText('64%');
-  await expect(root.locator('.profile-learning-stats')).toContainText('2Courses started');
-  await expect(root.locator('.profile-learning-stats')).toContainText('27Tests completed');
+  await expect(root.locator('.profile-learning, .profile-xp, .profile-learning-stats')).toHaveCount(0);
   await expect(root.getByText('2 active days')).toBeVisible();
   await expect(root.locator('[role="img"][aria-label$=" • Active"]')).toHaveCount(2);
-  await expect(root.getByRole('heading', { name: /Account|leaderboard|friends/i })).toHaveCount(0);
-  expect(calls.filter(path => path === '/api/v1/user-auth/me')).toHaveLength(1);
-  expect(calls.filter(path => path === '/api/v1/enrollments/me')).toHaveLength(1);
+  await expect(root.locator('.profile-region')).toBeVisible();
 });
+
+for (const points of [0, 500, 1250, 10000]) {
+  test(`profile retains the full ${points} points total`, async ({ page }) => {
+    await page.route('**/api/v1/user-auth/me', route => route.fulfill({ json: { data: { ...user, points } } }));
+    await page.goto('/profile');
+    await expect(page.locator('.profile-stat').filter({ hasText: 'Points' }).locator('dd')).toHaveText(points.toLocaleString('en'));
+    await expect(page.locator('.profile-learning')).toHaveCount(0);
+  });
+}
 
 test('responsive profile fits mobile tablet and desktop in both themes', async ({ page }) => {
   await page.goto('/profile');
@@ -66,7 +69,8 @@ test('responsive profile fits mobile tablet and desktop in both themes', async (
   }
 });
 
-test('buddy choices and reaction settings use existing persistence', async ({ page }) => {
+// Retain settings coverage for when the mascot UI is restored.
+test.skip('buddy choices and reaction settings use existing persistence', async ({ page }) => {
   await page.goto('/profile');
   const buddy = page.locator('.profile-buddy');
   await expect(buddy.locator('.ua-buddy-settings__char')).toHaveCount(1);
@@ -80,6 +84,22 @@ test('buddy choices and reaction settings use existing persistence', async ({ pa
   await expect(buddy.getByRole('button', { name: /Buddy is muted/ })).toHaveAttribute('aria-pressed', 'false');
   expect(await page.evaluate(() => localStorage.getItem('ua_mascot_vibe'))).toBe('companion');
   expect(await page.evaluate(() => localStorage.getItem('ua_mascot_muted'))).toBe('1');
+});
+
+test('mascot UI and profile settings stay hidden while paused', async ({ page }) => {
+  await page.goto('/profile');
+  await expect(page.getByRole('heading', { level: 1, name: 'Profile' })).toBeVisible();
+  await expect(page.locator('.profile-buddy, .ua-mascot, .ua-buddy-settings')).toHaveCount(0);
+  await expect(page.locator('.profile-region')).toBeVisible();
+
+  await page.goto('/tests');
+  await expect(page.locator('.practice-page')).toBeVisible();
+  await expect(page.locator('.practice-buddy, .ua-mascot')).toHaveCount(0);
+
+  await page.goto('/mascot-preview');
+  await expect(page).toHaveURL(/\/dashboard$/);
+  await expect(page.getByRole('img', { name: 'Aria, your coding companion' })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: /Your study buddy/ })).toHaveCount(0);
 });
 
 test('manual region save updates identity and preserves failure feedback', async ({ page }) => {

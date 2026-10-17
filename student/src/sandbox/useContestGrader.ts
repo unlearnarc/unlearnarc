@@ -1,5 +1,7 @@
 import { useCallback, useState } from 'react';
-import { contestAPI } from '../api/endpoints';
+import { contestAPI, userAuthAPI } from '../api/endpoints';
+import { useQueryClient } from '@tanstack/react-query';
+import { useAuth } from '../context/AuthContext';
 import { useSandbox } from './useSandbox';
 import type { Language } from './types';
 import type {
@@ -65,6 +67,8 @@ const PER_CASE_TIMEOUT_FALLBACK = 5_000;
 
 export function useContestGrader(language: Language): UseContestGrader {
   const sandbox = useSandbox(language);
+  const queryClient = useQueryClient();
+  const { updateUser } = useAuth();
   const [phase, setPhase] = useState<GradePhase>('idle');
   const [runProgress, setRunProgress] = useState(0);
   const [localResults, setLocalResults] = useState<LocalCaseResult[]>([]);
@@ -193,6 +197,13 @@ export function useContestGrader(language: Language): UseContestGrader {
         const graded: SubmissionResponse = subRes.data?.data ?? subRes.data;
         setSubmission(graded);
         setPhase('done');
+        // Refresh persisted progress and rankings without turning a successful
+        // submission into an error if a follow-up request fails.
+        void Promise.all([
+          ...['contest-progress', 'contest-submissions', 'contest-leaderboard', 'leaderboard', 'lb-me', 'lb-regions', 'streak-calendar'].map(key =>
+            queryClient.invalidateQueries({ queryKey: [key] })),
+          userAuthAPI.me().then(res => updateUser(res.data?.data ?? res.data)),
+        ]).catch(() => { /* refreshed on the next page load */ });
         return graded;
       } catch (e) {
         const msg = extractError(e);
@@ -201,7 +212,7 @@ export function useContestGrader(language: Language): UseContestGrader {
         return null;
       }
     },
-    [sandbox, executeCase, language],
+    [sandbox, executeCase, language, queryClient, updateUser],
   );
 
   return {

@@ -1,12 +1,13 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Globe, Star, Trophy, Shield, Flame, Heart } from 'lucide-react';
+import { Globe, Trophy, Shield, Flame } from 'lucide-react';
+// import { Heart } from 'lucide-react'; // Restore with mascot settings.
 import { useAuth } from '../context/AuthContext';
 import { RegionEditor } from '../components/profile/RegionEditor';
 import { StreakCalendar } from '../components/profile/StreakCalendar';
-import { LearningProgress } from '../components/profile/LearningProgress';
-import { BuddySettings, useMascot } from '../components/mascot';
-import { getCharacter } from '../components/mascot/characters';
+// Mascot settings temporarily paused; keep the implementation for restoration.
+// import { BuddySettings, useMascot } from '../components/mascot';
+// import { getCharacter } from '../components/mascot/characters';
 import { regionLabel } from '../utils/region';
 import { ProfileAvatar } from '../components/ui/ProfileAvatar';
 import './profile.css';
@@ -14,14 +15,13 @@ import './profile.css';
 export const ProfilePage: React.FC = () => {
   const { t, i18n } = useTranslation();
   const { user } = useAuth();
-  const { characterId } = useMascot();
+  // const { characterId } = useMascot(); // Restore with mascot settings.
   if (!user) return null;
 
   const number = (value?: number) => value == null ? '—' : value.toLocaleString(i18n.language);
   const days = (value?: number) => value == null ? '—' : t('profile.compact.days', { count: value, defaultValue: '{{count}} days' });
   const stats = [
     { icon: Trophy, label: t('profile.points'), value: number(user.points) },
-    { icon: Star, label: t('profile.rank'), value: number(user.rank) },
     { icon: Flame, label: t('profile.compact.currentStreak', 'Current streak'), value: days(user.currentStreak) },
     { icon: Flame, label: t('profile.compact.bestStreak', 'Best streak'), value: days(user.longestStreak) },
   ];
@@ -55,8 +55,8 @@ export const ProfilePage: React.FC = () => {
       </section>
 
       <div className="profile-grid">
-        <LearningProgress />
         <StreakCalendar />
+        {/* Mascot settings temporarily paused.
         <section className="card profile-buddy" aria-labelledby="profile-buddy-title">
           <header className="profile-card-heading">
             <Heart size={17} aria-hidden="true" /><h2 id="profile-buddy-title">{t('profile.studyBuddy')}</h2>
@@ -64,6 +64,7 @@ export const ProfilePage: React.FC = () => {
           </header>
           <BuddySettings />
         </section>
+        */}
         <RegionEditor />
       </div>
     </div>

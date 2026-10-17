@@ -17,6 +17,10 @@ public interface UserRepository extends JpaRepository<User, String> {
     boolean existsByEmail(String email);
     Optional<User> findByEmail(String email);
 
+    @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT u FROM User u WHERE u.id = :userId")
+    Optional<User> lockForContestScoring(@Param("userId") String userId);
+
     // ── Global leaderboard (highest points first; tie-break alphabetical) ──
     @Query("""
             SELECT u FROM User u
@@ -50,8 +54,8 @@ public interface UserRepository extends JpaRepository<User, String> {
     long countWithMorePoints(@Param("points") long points);
 
     // ── Atomic increment used on quiz/contest scoring (no read-modify-write race) ──
-    @Modifying
-    @Query("UPDATE User u SET u.points = u.points + :delta WHERE u.id = :userId")
+    @Modifying(flushAutomatically = true, clearAutomatically = true)
+    @Query("UPDATE User u SET u.points = COALESCE(u.points, 0) + :delta WHERE u.id = :userId")
     int incrementPoints(@Param("userId") String userId, @Param("delta") long delta);
 
     // ── Source-of-truth totals for the nightly self-heal recompute ──

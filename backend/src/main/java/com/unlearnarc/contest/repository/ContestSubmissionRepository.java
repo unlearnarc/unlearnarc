@@ -19,4 +19,6 @@ public interface ContestSubmissionRepository extends JpaRepository<ContestSubmis
             String contestId, String userId, String problemId);
 
     long countByContestIdAndUserIdAndProblemId(String contestId, String userId, String problemId);
+
+    List<ContestSubmission> findByUserId(String userId);
 }

@@ -1,9 +1,12 @@
-import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+// import { useLocation } from 'react-router-dom'; // Restore with RoutedStudyBuddy.
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
-import { MascotProvider, CoachBuddy } from './components/mascot';
+// Keep the event context for existing learning hooks while mascot UI is paused.
+import { MascotProvider } from './components/mascot';
+// import { CoachBuddy } from './components/mascot';
 import { ProtectedRoute } from './router/ProtectedRoute';
 import { AppLayout } from './components/layout/AppLayout';
 import { LandingPage }       from './pages/LandingPage';
@@ -23,7 +26,7 @@ import { ContestsPage }      from './pages/ContestsPage';
 import { ContestDetailPage } from './pages/ContestDetailPage';
 import { LeaderboardPage }   from './pages/LeaderboardPage';
 import { RoadmapPage }       from './pages/RoadmapPage';
-import { MascotPreviewPage } from './pages/MascotPreviewPage';
+// import { MascotPreviewPage } from './pages/MascotPreviewPage';
 
 const qc = new QueryClient({
   defaultOptions: {
@@ -31,10 +34,12 @@ const qc = new QueryClient({
   },
 });
 
+/* Mascot UI temporarily paused; retain this connection for restoration.
 function RoutedStudyBuddy() {
   const { pathname } = useLocation();
   return pathname === '/' ? null : <CoachBuddy />;
 }
+*/
 
 function App() {
   return (
@@ -51,7 +56,9 @@ function App() {
 
             {/* All app pages require a session, including direct/deep links. */}
             <Route element={<ProtectedRoute />}>
+              {/* Mascot UI temporarily paused.
               <Route path="/mascot-preview" element={<MascotPreviewPage />} />
+              */}
               <Route element={<AppLayout />}>
                 <Route path="/explore"          element={<ExplorePage />} />
                 <Route path="/algorithms"       element={<AlgorithmsPage />} />
@@ -74,7 +81,7 @@ function App() {
               <Route path="*" element={<Navigate to="/dashboard" replace />} />
             </Route>
           </Routes>
-          <RoutedStudyBuddy />
+          {/* Mascot UI temporarily paused: <RoutedStudyBuddy /> */}
         </BrowserRouter>
 
         <Toaster

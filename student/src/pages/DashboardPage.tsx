@@ -112,7 +112,7 @@ export const DashboardPage: React.FC = () => {
           <LearningSection id="study-courses" title={copy('yourNextChapter')} subtitle={copy('chapterHint')} to="/my-courses" linkLabel={t('common.viewAll')}>
             <SectionBody isLoading={enrollQuery.isLoading || coursesQuery.isLoading} isError={enrollQuery.isError || coursesQuery.isError} isEmpty={!myCourses.length} emptyText={copy('emptyCourses')} retry={() => { void enrollQuery.refetch(); void coursesQuery.refetch(); }}>
               <div className="study-course-grid">
-                {myCourses.slice(0, 4).map(course => (
+                {myCourses.slice(0, 2).map(course => (
                   <CourseCard key={course.id} course={course} actionLabel={copy('keepLearning')} />
                 ))}
               </div>

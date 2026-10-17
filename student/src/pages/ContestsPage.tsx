@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { contestAPI } from '../api/endpoints';
 import { EmptyState, Spinner } from '../components/ui';
 import { formatDateTime } from '../i18n/format';
-import type { Contest, ContestPhase } from '../types';
+import type { Contest, ContestPhase, ContestProgress } from '../types';
 import { Trophy, ListChecks, Clock, Timer, Code2 } from 'lucide-react';
 import clsx from 'clsx';
 
@@ -23,6 +23,8 @@ export const ContestsPage: React.FC = () => {
     queryFn: contestAPI.getAll,
   });
 
+  const progressQ = useQuery({ queryKey: ['contest-progress'], queryFn: contestAPI.myProgress });
+  const progress: ContestProgress[] = progressQ.data?.data?.data ?? [];
   const contests: Contest[] = data?.data?.data ?? [];
 
   const phaseLabel = (phase: ContestPhase): string => {
@@ -64,6 +66,7 @@ export const ContestsPage: React.FC = () => {
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {contests.map(c => {
             const tone = PHASE_TONE[c.phase] ?? PHASE_TONE.ENDED;
+            const mine = progress.find(p => p.contestId === c.id);
             return (
               <button
                 key={c.id}
@@ -83,6 +86,12 @@ export const ContestsPage: React.FC = () => {
                     </span>
                   )}
                 </div>
+
+                {mine && (
+                  <p className="mb-3 text-xs font-medium text-success">
+                    {mine.completed ? '✓ Completed' : 'In progress'} · {mine.solvedProblemIds.length}/{mine.problemCount} solved · {mine.totalScore} pts
+                  </p>
+                )}
 
                 {c.description && (
                   <p className="text-sm text-text-muted line-clamp-2 mb-4">{c.description}</p>

@@ -195,6 +195,7 @@ export const contestAPI = {
     api.post(`/contests/${contestId}/submit`, data),
   leaderboard:   (contestId: string)                 => api.get(`/contests/${contestId}/leaderboard`),
   mySubmissions: (contestId: string)                 => api.get(`/contests/${contestId}/my-submissions`),
+  myProgress:    () => api.get('/contests/my-progress'),
 };
 
 // ── Interview Experiences ────────────────────────────────────────────────────

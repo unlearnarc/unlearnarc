@@ -35,8 +35,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/contests")
 @RequiredArgsConstructor
-// TEST-ONLY: class-level auth disabled so the contest flow works without a JWT
-// while debugging the WASM sandbox. TODO: restore @PreAuthorize("hasAnyRole('USER','ADMIN')").
+@PreAuthorize("hasAnyRole('USER','ADMIN')")
 public class ContestController {
 
     private final ContestParticipationService service;
@@ -46,6 +45,11 @@ public class ContestController {
     @GetMapping
     public ResponseEntity<ApiResponse<List<ContestResponse>>> list() {
         return ResponseEntity.ok(ApiResponse.ok(service.listPublished(), "Contests fetched"));
+    }
+
+    @GetMapping("/my-progress")
+    public ResponseEntity<ApiResponse<List<ContestProgressResponse>>> myProgress(Authentication auth) {
+        return ResponseEntity.ok(ApiResponse.ok(service.myProgress(currentUserId(auth)), "Progress fetched"));
     }
 
     @GetMapping("/{contestId}")
@@ -113,27 +117,14 @@ public class ContestController {
                 service.mySubmissions(contestId, currentUserId(auth)), "Submissions fetched"));
     }
 
-    /**
-     * Resolves the authenticated user's id. For USER tokens the JWT filter sets
-     * the principal name to the email, so we look up the user by email.
-     *
-     * TEST-ONLY: when auth is null (contest endpoints are temporarily public for
-     * WASM-sandbox testing), fall back to the first user in the DB so the
-     * challenge/submit flow still has a valid user id. TODO: remove the fallback
-     * and restore the strict null check before production.
-     */
+    /** Resolve progress ownership from the authenticated identity only. */
     private String currentUserId(Authentication auth) {
-        if (auth != null && auth.getName() != null) {
-            String email = auth.getName();
-            return userRepo.findByEmail(email)
-                    .map(User::getId)
-                    .orElseThrow(() -> new EntityNotFoundException("User not found: " + email));
+        if (auth == null || !auth.isAuthenticated()) {
+            throw new org.springframework.security.authentication.AuthenticationCredentialsNotFoundException(
+                    "Sign in to participate in contests");
         }
-        // TEST-ONLY fallback: use any existing user so public contest calls work.
-        return userRepo.findAll().stream()
-                .findFirst()
+        return userRepo.findByEmail(auth.getName())
                 .map(User::getId)
-                .orElseThrow(() -> new EntityNotFoundException(
-                        "No users in DB for test-only contest fallback"));
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
     }
 }

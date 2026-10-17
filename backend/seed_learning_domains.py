@@ -8,6 +8,8 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import urlparse
 from urllib.request import Request, urlopen
 
+from catalog_names import skill_name
+
 # Shared skills have one recommended entry level, not a learner proficiency score.
 SKILL_GROUPS = {
     'BEGINNER': '''Computer Basics|Internet Safety|Command Line|Git|GitHub|Problem Solving|Python|Java|HTML|CSS|SQL|Linux|Networking|Statistics|Data Visualization|Software Testing|Technical Communication|Debugging''',
@@ -43,7 +45,7 @@ def catalog():
             levels[name.casefold()] = level
     result = []
     for name, names in DOMAIN_SPECS:
-        skills = [{'name': skill, 'level': levels[skill.casefold()]}
+        skills = [{'name': skill_name(skill), 'level': levels[skill.casefold()]}
                   for skill in names.split('|')]
         if len({s['name'].casefold() for s in skills}) != len(skills):
             raise ValueError('Duplicate domain skill: ' + name)

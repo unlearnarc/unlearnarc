@@ -438,6 +438,14 @@ export interface Contest {
   phase: ContestPhase;
 }
 
+export interface ContestProgress {
+  contestId: string;
+  totalScore: number;
+  problemCount: number;
+  solvedProblemIds: string[];
+  completed: boolean;
+}
+
 export interface PublicTestCase {
   id: string;
   input: string;

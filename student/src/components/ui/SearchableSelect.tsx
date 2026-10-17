@@ -110,7 +110,7 @@ export function SearchableSelect({ id, value, options, onChange, placeholder, lo
           onMouseDown={event => event.preventDefault()}
           onPointerMove={event => { if (event.pointerType === 'mouse') setActive(index); }}
           onClick={() => choose(option)}>
-          <span>{option.label}</span>{option.value === value && <Check size={17} aria-hidden="true" />}
+          <span title={option.label}>{option.label}</span>{option.value === value && <Check size={17} aria-hidden="true" />}
         </li>)}
       </ul>
     </div>}

@@ -4,12 +4,13 @@
   --lb-secondary: #475569;
   --lb-border: #bfdbfe;
   --lb-header: linear-gradient(120deg, #eff6ff, #f0fdfa);
-  --lb-gold: #854d0e;
+  --lb-gold: #D4A017;
   --lb-gold-soft: #fef3c7;
-  --lb-silver: #334155;
+  --lb-silver: #8A97A8;
   --lb-silver-soft: #e2e8f0;
-  --lb-bronze: #9a3412;
+  --lb-bronze: #B06B2E;
   --lb-bronze-soft: #ffedd5;
+  --lb-rank-text: #1A1206;
   color: var(--ua-text-primary);
 }
 
@@ -19,12 +20,13 @@
   --lb-secondary: #b0bdcc;
   --lb-border: #3b5578;
   --lb-header: linear-gradient(120deg, #1a2b44, #173637);
-  --lb-gold: #fde68a;
+  --lb-gold: #FFC247;
   --lb-gold-soft: #42351b;
-  --lb-silver: #e2e8f0;
+  --lb-silver: #C7D2E0;
   --lb-silver-soft: #303e50;
-  --lb-bronze: #fdba74;
+  --lb-bronze: #CD8748;
   --lb-bronze-soft: #452c20;
+  --lb-rank-text: var(--place-ink);
 }
 
 .leaderboard-header {
@@ -91,7 +93,7 @@
 .leaderboard-podium .ring-4 { --tw-ring-color: var(--place-ink); }
 .leaderboard-podium > .relative > span {
   background: var(--place-ink);
-  color: var(--place-soft);
+  color: #1A1206;
 }
 .leaderboard-podium > div:last-child {
   background: var(--place-soft);
@@ -101,7 +103,7 @@
   border-radius: 12px 12px 0 0;
 }
 .leaderboard-podium > div:last-child > span {
-  color: var(--place-ink);
+  color: var(--lb-rank-text);
   filter: none;
 }
 .leaderboard-row { transition: none; }

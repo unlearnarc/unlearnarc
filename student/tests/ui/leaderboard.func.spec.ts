@@ -26,6 +26,14 @@ test('leaderboard colors remain readable in both themes and on narrow phones', a
   await expect(page.locator('.leaderboard-podium')).toHaveCount(3);
   for (const theme of ['light', 'dark']) {
     await page.evaluate(t => document.documentElement.setAttribute('data-theme', t), theme);
+    const colors = theme === 'light'
+      ? ['rgb(212, 160, 23)', 'rgb(138, 151, 168)', 'rgb(176, 107, 46)']
+      : ['rgb(255, 194, 71)', 'rgb(199, 210, 224)', 'rgb(205, 135, 72)'];
+    for (const [index, color] of colors.entries()) {
+      const podium = page.locator(`.leaderboard-place-${index + 1}`);
+      await expect(podium.locator('svg').first()).toHaveCSS('color', color);
+      await expect(podium.locator(':scope > .relative > span')).toHaveCSS('background-color', color);
+    }
     for (const width of [320, 390, 1440]) {
       await page.setViewportSize({ width, height: 900 });
       await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);

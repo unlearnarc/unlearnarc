@@ -1,17 +1,18 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
-  Briefcase, CheckCircle2, ChevronRight,
-  ChevronDown, Search, X, AlertTriangle, Compass, RotateCcw, Plus,
+  Briefcase, ChevronRight,
+  Search, X, AlertTriangle, Compass, RotateCcw,
 } from 'lucide-react';
 import { enrollmentAPI, roadmapAPI } from '../api/endpoints';
 import './roadmap.css';
 import { RoadmapJourney } from './RoadmapJourney';
 import type { Roadmap, RoadmapCourse } from './roadmapModel';
 import { EmptyState, Skeleton, SkeletonRepeat } from '../components/ui';
+import { SearchableSelect } from '../components/ui/SearchableSelect';
 
 /* ── Types (mirror the backend DTOs — no derived/progress fields used) ─────── */
 interface SkillTag { id: string; name: string; level?: string; }
@@ -214,7 +215,7 @@ const RoadmapExplorer: React.FC<{ onSelectRole: (id: string) => void }> = ({ onS
 
 /* ── Skill filter bar — shows first 7 chips inline; the rest collapse into a
    "More" dropdown. Picking a hidden skill promotes it so the active selection
-   is always visible. Clicking outside or Escape closes the dropdown. ─────────── */
+   is always visible. The shared searchable combobox handles dismissal and keyboard navigation. ─────────── */
 const VISIBLE_SKILL_CHIPS = 7;
 
 const SkillFilterBar: React.FC<{
@@ -223,8 +224,6 @@ const SkillFilterBar: React.FC<{
   onSelect: (id: string | null) => void;
 }> = ({ skills, selectedId, onSelect }) => {
   const { t } = useTranslation();
-  const [menuOpen, setMenuOpen] = useState(false);
-  const wrapRef = useRef<HTMLDivElement>(null);
 
   // Keep the selected skill visible even if it lives in the overflow bucket.
   const ordered = useMemo(() => {
@@ -239,23 +238,6 @@ const SkillFilterBar: React.FC<{
 
   const visible = ordered.slice(0, VISIBLE_SKILL_CHIPS);
   const overflow = ordered.slice(VISIBLE_SKILL_CHIPS);
-  const overflowActive = overflow.some((s) => s.id === selectedId);
-
-  // Close the dropdown on outside-click / Escape.
-  useEffect(() => {
-    if (!menuOpen) return;
-    const onDoc = (e: MouseEvent) => {
-      if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) setMenuOpen(false);
-    };
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setMenuOpen(false); };
-    document.addEventListener('mousedown', onDoc);
-    document.addEventListener('keydown', onKey);
-    return () => {
-      document.removeEventListener('mousedown', onDoc);
-      document.removeEventListener('keydown', onKey);
-    };
-  }, [menuOpen]);
-
   const chipClass = (active: boolean) =>
     `roadmap-filter-chip rounded-full px-2.5 py-1 text-xs font-medium border transition ${
       active
@@ -278,6 +260,7 @@ const SkillFilterBar: React.FC<{
               key={s.id}
               onClick={() => onSelect(active ? null : s.id)}
               aria-pressed={active}
+              title={s.name}
               className={chipClass(active)}
             >
               {s.name}
@@ -286,46 +269,17 @@ const SkillFilterBar: React.FC<{
         })}
 
         {overflow.length > 0 && (
-          <div ref={wrapRef} className="roadmap-filter-overflow relative">
-            <button
-              type="button"
-              onClick={() => setMenuOpen((v) => !v)}
-              aria-expanded={menuOpen}
-              aria-haspopup="menu"
-              className={`${chipClass(overflowActive)} inline-flex items-center gap-1`}
-            >
-              {overflowActive
-                ? (ordered.find((s) => s.id === selectedId)?.name ?? t('roadmap.moreFilters', { count: overflow.length }))
-                : t('roadmap.moreFilters', { count: overflow.length })}
-              <ChevronDown size={12} className={`transition-transform ${menuOpen ? 'rotate-180' : ''}`} />
-            </button>
-
-            {menuOpen && (
-              <div
-                role="menu"
-                className="roadmap-filter-menu absolute end-0 z-[var(--ua-z-dropdown)] mt-1.5 max-h-72 w-56 overflow-y-auto rounded-xl border border-border bg-surface p-1.5 shadow-lg ua-scroll"
-              >
-                {overflow.map((s) => {
-                  const active = selectedId === s.id;
-                  return (
-                    <button
-                      key={s.id}
-                      role="menuitemradio"
-                      aria-checked={active}
-                      onClick={() => { onSelect(active ? null : s.id); setMenuOpen(false); }}
-                      className={`flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-left text-xs font-medium transition ${
-                        active
-                          ? 'bg-primary-50 text-primary-500'
-                          : 'text-text-secondary hover:bg-surface-soft'
-                      }`}
-                    >
-                      {active ? <CheckCircle2 size={13} className="shrink-0" /> : <Plus size={13} className="shrink-0 text-text-muted" />}
-                      <span className="min-w-0">{s.name}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            )}
+          <div className="roadmap-filter-overflow">
+            <label htmlFor="roadmap-more-skills" className="sr-only">
+              {t('roadmap.filterBySkill')}
+            </label>
+            <SearchableSelect
+              id="roadmap-more-skills"
+              value=""
+              options={overflow.map(skill => ({ value: skill.id, label: skill.name }))}
+              onChange={onSelect}
+              placeholder={t('roadmap.moreFilters', { count: overflow.length })}
+            />
           </div>
         )}
       </div>

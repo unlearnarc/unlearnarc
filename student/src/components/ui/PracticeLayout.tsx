@@ -1,6 +1,6 @@
 import type { ElementType, ReactNode } from 'react';
 import { Sparkles } from 'lucide-react';
-import { AriaMascot } from '../mascot/AriaMascot';
+// import { AriaMascot } from '../mascot/AriaMascot'; // Mascot UI temporarily paused.
 import '../../styles/practice.css';
 
 /** Shared visual language for the learner's practice, journal and insights pages. */
@@ -15,7 +15,9 @@ export function PracticeHero({ eyebrow, title, description, actions, children }:
         {actions && <div className="practice-actions">{actions}</div>}
         {children}
       </div>
+      {/* Mascot UI temporarily paused.
       <div className="practice-buddy" aria-hidden="true"><AriaMascot currentState="greeting" /><span><Sparkles size={18} /></span></div>
+      */}
     </header>
   );
 }

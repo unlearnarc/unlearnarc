@@ -142,6 +142,8 @@ public class ContestParticipationService {
 
     @Transactional
     public SubmissionResponse submit(String contestId, String userId, SubmissionRequest req) {
+        userRepo.lockForContestScoring(userId)
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
         Contest contest = getPublishedContestOrThrow(contestId);
         assertSubmissionWindowOpen(contest);
 
@@ -220,6 +222,12 @@ public class ContestParticipationService {
         Verdict verdict = resolveVerdict(passed, cases.size(), malformed,
                 sawCompileError, sawRuntimeError, sawTimeout);
 
+        // Read history BEFORE saving: JPA queries auto-flush pending submissions.
+        List<ContestSubmission> history = submissionRepo.findByContestIdAndUserIdAndProblemId(
+                contestId, userId, req.getProblemId());
+        int previousBest = history.stream().mapToInt(ContestSubmission::getScore).max().orElse(0);
+        boolean alreadySolved = history.stream().anyMatch(s -> s.getVerdict() == Verdict.ACCEPTED);
+
         ContestSubmission submission = submissionRepo.save(ContestSubmission.builder()
                 .contestId(contestId)
                 .problemId(req.getProblemId())
@@ -233,8 +241,8 @@ public class ContestParticipationService {
                 .runtimeMs(maxRuntime)
                 .build());
 
-        int delta = applyScoreToLeaderboard(participant, contest, req.getProblemId(),
-                score, problem.getMaxPoints(), verdict == Verdict.ACCEPTED);
+        int delta = applyScoreToLeaderboard(participant, contest,
+                score, previousBest, alreadySolved, verdict == Verdict.ACCEPTED);
 
         // HYBRID cache: reflect the contest gain into the global/region leaderboard.
         if (delta > 0) {
@@ -292,6 +300,28 @@ public class ContestParticipationService {
         return submissionRepo.findByContestIdAndUserIdOrderBySubmittedAtDesc(contestId, userId);
     }
 
+    /** Derive durable progress from graded history, including pre-fix submissions. */
+    public List<ContestProgressResponse> myProgress(String userId) {
+        Map<String, List<ContestSubmission>> byContest = submissionRepo.findByUserId(userId).stream()
+                .collect(Collectors.groupingBy(ContestSubmission::getContestId));
+        List<ContestProgressResponse> progress = new ArrayList<>();
+        for (var entry : byContest.entrySet()) {
+            List<ContestProblem> problems = problemRepo
+                    .findByContestIdAndIsActiveTrueOrderByDisplayOrder(entry.getKey());
+            Set<String> activeIds = problems.stream().map(ContestProblem::getId).collect(Collectors.toSet());
+            Set<String> solved = entry.getValue().stream()
+                    .filter(s -> s.getVerdict() == Verdict.ACCEPTED && activeIds.contains(s.getProblemId()))
+                    .map(ContestSubmission::getProblemId).collect(Collectors.toSet());
+            Map<String, Integer> best = new HashMap<>();
+            entry.getValue().forEach(s -> best.merge(s.getProblemId(), s.getScore(), Math::max));
+            progress.add(new ContestProgressResponse(entry.getKey(),
+                    best.values().stream().mapToInt(Integer::intValue).sum(), problems.size(), solved,
+                    !problems.isEmpty() && solved.size() == problems.size()));
+        }
+        progress.sort(Comparator.comparing(ContestProgressResponse::contestId));
+        return progress;
+    }
+
     // ── Internals ────────────────────────────────────────────────────────────────
 
     /**
@@ -299,21 +329,14 @@ public class ContestParticipationService {
      * only add the improvement). Applies wrong-submission penalty + marks solved.
      */
     private int applyScoreToLeaderboard(ContestParticipant participant, Contest contest,
-                                        String problemId, int newScore, int maxPoints,
-                                        boolean accepted) {
-        int previousBest = submissionRepo
-                .findByContestIdAndUserIdAndProblemId(contest.getId(), participant.getUserId(), problemId)
-                .stream()
-                .mapToInt(ContestSubmission::getScore)
-                .max().orElse(0);
-
+                                        int newScore, int previousBest,
+                                        boolean alreadySolved, boolean accepted) {
         int delta = Math.max(0, newScore - previousBest);
 
         if (delta > 0) {
             participant.setTotalScore(participant.getTotalScore() + delta);
             participant.setLastAcceptedAt(Instant.now());
         }
-        boolean alreadySolved = previousBest >= maxPoints;
         if (accepted && !alreadySolved) {
             participant.setSolvedCount(participant.getSolvedCount() + 1);
         }

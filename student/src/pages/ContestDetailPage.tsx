@@ -1,11 +1,11 @@
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { contestAPI } from '../api/endpoints';
 import { EmptyState, Spinner } from '../components/ui';
 import { ContestSolver } from '../components/contest/ContestSolver';
-import type { Contest, ContestProblem } from '../types';
+import type { Contest, ContestProblem, ContestProgress } from '../types';
 import {
   Trophy, ArrowLeft, ListChecks, ChevronRight, CheckCircle2,
 } from 'lucide-react';
@@ -34,13 +34,16 @@ export const ContestDetailPage: React.FC = () => {
     enabled: !!id,
   });
 
+  const progressQ = useQuery({
+    queryKey: ['contest-progress'],
+    queryFn: contestAPI.myProgress,
+  });
+  const progress = (progressQ.data?.data?.data as ContestProgress[] | undefined)?.find(p => p.contestId === id);
+
   const contest: Contest | undefined = contestQ.data?.data?.data;
   const problems: ContestProblem[] = problemsQ.data?.data?.data ?? [];
 
-  const activeProblem = useMemo(
-    () => problems.find(p => p.id === activeProblemId) ?? null,
-    [problems, activeProblemId],
-  );
+  const activeProblem = problems.find(p => p.id === activeProblemId) ?? null;
 
   if (contestQ.isLoading || problemsQ.isLoading) return <Spinner />;
   if (contestQ.error || !contest) {
@@ -83,6 +86,12 @@ export const ContestDetailPage: React.FC = () => {
           <ListChecks size={15} className="shrink-0" aria-hidden="true" />
           {t('contests.problemsCount', { count: problems.length })}
         </p>
+        {progress && (
+          <p className="mt-2 text-sm text-success" role="status">
+            {progress.completed ? 'Completed' : 'In progress'} · {progress.solvedProblemIds.length}/{problems.length} solved · {progress.totalScore} pts
+          </p>
+        )}
+        {progressQ.isError && <p className="mt-2 text-sm text-danger">Could not load your saved progress.</p>}
       </header>
 
       {problems.length === 0 ? (
@@ -101,6 +110,9 @@ export const ContestDetailPage: React.FC = () => {
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold text-text-primary group-hover:text-primary-500 transition truncate">
                   {p.title}
+                  {progress?.solvedProblemIds.includes(p.id) && (
+                    <span className="ml-2 text-xs font-medium text-success">✓ Solved</span>
+                  )}
                 </p>
                 <div className="flex items-center gap-3 mt-0.5 text-xs">
                   <span className={clsx('font-medium', DIFF_TONE[p.difficulty])}>{difficultyLabel(p.difficulty)}</span>

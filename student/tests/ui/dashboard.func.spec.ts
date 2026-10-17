@@ -50,6 +50,23 @@ test('learning home shows real stats, course adventures and working destinations
   await expect(page).toHaveURL(/\/courses\/intro$/);
 });
 
+test('Your Next Chapter shows only two courses and links to all learnings', async ({ page }) => {
+  const enrolledCourses = [
+    ...courses,
+    { id: 'databases', name: 'Database essentials', level: 'BEGINNER', topicsCount: 6 },
+    { id: 'networks', name: 'Network essentials', level: 'BEGINNER', topicsCount: 5 },
+  ];
+  await page.route('**/api/v1/courses', route => route.fulfill({ json: { data: enrolledCourses } }));
+  await page.route('**/api/v1/enrollments/me', route => route.fulfill({ json: { data: enrolledCourses.map(course => ({ courseId: course.id })) } }));
+  await page.goto('/dashboard');
+  const section = page.getByRole('region', { name: /your next chapter/i });
+  await expect(section.locator('.study-course')).toHaveCount(2);
+  await expect(section.getByRole('heading', { name: courses[0].name, exact: true })).toBeVisible();
+  await expect(section.getByRole('heading', { name: courses[1].name, exact: true })).toBeVisible();
+  await expect(section.getByRole('link', { name: /View all/i })).toHaveAttribute('href', '/my-courses');
+  await expect(page.getByRole('group', { name: 'Your learning at a glance' }).getByRole('link', { name: /4 Courses started/ })).toBeVisible();
+});
+
 test('layout fits phones, tablets and desktops in both themes', async ({ page }) => {
   await page.goto('/dashboard');
   await expect(page.locator('.study-course')).toHaveCount(2);

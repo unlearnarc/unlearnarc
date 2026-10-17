@@ -1,5 +1,8 @@
 import { test, expect } from '@playwright/test';
 
+// Retain mascot coverage for restoration; its UI connections are temporarily commented out.
+test.skip(true, 'Mascot UI is temporarily paused.');
+
 test.beforeEach(async ({ page }) => {
   await page.addInitScript(() => localStorage.setItem('ua_user_token', 'mascot-test-session'));
   await page.route('**/api/v1/**', route => route.fulfill({ json: { data: {} } }));

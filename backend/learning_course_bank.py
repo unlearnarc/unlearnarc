@@ -1,5 +1,6 @@
 """Curated four-level curricula. Reading estimates exclude independent project work."""
 from html import escape
+from catalog_names import skill_name
 
 LEVELS = ('BEGINNER', 'INTERMEDIATE', 'ADVANCED', 'EXPERT')
 # Each row: course focus | four ordered modules | assessable project | official reference.
@@ -101,8 +102,8 @@ def catalog():
         for index, (focus, modules, project, reference) in enumerate(rows):
             level = LEVELS[index]
             topics = modules.split(';')
-            result.append(dict(domain=domain, level=level, name=f'{domain}: {focus}',
-                               skill=f'{domain} — {level.title()} Practice', topics=topics,
+            result.append(dict(domain=domain, level=level, name=focus,
+                               skill=skill_name(f'{domain} — {level.title()} Practice'), topics=topics,
                                project=project, reference=reference, order=index + 1))
     return result
 

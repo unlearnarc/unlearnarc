@@ -1,11 +1,16 @@
 .roadmap-explorer, .roadmap-detail { min-width: 0; width: 100%; overflow-wrap: anywhere; }
 .roadmap-explorer .grid { grid-template-columns: minmax(0, 1fr); }
 .roadmap-role-card { align-self: start; min-width: 0; width: 100%; }
+.roadmap-explorer-toolbar { position: relative; }
 .roadmap-filters { position: relative; min-width: 0; }
 .roadmap-filter-chip, .roadmap-filter-overflow { min-width: 0; max-width: 100%; }
-.roadmap-filter-chip { min-height: 2.75rem; overflow-wrap: anywhere; text-align: start; }
-.roadmap-filter-menu { max-width: 100%; }
-.roadmap-filter-menu button { min-height: 2.75rem; overflow-wrap: anywhere; }
+.roadmap-filter-chip { height: 2.75rem; max-width: min(18rem, 100%); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: start; }
+.roadmap-filter-overflow { position: relative; width: 22rem; }
+.roadmap-filter-overflow .searchable-select-control { height: 3.25rem; min-height: 3.25rem; }
+.roadmap-filter-overflow .searchable-select-panel { position: absolute; inset-inline-start: 0; z-index: var(--ua-z-dropdown); width: 100%; height: 20rem; max-height: 55dvh; display: flex; flex-direction: column; }
+.roadmap-filter-overflow .searchable-select-options { flex: 1; min-height: 0; max-height: none; }
+.roadmap-filter-overflow .searchable-select-options [role="option"] { height: 4rem; min-height: 4rem; }
+.roadmap-filter-overflow .searchable-select-options [role="option"] > span { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
 .roadmap-journey { --journey-secondary: color-mix(in srgb, var(--ua-text-secondary) 80%, var(--ua-text-primary)); display: grid; gap: 1.25rem; max-width: 76rem; margin-inline: auto; color: var(--ua-text-primary); padding-bottom: 7rem; }
 .roadmap-journey :is(a, button) { scroll-margin-block: 7rem; }
 .journey-breadcrumb { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; font-size: .8125rem; color: var(--journey-secondary); }
@@ -78,7 +83,6 @@
 .roadmap-journey :is(a, button):focus-visible, #journey-courses-heading:focus-visible { outline: 2px solid var(--ua-focus-ring); outline-offset: 3px; }
 @media (min-width: 640px) {
   .roadmap-explorer .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .roadmap-filter-chip { min-height: 2rem; }
 }
 @media (min-width: 1024px) { .roadmap-explorer .grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 @media (min-width: 768px) and (max-width: 1100px) {
@@ -125,8 +129,7 @@
   .roadmap-role-card { padding: .875rem; }
   .roadmap-filters > div { align-items: stretch; }
   .roadmap-filter-chips > span { flex-basis: 100%; }
-  .roadmap-filter-overflow { flex-wrap: wrap; flex-basis: 100%; }
-  .roadmap-filter-menu { position: static; flex-basis: 100%; width: 100%; max-height: min(18rem, 50dvh); }
+  .roadmap-filter-overflow { flex-basis: 100%; width: 100%; }
 }
 [data-theme="dark"] .roadmap-journey .btn-primary, [data-theme="dark"] .journey-stop:is(.is-completed, .is-current) .journey-stop-number { color: var(--ua-navy-950); }
 [data-theme="dark"] .roadmap-journey .journey-status.is-active { color: var(--ua-primary-700); }

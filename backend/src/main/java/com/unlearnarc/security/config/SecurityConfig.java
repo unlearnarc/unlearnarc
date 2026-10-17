@@ -185,11 +185,6 @@ public class SecurityConfig {
                         "/api/v1/notes/course/*"
                 ).permitAll()
 
-                // ── TEST-ONLY: contest endpoints open for WASM/sandbox testing ──
-                // TODO: REMOVE before production. Lets the student contest flow
-                // (list/get/problems/challenge/submit/leaderboard) run without a JWT.
-                .requestMatchers("/api/v1/contests/**").permitAll()
-
                 // ── Everything else must carry a valid JWT ──────────────────
                 // Fine-grained ADMIN vs USER rules live on @PreAuthorize
                 .anyRequest().authenticated()
