@@ -166,7 +166,9 @@ export const SearchPanel: React.FC<SearchPanelProps> = ({
       ref={rootRef}
       className={clsx(
         'flex flex-col',
-        floating ? 'relative' : (variant === 'overlay' ? 'min-h-0' : 'gap-3'),
+        // overlay: min-h-0 + flex-1 so the panel can fill the dialog box and
+        // the results list can scroll inside it without expanding the container.
+        floating ? 'relative' : (variant === 'overlay' ? 'min-h-0 flex-1' : 'gap-3'),
       )}
     >
       {/* Input */}
@@ -274,12 +276,14 @@ export const SearchPanel: React.FC<SearchPanelProps> = ({
           )}
 
           {/*
-            Height is capped so the results list stays inside the dialog and
-            never overflows the viewport — which was the root cause of the
-            "blank page / can't exit" issue. `overflow-y-auto` lets the user
-            scroll a long result set without ever escaping the modal.
+            flex-1 + min-h-0: the list takes all remaining height inside the
+            flex-col dialog panel, but NEVER expands the panel beyond its own
+            max-height. overflow-y-auto then makes this the scroll container.
+            This is the correct fix for the "blank page / can't exit" bug —
+            the content scrolls *inside* the bounded panel instead of pushing
+            the panel off-screen.
           */}
-          <div className="mt-3 space-y-0.5 overflow-y-auto max-h-[min(45vh,400px)]">
+          <div className="mt-3 space-y-0.5 flex-1 min-h-0 overflow-y-auto">
             {!active ? (
               <p className="px-3 py-8 text-center text-sm text-text-muted">
                 Type to search across {lockedTypes?.length ? 'this section' : 'everything'}.

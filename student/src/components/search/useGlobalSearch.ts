@@ -40,10 +40,18 @@ export function useGlobalSearch({
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   useEffect(() => {
+    // When the master switch is turned off (dialog closed), cancel any
+    // in-flight debounce timer immediately and clear the debounced value so
+    // stale results don't flash in on the next open.
+    if (!enabled) {
+      clearTimeout(timer.current);
+      setDebounced('');
+      return;
+    }
     clearTimeout(timer.current);
     timer.current = setTimeout(() => setDebounced(term), debounceMs);
     return () => clearTimeout(timer.current);
-  }, [term, debounceMs]);
+  }, [term, debounceMs, enabled]);
 
   const q = debounced.trim();
   const canRun = enabled && q.length >= minChars;
