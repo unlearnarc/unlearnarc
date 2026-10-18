@@ -59,6 +59,19 @@ export function RoadmapJourney({ roadmap, onBack, pickAction }: {
   const trackerRef = useRef<HTMLElement>(null);
   const returnLevelRef = useRef<string | null>(null);
   const stageParam = params.get('stage');
+  const requested = journey.stages.find(item => item.level === stageParam);
+  const stage = requested ?? journey.stages[journey.current];
+
+  // Reset the selected course whenever the active stage changes so the right-panel
+  // never shows a course that belongs to a different stage.
+  const prevStageLevel = useRef<string | null>(null);
+  useEffect(() => {
+    if (prevStageLevel.current !== stage.level) {
+      prevStageLevel.current = stage.level;
+      setSelectedCourseId(null);
+    }
+  }, [stage.level]);
+
   useEffect(() => {
     if (!window.matchMedia('(max-width: 767px)').matches) return;
     if (stageParam) headingRef.current?.focus();
@@ -67,8 +80,7 @@ export function RoadmapJourney({ roadmap, onBack, pickAction }: {
       returnLevelRef.current = null;
     }
   }, [stageParam]);
-  const requested = journey.stages.find(item => item.level === stageParam);
-  const stage = requested ?? journey.stages[journey.current];
+
   // The API has no completion timestamp: use the last completed course in curriculum order.
   const course = stage.courses.find(item => item.courseId === selectedCourseId)
     ?? [...stage.courses].reverse().find(item => item.completed) ?? stage.courses[0];

@@ -42,6 +42,16 @@ export interface SearchPanelProps {
    * page search where a resting empty panel would be noise.
    */
   hideWhenEmpty?: boolean;
+  /**
+   * Master switch — set false to pause all search requests (e.g. when the
+   * parent dialog/panel is closed or unmounted). Defaults to true.
+   */
+  enabled?: boolean;
+  /**
+   * Minimum characters before a search fires. Defaults to 2 for overlay,
+   * 1 for inline.
+   */
+  minChars?: number;
 }
 
 export const SearchPanel: React.FC<SearchPanelProps> = ({
@@ -54,6 +64,8 @@ export const SearchPanel: React.FC<SearchPanelProps> = ({
   initialTerm = '',
   onTermChange,
   hideWhenEmpty = false,
+  enabled = true,
+  minChars,
 }) => {
   const [term, setTerm] = useState(initialTerm);
   const [activeChip, setActiveChip] = useState<SearchTypeKey | 'ALL'>('ALL');
@@ -74,10 +86,16 @@ export const SearchPanel: React.FC<SearchPanelProps> = ({
     return activeChip === 'ALL' ? undefined : [activeChip];
   }, [lockedTypes, activeChip]);
 
+  // Effective min chars: caller-supplied > variant default (overlay=2, inline=1)
+  const effectiveMinChars = minChars ?? (variant === 'overlay' ? 2 : 1);
+
   const { data, isFetching, active } = useGlobalSearch({
     term,
     baseParams: { ...baseParams, types: effectiveTypes },
-    enabled: true,
+    // overlay uses a longer debounce to avoid hammering on rapid keystrokes
+    debounceMs: variant === 'overlay' ? 350 : 250,
+    minChars: effectiveMinChars,
+    enabled,
   });
 
   // Flat, relevance-ranked list for the overlay (or restricted to active chip).
@@ -255,7 +273,13 @@ export const SearchPanel: React.FC<SearchPanelProps> = ({
             </div>
           )}
 
-          <div className="mt-3 space-y-0.5 overflow-y-auto max-h-[60vh]">
+          {/*
+            Height is capped so the results list stays inside the dialog and
+            never overflows the viewport — which was the root cause of the
+            "blank page / can't exit" issue. `overflow-y-auto` lets the user
+            scroll a long result set without ever escaping the modal.
+          */}
+          <div className="mt-3 space-y-0.5 overflow-y-auto max-h-[min(45vh,400px)]">
             {!active ? (
               <p className="px-3 py-8 text-center text-sm text-text-muted">
                 Type to search across {lockedTypes?.length ? 'this section' : 'everything'}.
