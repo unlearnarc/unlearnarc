@@ -11,8 +11,7 @@ services:
     healthCheckPath: /api/v1/auth/health   # change if your health route differs
     autoDeploy: true
     envVars:
-      - key: PORT
-        value: "8085"
+      # Render supplies PORT; Spring binds to it on 0.0.0.0.
       # ── Database (Aiven MySQL) — fill these in the dashboard, do NOT commit ──
       - key: DATABASE_URL
         sync: false
@@ -22,8 +21,10 @@ services:
         sync: false
       - key: DB_POOL_SIZE
         value: "10"
+      # Import schema.sql on a fresh DB / apply migrations before deploying.
+      # Do not run blocking ALTER TABLE operations during web-service startup.
       - key: JPA_DDL_AUTO
-        value: update
+        value: validate
       - key: JPA_SHOW_SQL
         value: "false"
       - key: LOG_LEVEL_APP

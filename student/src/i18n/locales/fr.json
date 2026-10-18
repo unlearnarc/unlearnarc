@@ -41,7 +41,8 @@
     "tests": "Tests",
     "leaderboard": "Classement",
     "roadmap": "Feuille de route",
-    "interviews": "Entretiens",
+    "interviews": "Interviews",
+    "labs": "Lab",
     "profile": "Profil"
   },
   "sidebar": {

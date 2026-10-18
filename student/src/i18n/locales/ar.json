@@ -44,7 +44,8 @@
     "tests": "الاختبارات",
     "leaderboard": "لوحة الصدارة",
     "roadmap": "خارطة الطريق",
-    "interviews": "المقابلات",
+    "interviews": "Interviews",
+    "labs": "Lab",
     "profile": "الملف الشخصي"
   },
   "sidebar": {

@@ -1,6 +1,25 @@
 # ─── Dev logs ────────────────────────────────────────────────────────────────
 .dev-logs/
 
+# ─── Backend seeding & utility scripts (Python) ──────────────────────────────
+# These are local data-population helpers, not application code.
+# MCP server files (mcp/) and course-architect validator are intentionally kept.
+backend/*.py
+backend/.seed_questions.py
+backend/content/**/build_sql.py
+backend/content/**/test_content.py
+backend/content/**/seed_notes.sql
+
+# ─── Backend content note files (HTML) ───────────────────────────────────────
+# Source HTML notes are authored locally and seeded via scripts; they are
+# not served directly by the application and bloat the repository.
+backend/content/**/*.html
+
+# ─── SVG animator standalone HTML tools ──────────────────────────────────────
+svg/svg-character-animator/animator-studio-cn.html
+svg/svg-character-animator/animator-studio-en.html
+svg/svg-character-animator/templates/preview/preview.html
+
 # ─── OS / editor ─────────────────────────────────────────────────────────────
 .DS_Store
 Thumbs.db

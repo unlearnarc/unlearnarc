@@ -8,7 +8,7 @@ import { ProfileAvatar } from '../ui/ProfileAvatar';
 import {
   BookOpen, LayoutDashboard, GraduationCap, Globe, LogOut,
   Workflow, MessageSquareText, PanelLeftClose, PanelLeftOpen, X, Trophy,
-  Medal, Map, Clapperboard,
+  Medal, Map, Clapperboard, FlaskConical,
   Moon, Sun,
 } from 'lucide-react';
 import clsx from 'clsx';
@@ -31,6 +31,7 @@ const NAV_LINKS = [
   { to: '/algorithms',            icon: Workflow,          labelKey: 'nav.algorithms' },
   { to: '/animations',            icon: Clapperboard,      labelKey: 'nav.animations' },
   { to: '/interview-experiences', icon: MessageSquareText, labelKey: 'nav.interviews' },
+  { to: '/labs',                  icon: FlaskConical,       labelKey: 'nav.labs'       },
 ] as const;
 
 interface AppSidebarProps {

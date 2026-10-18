@@ -22,6 +22,7 @@ import { AlgorithmsPage }      from './pages/AlgorithmsPage';
 import { AlgorithmDetailPage } from './pages/AlgorithmDetailPage';
 import { AnimationsPage }      from './pages/AnimationsPage';
 import { InterviewExperiencesPage } from './pages/InterviewExperiencesPage';
+import { LabsPage } from './pages/LabsPage';
 import { ContestsPage }      from './pages/ContestsPage';
 import { ContestDetailPage } from './pages/ContestDetailPage';
 import { LeaderboardPage }   from './pages/LeaderboardPage';
@@ -73,6 +74,7 @@ function App() {
                 <Route path="/leaderboard"         element={<LeaderboardPage />} />
                 <Route path="/roadmap"              element={<RoadmapPage />} />
                 <Route path="/interview-experiences" element={<InterviewExperiencesPage />} />
+                <Route path="/labs" element={<LabsPage />} />
                 <Route path="/profile"              element={<ProfilePage />} />
               </Route>
             </Route>

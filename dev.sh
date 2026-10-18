@@ -6,16 +6,18 @@
 #   • backend          Spring Boot  → http://localhost:8085
 #   • admin frontend   Vite         → http://localhost:3000
 #   • student frontend Vite         → http://localhost:3002
+#   • mcp              Python MCP   → stdio (Zoho Code IDE / Claude Desktop)
 #   • algo-visualizer  tsup --watch (optional, with --watch-pkg)
 #
 # All child processes are tracked in a process group and torn down cleanly
-# on Ctrl+C (SIGINT), SIGTERM, or normal exit — no orphaned Vite/Java procs.
+# on Ctrl+C (SIGINT), SIGTERM, or normal exit — no orphaned processes.
 #
 # Usage:
-#   ./dev.sh                 # attach (if needed) + start backend/admin/student
+#   ./dev.sh                 # attach (if needed) + start backend/admin/student/mcp
 #   ./dev.sh --no-attach     # skip the attach-algoviz step (faster restarts)
 #   ./dev.sh --watch-pkg     # also run algo-visualizer in watch/rebuild mode
 #   ./dev.sh --skip-backend  # don't start the Spring Boot backend
+#   ./dev.sh --skip-mcp      # don't start the MCP server
 #
 set -euo pipefail
 
@@ -24,25 +26,30 @@ BACKEND_DIR="$ROOT/backend"
 ADMIN_DIR="$ROOT/admin"
 STUDENT_DIR="$ROOT/student"
 PKG_DIR="$ROOT/packages/algo-visualizer"
+MCP_DIR="$ROOT/mcp"
 LOG_DIR="$ROOT/.dev-logs"
 
 # ── Pretty output ─────────────────────────────────────────────────────────────
 RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'; BLUE='\033[0;34m'
-CYAN='\033[0;36m'; MAGENTA='\033[0;35m'; NC='\033[0m'
-step() { echo -e "\n${BLUE}▶ $1${NC}"; }
-ok()   { echo -e "${GREEN}✅ $1${NC}"; }
-warn() { echo -e "${YELLOW}⚠  $1${NC}"; }
-die()  { echo -e "${RED}❌ $1${NC}"; exit 1; }
+CYAN='\033[0;36m'; MAGENTA='\033[0;35m'; WHITE='\033[1;37m'; NC='\033[0m'
+step()  { echo -e "\n${BLUE}▶ $1${NC}"; }
+ok()    { echo -e "${GREEN}✅ $1${NC}"; }
+warn()  { echo -e "${YELLOW}⚠  $1${NC}"; }
+die()   { echo -e "${RED}❌ $1${NC}"; exit 1; }
+info()  { echo -e "${WHITE}   $1${NC}"; }
 
 # ── Flags ─────────────────────────────────────────────────────────────────────
 DO_ATTACH=true
 WATCH_PKG=false
 START_BACKEND=true
+START_MCP=true
+
 for arg in "$@"; do
   case "$arg" in
     --no-attach)    DO_ATTACH=false ;;
     --watch-pkg)    WATCH_PKG=true ;;
     --skip-backend) START_BACKEND=false ;;
+    --skip-mcp)     START_MCP=false ;;
     -h|--help)
       grep '^#' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
     *) warn "Unknown flag: $arg" ;;
@@ -117,10 +124,6 @@ start_proc() {
   #   1) per-process plain log ($logfile)
   #   2) combined timestamped session log ($SESSION_LOG), prefixed with [label]
   #   3) colourised console output (stdout)
-  # Why awk (not sed|tee|sed): under `nohup`/redirected stdout the stream is not
-  # a TTY, so sed/tee block-buffer (~8 KB) and the combined log appears empty
-  # until a buffer flushes. awk with fflush() writes every line immediately.
-  # Keep this on its own lines with no inline comments inside the >>( ) body.
   ) > >(awk \
           -v plain="$logfile" \
           -v sess="$SESSION_LOG" \
@@ -141,6 +144,7 @@ step "Checking workspace"
 [ -d "$ADMIN_DIR" ]   || die "admin/ not found"
 [ -d "$STUDENT_DIR" ] || die "student/ not found"
 [ -d "$BACKEND_DIR" ] || die "backend/ not found"
+[ -d "$MCP_DIR" ]     || { warn "mcp/ not found — MCP server disabled"; START_MCP=false; }
 command -v npm >/dev/null 2>&1 || die "npm is not installed"
 mkdir -p "$LOG_DIR"
 
@@ -180,7 +184,35 @@ if [ "$START_BACKEND" = true ]; then
   fi
 fi
 
-# ── 3. Boot everything ────────────────────────────────────────────────────────
+# ── 3. Resolve MCP Python interpreter ────────────────────────────────────────
+MCP_PYTHON=""
+if [ "$START_MCP" = true ]; then
+  if [ -x "$MCP_DIR/.venv/bin/python" ]; then
+    MCP_PYTHON="$MCP_DIR/.venv/bin/python"
+  elif command -v python3 >/dev/null 2>&1; then
+    warn "mcp/.venv not found — falling back to system python3 (may be missing deps)"
+    MCP_PYTHON="$(command -v python3)"
+  else
+    warn "No Python interpreter found — MCP server will NOT start"
+    warn "  Fix: cd mcp && python3 -m venv .venv && .venv/bin/pip install -e ."
+    START_MCP=false
+  fi
+  # Verify the package is importable before we try to start it
+  if [ "$START_MCP" = true ]; then
+    if ! "$MCP_PYTHON" -c "import unlearnarc_mcp" 2>/dev/null; then
+      warn "unlearnarc_mcp package not importable — MCP server will NOT start"
+      warn "  Fix: cd mcp && .venv/bin/pip install -e ."
+      START_MCP=false
+    fi
+  fi
+  # Warn if .env is missing (server will still start but auth will fail at runtime)
+  if [ "$START_MCP" = true ] && [ ! -f "$MCP_DIR/.env" ]; then
+    warn "mcp/.env not found — MCP server will start but admin auth will fail"
+    warn "  Fix: cp mcp/.env.example mcp/.env  and fill in credentials"
+  fi
+fi
+
+# ── 4. Boot everything ────────────────────────────────────────────────────────
 step "Launching dev processes"
 
 if [ "$WATCH_PKG" = true ] && [ -d "$PKG_DIR" ]; then
@@ -196,16 +228,29 @@ fi
 start_proc "admin"   "$GREEN"  "$ADMIN_DIR"   npm run dev
 start_proc "student" "$YELLOW" "$STUDENT_DIR" npm run dev
 
+if [ "$START_MCP" = true ]; then
+  # MCP servers communicate over stdio — we redirect stdin from /dev/null
+  # so the process doesn't block waiting for MCP client input, and just
+  # keeps its own lifecycle running for logging purposes.
+  # Zoho Code IDE / Claude Desktop each spawn their OWN instance over stdio
+  # when a tool call arrives; this background instance is only for dev logging.
+  start_proc "mcp" "$WHITE" "$MCP_DIR" \
+    "$MCP_PYTHON" -m unlearnarc_mcp.server
+fi
+
+# ── 5. Summary ────────────────────────────────────────────────────────────────
 echo ""
 echo -e "${GREEN}──────────────────────────────────────────────${NC}"
 ok "Dev stack is starting up"
-[ "$START_BACKEND" = true ] && echo -e "   • Backend : http://localhost:8085"
-echo -e "   • Admin   : http://localhost:3000"
-echo -e "   • Student : http://localhost:3002"
-echo -e "   • Logs    : $LOG_DIR/*.log"
+[ "$START_BACKEND" = true ] && info "Backend  : http://localhost:8085"
+info "Admin    : http://localhost:3000"
+info "Student  : http://localhost:3002"
+[ "$START_MCP" = true ]     && info "MCP      : $MCP_DIR (stdio — IDE/Claude Desktop)"
+info "Logs     : $LOG_DIR/*.log"
+info "Tail all : tail -f $LATEST_LINK"
 echo -e "${GREEN}──────────────────────────────────────────────${NC}"
 echo -e "${BLUE}Press Ctrl+C to stop everything.${NC}\n"
 
-# ── 4. Wait — block here until Ctrl+C, then trap handles teardown ─────────────
+# ── 6. Wait — block here until Ctrl+C, then trap handles teardown ─────────────
 # If any single process dies, keep the others running; only Ctrl+C tears down.
 wait

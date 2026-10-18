@@ -41,7 +41,8 @@
     "tests": "தேர்வுகள்",
     "leaderboard": "முன்னணி பட்டியல்",
     "roadmap": "வழித்தடம்",
-    "interviews": "நேர்காணல்கள்",
+    "interviews": "Interviews",
+    "labs": "Lab",
     "profile": "சுயவிவரம்"
   },
   "sidebar": {
