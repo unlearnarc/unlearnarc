@@ -59,6 +59,12 @@ public class LeaderboardController {
                 leaderboardService.myStanding(currentUserId(auth)), "Your standing fetched"));
     }
 
+    @PostMapping("/me/rank-change")
+    public ResponseEntity<ApiResponse<LeaderboardService.RankChange>> rankChange(Authentication auth) {
+        return ResponseEntity.ok(ApiResponse.ok(
+                leaderboardService.checkRankChange(currentUserId(auth)), "Rank checked"));
+    }
+
     /** USER tokens carry the email as principal name; resolve to the user id. */
     private String currentUserId(Authentication auth) {
         if (auth == null) return null;

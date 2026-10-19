@@ -55,13 +55,21 @@ export const SEARCH_TYPES: Record<SearchTypeKey, SearchTypeConfig> = {
     accent: 'text-sky-600',
     to: (i) => `/explore?domain=${encodeURIComponent(i.id)}`,
   },
+  SKILL: {
+    key: 'SKILL',
+    label: 'Skill',
+    plural: 'Skills',
+    icon: GraduationCap,
+    accent: 'text-violet-600',
+    to: (i) => `/explore?skill=${encodeURIComponent(i.id)}`,
+  },
   INTERVIEW_EXPERIENCE: {
     key: 'INTERVIEW_EXPERIENCE',
     label: 'Interview',
     plural: 'Interview Experiences',
     icon: MessageSquareText,
     accent: 'text-rose-600',
-    to: () => `/interview-experiences`,
+    to: (i) => `/interview-experiences?experience=${encodeURIComponent(i.id)}`,
   },
   CONTEST: {
     key: 'CONTEST',
@@ -108,6 +116,6 @@ export const SEARCH_TYPES: Record<SearchTypeKey, SearchTypeConfig> = {
 
 /** Ordered list for rendering type chips / sections in a stable sequence. */
 export const SEARCH_TYPE_ORDER: SearchTypeKey[] = [
-  'COURSE', 'TOPIC', 'DOMAIN', 'ALGORITHM',
+  'COURSE', 'TOPIC', 'DOMAIN', 'SKILL', 'ALGORITHM',
   'CONTEST', 'CONTEST_PROBLEM', 'INTERVIEW_EXPERIENCE', 'COMPANY',
 ];

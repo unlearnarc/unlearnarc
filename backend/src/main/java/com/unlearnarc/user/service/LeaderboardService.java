@@ -68,6 +68,22 @@ public class LeaderboardService {
                 .build();
     }
 
+    /** Acknowledge once across devices. The initial check establishes a silent baseline. */
+    @Transactional
+    public RankChange checkRankChange(String userId) {
+        User user = userRepo.lockForContestScoring(userId)
+                .orElseThrow(() -> new jakarta.persistence.EntityNotFoundException("User not found"));
+        long points = user.getPoints() == null ? 0 : user.getPoints();
+        int current = Boolean.TRUE.equals(user.getIsActive()) && points > 0
+                ? (int) (userRepo.countWithMorePoints(points) + 1) : 0;
+        Integer previous = user.getLastSeenRank();
+        user.setLastSeenRank(current);
+        userRepo.save(user);
+        return new RankChange(previous, current, previous != null && previous != current);
+    }
+
+    public record RankChange(Integer previousRank, int currentRank, boolean changed) {}
+
     /**
      * HYBRID cache update — call synchronously whenever a user earns points.
      * Atomic increment avoids read-modify-write races under concurrency.

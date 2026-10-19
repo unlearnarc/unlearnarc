@@ -13,6 +13,7 @@ import { ConfirmDialog } from '../components/ui/ConfirmDialog';
 import { FormField, Input, Select } from '../components/ui/FormField';
 import { Badge } from '../components/ui/Badge';
 import { EmptyState } from '../components/ui/EmptyState';
+import { DailyQuizQuality } from '../components/DailyQuizQuality';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 type ScopeType  = 'DOMAIN' | 'COURSE' | 'TOPIC';
@@ -966,6 +967,8 @@ export const QuestionPoolsPage: React.FC = () => {
           <Plus size={16} /> New Pool
         </button>
       </div>
+
+      <DailyQuizQuality />
 
       {/* Summary cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">

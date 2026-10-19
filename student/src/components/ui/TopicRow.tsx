@@ -1,5 +1,5 @@
 import React, { useId, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import {
   Clock, GraduationCap, ChevronDown, ChevronRight, PlayCircle,
@@ -33,7 +33,8 @@ interface TopicRowProps {
 
 export const TopicRow: React.FC<TopicRowProps> = ({ topic, index }) => {
   const { t } = useTranslation();
-  const [open, setOpen] = useState(false);
+  const [searchParams] = useSearchParams();
+  const [open, setOpen] = useState(() => searchParams.get('topic') === topic.id);
   const contentId = useId();
   const [readingNoteId, setReadingNoteId] = useState<string | null>(null);
 

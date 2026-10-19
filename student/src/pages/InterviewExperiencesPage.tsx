@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
@@ -339,7 +340,15 @@ export const InterviewExperiencesPage: React.FC = () => {
   const { t } = useTranslation();
   const { user } = useAuth();
   const [tab, setTab] = useState<'feed' | 'mine'>('feed');
-  const [companyFilter, setCompanyFilter] = useState('');
+  const [params, setParams] = useSearchParams();
+  const companyFilter = params.get('company') ?? '';
+  const experienceId = params.get('experience');
+  const setCompanyFilter = (company: string) => setParams(company ? { company } : {});
+  const detailQuery = useQuery({
+    queryKey: ['interview-detail', experienceId],
+    queryFn: () => interviewAPI.getById(experienceId!),
+    enabled: !!experienceId,
+  });
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<InterviewExperience | null>(null);
   const [deleting, setDeleting] = useState<InterviewExperience | null>(null);
@@ -364,7 +373,13 @@ export const InterviewExperiencesPage: React.FC = () => {
     ? feed.filter(e => e.company.toLowerCase() === companyFilter.toLowerCase())
     : feed;
 
-  const isLoading = tab === 'feed' ? feedQuery.isLoading : mineQuery.isLoading;
+  const activeQuery = tab === 'feed' ? feedQuery : mineQuery;
+  const isLoading = activeQuery.isLoading;
+  const selectedExperience: InterviewExperience | null = experienceId ? detailQuery.data?.data?.data ?? null : reading;
+  const closeReader = () => {
+    setReading(null);
+    if (experienceId) setParams(previous => { const next = new URLSearchParams(previous); next.delete('experience'); return next; });
+  };
 
   const openCreate = () => { setEditing(null); setFormOpen(true); };
   const openEdit = (e: InterviewExperience) => { setEditing(e); setFormOpen(true); };
@@ -373,6 +388,7 @@ export const InterviewExperiencesPage: React.FC = () => {
   // narrows the feed below; picking an experience is handled by the registry.
   const handleSearchSelect = (item: SearchResultItem) => {
     if (item.type === 'COMPANY') setCompanyFilter(item.title);
+    if (item.type === 'INTERVIEW_EXPERIENCE') setParams({ experience: item.id });
   };
 
   return (
@@ -430,8 +446,12 @@ export const InterviewExperiencesPage: React.FC = () => {
 
       {/* Content — the ONLY scrollable region (internal scroll, no full-page scroll) */}
       <div className="flex-1 min-h-0 overflow-y-auto mt-4 -mr-1 pr-1">
+        {experienceId && detailQuery.isLoading && <div role="status" className="py-4">Loading interview experience…</div>}
+        {experienceId && detailQuery.isError && <div role="alert" className="card p-4">Unable to load this interview experience. <button className="text-primary-500" onClick={() => void detailQuery.refetch()}>Retry story</button><button className="ml-3 text-primary-500" onClick={closeReader}>Back to stories</button></div>}
         {isLoading ? (
           <div className="flex justify-center py-16"><Spinner size="lg" /></div>
+        ) : activeQuery.isError ? (
+          <div role="alert" className="card p-5">Unable to load interview experiences. <button className="text-primary-500" onClick={() => void activeQuery.refetch()}>Try again</button></div>
         ) : tab === 'feed' ? (
           filteredFeed.length === 0 ? (
             <EmptyState
@@ -479,11 +499,11 @@ export const InterviewExperiencesPage: React.FC = () => {
       </div>
 
       {/* Full-screen reader */}
-      {reading && (
+      {selectedExperience && (
         <ExperienceReader
-          exp={reading}
+          exp={selectedExperience}
           ownerMode={tab === 'mine'}
-          onClose={() => setReading(null)}
+          onClose={closeReader}
         />
       )}
 

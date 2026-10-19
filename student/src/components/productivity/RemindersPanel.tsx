@@ -6,6 +6,7 @@ import { EmptyState } from '../ui/EmptyState';
 import { LinkPicker, LinkBadge } from './LinkPicker';
 import { useReminders } from './hooks';
 import type { LinkRef, Reminder } from './types';
+import { NotificationSettings } from '../../pwa/NotificationSettings';
 
 /* =============================================================================
    RemindersPanel — schedule time-based nudges, optionally tied to a course/topic.
@@ -55,6 +56,7 @@ export const RemindersPanel: React.FC = () => {
 
   return (
     <div className="space-y-5">
+      <NotificationSettings />
       {/* Composer */}
       <div className="rounded-[12px] border border-border bg-surface p-3 space-y-2.5">
         <input

@@ -9,7 +9,7 @@ import {
   BookOpen, LayoutDashboard, GraduationCap, Globe, LogOut,
   Workflow, MessageSquareText, PanelLeftClose, PanelLeftOpen, X, Trophy,
   Medal, Map, Clapperboard, FlaskConical,
-  Moon, Sun,
+  Moon, Sun, CalendarDays,
 } from 'lucide-react';
 import clsx from 'clsx';
 
@@ -24,6 +24,8 @@ const NAV_LINKS = [
   { to: '/dashboard',             icon: LayoutDashboard,   labelKey: 'nav.dashboard'  },
   { to: '/explore',               icon: Globe,             labelKey: 'nav.explore'    },
   { to: '/my-courses',            icon: BookOpen,          labelKey: 'nav.myCourses'  },
+  { to: '/study-plan',            icon: CalendarDays,      labelKey: 'nav.studyPlan' },
+  { to: '/daily-quiz',            icon: GraduationCap,     labelKey: 'nav.dailyQuiz' },
   { to: '/tests',                 icon: GraduationCap,     labelKey: 'nav.tests'      },
   { to: '/contests',              icon: Trophy,            labelKey: 'nav.contests'   },
   { to: '/leaderboard',           icon: Medal,             labelKey: 'nav.leaderboard'},
@@ -121,7 +123,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
         {isAuthenticated ? (
           <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
             {NAV_LINKS.map(({ to, icon: Icon, labelKey }) => {
-              const label = t(labelKey);
+              const label = t(labelKey, { defaultValue: labelKey === 'nav.studyPlan' ? 'Study Plan' : labelKey === 'nav.dailyQuiz' ? 'Daily Quiz' : labelKey });
               return (
                 <NavLink
                   key={to}

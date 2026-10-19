@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { SandboxClient, type RunOptions } from './SandboxClient';
 import type { ExecutionResult, InitProgress, Language } from './types';
+import { failedExecution } from './executionErrors';
 
 export type SandboxStatus =
   | 'idle'
@@ -39,7 +40,8 @@ export function useSandbox(language: Language): UseSandbox {
     const client = clientRef.current ?? (clientRef.current = new SandboxClient());
     setError(null);
 
-    const alreadyInstalled = await SandboxClient.isInstalled(language);
+    // Cache probing must not prevent execution when browser storage is blocked.
+    const alreadyInstalled = await SandboxClient.isInstalled(language).catch(() => false);
     setInstalledFromCache(alreadyInstalled);
     setStatus(alreadyInstalled ? 'loading' : 'installing');
 
@@ -63,11 +65,16 @@ export function useSandbox(language: Language): UseSandbox {
   }, [language]);
 
   const run = useCallback(async (code: string, opts?: RunOptions) => {
-    const client = clientRef.current!;
+    const client = clientRef.current;
     setStatus('running');
-    const result = await client.run(code, opts);
+    const result = client
+      ? await client.run(code, opts)
+      : failedExecution('Sandbox not initialised', 'initialization');
+    if (clientRef.current !== client) return result;
     setLastResult(result);
-    setStatus('ready');
+    const unavailable = result.errorDetails && ['initialization', 'worker', 'cancelled'].includes(result.errorDetails.kind);
+    setError(unavailable ? result.error ?? 'Code executor unavailable' : null);
+    setStatus(unavailable ? 'error' : 'ready');
     return result;
   }, []);
 

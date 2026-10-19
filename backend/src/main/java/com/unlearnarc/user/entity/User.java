@@ -66,6 +66,14 @@ public class User {
     @Builder.Default
     private Boolean mascotMuted = false;
 
+    /** Null means private. Revoking sharing invalidates the old link. */
+    @Column(name = "profile_share_token", unique = true, length = 36)
+    private String profileShareToken;
+
+    /** Last global standing acknowledged by the student app; null is first visit. */
+    @Column(name = "last_seen_rank")
+    private Integer lastSeenRank;
+
     @Column(name = "google_id", unique = true, columnDefinition = "VARCHAR(100)")
     private String googleId;
 

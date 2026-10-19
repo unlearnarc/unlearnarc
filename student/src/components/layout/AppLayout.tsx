@@ -12,6 +12,7 @@ import { GlobalSearchDialog } from '../search/GlobalSearchDialog';
 import { useAuth } from '../../context/AuthContext';
 import { ProductivityProvider } from '../productivity';
 import { FeatureTour } from '../onboarding/FeatureTour';
+import { RankChangeNotifier } from '../profile/RankChangeNotifier';
 
 /* =============================================================================
    AppLayout — the single shared shell for the student app.
@@ -51,12 +52,13 @@ export const AppLayout: React.FC = () => {
   }, [mobileOpen]);
 
   // Full-screen pages reset on unmount via the context setter they call.
-  const ctx: LayoutContext = { setFullScreen };
+  const ctx = React.useMemo<LayoutContext>(() => ({ setFullScreen }), []);
 
   const { user, isAuthenticated } = useAuth();
 
   return (
     <div className="min-h-screen bg-background">
+      {!fullScreen && <RankChangeNotifier />}
       {!fullScreen && (
         <AppSidebar
           collapsed={collapsed}

@@ -26,6 +26,7 @@ import type {
 } from './types';
 import { getAsset } from './assetCache';
 import { PYODIDE_INDEX_URL } from './manifests';
+import { failedExecution, formatExecutionError, normalizeExecutionError } from './executionErrors';
 
 const ctx = self as unknown as DedicatedWorkerGlobalScope;
 
@@ -223,10 +224,11 @@ function runJavaScript(code: string, runId: string) {
     returnValue = fn(sandboxConsole, ...blocked.map(() => undefined));
     return { ok: true, stdout, stderr, returnValue };
   } catch (e) {
-    const message = e instanceof Error ? `${e.name}: ${e.message}` : String(e);
+    const errorDetails = normalizeExecutionError(e, { language: 'javascript', code });
+    const message = formatExecutionError(errorDetails);
     stderr += message + '\n';
     post({ type: 'STDERR', runId, chunk: message + '\n' });
-    return { ok: false, stdout, stderr, error: message };
+    return { ok: false, stdout, stderr, error: message, errorDetails };
   }
 }
 
@@ -249,11 +251,10 @@ async function runPython(code: string, stdin: string | undefined, runId: string)
       post({ type: 'STDERR', runId, chunk: s + '\n' });
     },
   });
-  if (stdin !== undefined) {
-    const lines = stdin.split('\n');
-    let i = 0;
-    pyodide.setStdin({ stdin: () => (i < lines.length ? lines[i++] : null) });
-  }
+  // Reset input for every run, including runs without stdin.
+  const lines = stdin === undefined || stdin === '' ? [] : stdin.split('\n');
+  let i = 0;
+  pyodide.setStdin({ stdin: () => (i < lines.length ? lines[i++] : null) });
 
   try {
     const returnValue = await pyodide.runPythonAsync(code);
@@ -267,10 +268,11 @@ async function runPython(code: string, stdin: string | undefined, runId: string)
     }
     return { ok: true, stdout, stderr, returnValue: jsValue };
   } catch (e) {
-    const message = e instanceof Error ? e.message : String(e);
+    const errorDetails = normalizeExecutionError(e, { language: 'python', code });
+    const message = formatExecutionError(errorDetails);
     stderr += message + '\n';
     post({ type: 'STDERR', runId, chunk: message + '\n' });
-    return { ok: false, stdout, stderr, error: message };
+    return { ok: false, stdout, stderr, error: message, errorDetails };
   }
 }
 
@@ -287,7 +289,7 @@ function stringify(v: unknown): string {
 function withTimeout<T>(p: Promise<T>, ms: number): Promise<T> {
   return new Promise((resolve, reject) => {
     const id = setTimeout(
-      () => reject(new Error(`Execution timed out after ${ms}ms`)),
+      () => reject(Object.assign(new Error(`Execution timed out after ${ms}ms`), { name: 'TimeoutError' })),
       ms,
     );
     p.then(
@@ -331,18 +333,15 @@ ctx.onmessage = async (ev: MessageEvent<WorkerRequest>) => {
             returnValue: r.returnValue,
             durationMs: performance.now() - started,
             error: r.error,
+            errorDetails: r.errorDetails,
           });
         } catch (e) {
-          const message = e instanceof Error ? e.message : String(e);
-          post({
-            type: 'RESULT',
-            runId: msg.runId,
-            ok: false,
-            stdout: '',
-            stderr: message,
-            durationMs: performance.now() - started,
-            error: message,
-          });
+          const failure = failedExecution(
+            e,
+            e instanceof Error && e.name === 'TimeoutError' ? 'timeout' : 'worker',
+            performance.now() - started,
+          );
+          post({ type: 'RESULT', runId: msg.runId, ...failure });
         }
         break;
       }

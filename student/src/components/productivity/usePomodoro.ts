@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { read, write } from './storage';
 import { DEFAULT_POMODORO_SETTINGS, type PomodoroSettings } from './types';
 import { usePomodoroStats } from './hooks';
+import { isDnd, showLocalNotification } from '../../pwa/notifications';
 
 /* =============================================================================
    usePomodoro — a self-contained Pomodoro engine.
@@ -58,13 +59,7 @@ function playChime() {
 }
 
 function notify(title: string, body: string) {
-  try {
-    if ('Notification' in window && Notification.permission === 'granted') {
-      new Notification(title, { body, silent: true });
-    }
-  } catch {
-    /* ignore */
-  }
+  void showLocalNotification(title, body, 'pomodoro');
 }
 
 export function usePomodoro() {
@@ -123,7 +118,7 @@ export function usePomodoro() {
       const dur = phaseSeconds(phase, s);
       const autostart = s.autoStartNext;
 
-      if (s.soundEnabled) playChime();
+      if (s.soundEnabled && !isDnd()) playChime();
       notify(
         prev.phase === 'focus' ? 'Focus complete 🎉' : 'Break over',
         prev.phase === 'focus' ? 'Time for a break.' : 'Back to focus!',
@@ -168,9 +163,6 @@ export function usePomodoro() {
 
   // ── Controls ────────────────────────────────────────────────────────────────
   const start = useCallback(() => {
-    if ('Notification' in window && Notification.permission === 'default') {
-      Notification.requestPermission().catch(() => {});
-    }
     setState((prev) => {
       const secs = prev.pausedRemaining ?? phaseSeconds(prev.phase, settingsRef.current);
       const next: RunState = {

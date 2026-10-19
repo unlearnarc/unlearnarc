@@ -1,8 +1,9 @@
 import React from 'react';
 import { Navigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import { Logo } from '../components/ui/Logo';
-import { Zap, Shield, Target } from 'lucide-react';
+import { Zap, Shield, Target, Sun, Moon } from 'lucide-react';
 
 const BULLETS = [
   { icon: Zap,    text: 'Domain-level adaptive tests'        },
@@ -12,6 +13,7 @@ const BULLETS = [
 
 export const LoginPage: React.FC = () => {
   const { isAuthenticated, loginWithGoogle } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const [params] = useSearchParams();
   const error    = params.get('error');
 
@@ -20,25 +22,25 @@ export const LoginPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-background flex">
       {/* Left panel — brand */}
-      <div className="hidden lg:flex flex-col justify-between w-[52%] bg-gradient-dark p-12">
-        <Logo size="lg" onDark />
+      <div className="hidden lg:flex flex-col justify-between w-[52%] bg-gradient-hero p-12">
+        <Logo size="lg" />
 
         <div>
-          <h1 className="text-4xl font-bold text-white leading-tight mb-4">
+          <h1 className="text-4xl font-bold text-text-primary leading-tight mb-4">
             Master new skills.<br />
-            <span className="text-primary-400">One domain at a time.</span>
+            <span className="text-primary-500">One domain at a time.</span>
           </h1>
-          <p className="text-text-on-dark text-base leading-relaxed mb-8 max-w-sm">
-            Structured courses, smart adaptive tests, and real progress tracking — 
+          <p className="text-text-secondary text-base leading-relaxed mb-8 max-w-sm">
+            Structured courses, smart adaptive tests, and real progress tracking —
             all in one polished platform.
           </p>
           <div className="space-y-3">
             {BULLETS.map(({ icon: Icon, text }) => (
               <div key={text} className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center shrink-0">
-                  <Icon size={15} className="text-primary-400" />
+                <div className="w-8 h-8 rounded-lg bg-primary-50 flex items-center justify-center shrink-0">
+                  <Icon size={15} className="text-primary-500" />
                 </div>
-                <span className="text-text-on-dark text-sm">{text}</span>
+                <span className="text-text-secondary text-sm">{text}</span>
               </div>
             ))}
           </div>
@@ -48,7 +50,16 @@ export const LoginPage: React.FC = () => {
       </div>
 
       {/* Right panel — sign in */}
-      <div className="flex-1 flex items-center justify-center px-6 py-12">
+      <div className="relative flex-1 flex items-center justify-center px-6 py-24">
+        <button
+          type="button"
+          onClick={toggleTheme}
+          aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} theme`}
+          className="absolute top-6 right-6 flex items-center gap-2 rounded-[10px] border border-border bg-surface px-3 py-2 text-sm font-medium text-text-primary hover:bg-surface-soft transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-500"
+        >
+          {theme === 'light' ? <Moon size={16} aria-hidden="true" /> : <Sun size={16} aria-hidden="true" />}
+          {theme === 'light' ? 'Dark mode' : 'Light mode'}
+        </button>
         <div className="w-full max-w-sm animate-slide-up">
           {/* Logo mobile */}
           <div className="mb-10 lg:hidden">

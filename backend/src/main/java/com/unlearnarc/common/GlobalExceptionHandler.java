@@ -105,6 +105,13 @@ public class GlobalExceptionHandler {
                 .body(ApiResponse.error("Forbidden – admin access required."));
     }
 
+    @ExceptionHandler({org.springframework.web.servlet.resource.NoResourceFoundException.class,
+            org.springframework.web.servlet.NoHandlerFoundException.class})
+    public ResponseEntity<ApiResponse<Void>> handleMissingRoute(Exception ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(ApiResponse.error("Endpoint not found."));
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Void>> handleGeneric(Exception ex) {
         // Exception messages and stack traces may embed SQL values, credentials or personal data.

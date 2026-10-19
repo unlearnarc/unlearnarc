@@ -19,7 +19,7 @@
 -- add new restrictions or cascades to the current application lifecycle.
 -- Historical test_result pool/entity IDs intentionally remain unconstrained.
 -- V11 repairs existing scores and has no schema changes or role on fresh DBs.
--- Browser-local productivity tools have no backend tables.
+-- Productivity remains local-first; opt-in background push uses V12 tables below.
 --
 -- After import, configure DATABASE_URL for this database. JPA_DDL_AUTO=validate
 -- can be used to check compatibility without Hibernate modifying the schema.
@@ -47,6 +47,8 @@ CREATE TABLE IF NOT EXISTS `user` (
     `name` CHAR(100) not null,
     `points` bigint,
     `profile_picture` TEXT,
+    `profile_share_token` VARCHAR(36) UNIQUE,
+    `last_seen_rank` integer,
     `rank` bigint,
     `region` CHAR(100),
     primary key (id),
@@ -485,3 +487,28 @@ CREATE TABLE IF NOT EXISTS `contest_submission` (
     KEY `idx_csub_verdict` (verdict)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
+
+-- Web Push subscription and reminder scheduling (V12).
+-- Apply before deploying Web Push when Hibernate DDL auto-update is disabled.
+CREATE TABLE IF NOT EXISTS push_subscription (
+    id VARCHAR(36) NOT NULL PRIMARY KEY,
+    user_email VARCHAR(150) NOT NULL,
+    device_id VARCHAR(36) NOT NULL,
+    endpoint VARCHAR(2048) NOT NULL,
+    p256dh VARCHAR(200) NOT NULL,
+    auth VARCHAR(100) NOT NULL,
+    dnd_until BIGINT NOT NULL DEFAULT 0,
+    UNIQUE KEY uq_push_user_device (user_email, device_id)
+);
+CREATE TABLE IF NOT EXISTS push_reminder (
+    id VARCHAR(36) NOT NULL PRIMARY KEY,
+    subscription_id VARCHAR(36) NOT NULL,
+    client_id VARCHAR(100) NOT NULL,
+    title VARCHAR(200) NOT NULL,
+    original_at BIGINT NOT NULL,
+    due_at BIGINT NOT NULL,
+    cadence VARCHAR(10) NOT NULL,
+    fired BIT NOT NULL DEFAULT b'0',
+    UNIQUE KEY uq_push_reminder (subscription_id, client_id),
+    KEY ix_push_due (fired, due_at)
+);

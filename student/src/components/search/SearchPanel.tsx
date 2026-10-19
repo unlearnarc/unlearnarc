@@ -89,7 +89,7 @@ export const SearchPanel: React.FC<SearchPanelProps> = ({
   // Effective min chars: caller-supplied > variant default (overlay=2, inline=1)
   const effectiveMinChars = minChars ?? (variant === 'overlay' ? 2 : 1);
 
-  const { data, isFetching, active } = useGlobalSearch({
+  const { data, isFetching, isError, active } = useGlobalSearch({
     term,
     baseParams: { ...baseParams, types: effectiveTypes },
     // overlay uses a longer debounce to avoid hammering on rapid keystrokes
@@ -228,7 +228,9 @@ export const SearchPanel: React.FC<SearchPanelProps> = ({
 
             {/* Results */}
             <div className="max-h-[min(60vh,420px)] overflow-y-auto p-1 space-y-0.5">
-              {isFetching && items.length === 0 ? (
+              {isError ? (
+                <p role="alert" className="px-3 py-8 text-center text-sm text-text-muted">Unable to search. Please try again.</p>
+              ) : isFetching && items.length === 0 ? (
                 <p className="px-3 py-8 text-center text-sm text-text-muted">Searching…</p>
               ) : items.length === 0 ? (
                 <p className="px-3 py-8 text-center text-sm text-text-muted">
@@ -288,6 +290,8 @@ export const SearchPanel: React.FC<SearchPanelProps> = ({
               <p className="px-3 py-8 text-center text-sm text-text-muted">
                 Type to search across {lockedTypes?.length ? 'this section' : 'everything'}.
               </p>
+            ) : isError ? (
+              <p role="alert" className="px-3 py-8 text-center text-sm text-text-muted">Unable to search. Please try again.</p>
             ) : isFetching && items.length === 0 ? (
               <p className="px-3 py-8 text-center text-sm text-text-muted">Searching…</p>
             ) : items.length === 0 ? (

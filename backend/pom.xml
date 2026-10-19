@@ -21,6 +21,8 @@
 
     <properties>
         <java.version>21</java.version>
+        <!-- Keep a running dev server separate from IDE and test compilation. -->
+        <app.build.directory>target</app.build.directory>
         <!-- Patch overrides for advisories newer than the Spring Boot BOM. -->
         <tomcat.version>10.1.61</tomcat.version>
         <jackson-bom.version>2.21.7</jackson-bom.version>
@@ -31,6 +33,19 @@
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcprov-jdk18on</artifactId>
+            <version>1.84</version>
+        </dependency>
+
+        <!-- Standards-based encrypted Web Push (VAPID). -->
+        <dependency>
+            <groupId>nl.martijndwars</groupId>
+            <artifactId>web-push</artifactId>
+            <version>5.1.1</version>
+        </dependency>
+
         <!-- Web -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -168,6 +183,7 @@
     </dependencies>
 
     <build>
+        <directory>${app.build.directory}</directory>
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>

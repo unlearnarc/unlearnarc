@@ -7,6 +7,7 @@ export type SearchTypeKey =
   | 'COURSE'
   | 'TOPIC'
   | 'DOMAIN'
+  | 'SKILL'
   | 'INTERVIEW_EXPERIENCE'
   | 'CONTEST'
   | 'CONTEST_PROBLEM'

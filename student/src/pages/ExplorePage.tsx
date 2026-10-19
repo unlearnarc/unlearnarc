@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { domainAPI, courseAPI, mappingAPI } from '../api/endpoints';
+import { domainAPI, courseAPI, mappingAPI, skillAPI } from '../api/endpoints';
 import {
   CourseCard,
   EmptyState,
@@ -26,11 +26,17 @@ export const ExplorePage: React.FC = () => {
   const [level, setLevel] = useState('');
   const [term, setTerm] = useState('');
   const selectedDomain = searchParams.get('domain') ?? '';
+  const selectedSkill = searchParams.get('skill') ?? '';
 
   const { data: domainsRes, isLoading: domainsLoading } =
     useQuery({ queryKey: ['domains'], queryFn: domainAPI.getAll });
-  const { data: coursesRes, isLoading } =
+  const { data: coursesRes, isLoading, isError: coursesError, refetch: retryCourses } =
     useQuery({ queryKey: ['courses'], queryFn: courseAPI.getAll });
+  const skillQuery = useQuery({
+    queryKey: ['skill-courses', selectedSkill],
+    queryFn: () => skillAPI.getById(selectedSkill).then(() => courseAPI.getBySkill(selectedSkill)),
+    enabled: !!selectedSkill,
+  });
 
   /* Domain → Course is a two-hop relationship:
        Domain ─(domain_skill_mapping)─► Skill ─(skill_course_mapping)─► Course
@@ -61,15 +67,16 @@ export const ExplorePage: React.FC = () => {
   /* Course ids reachable from the selected domain, via skills.
      `null` means "no domain selected" → do not constrain by domain. */
   const domainCourseIds = useMemo<Set<string> | null>(() => {
-    if (!selectedDomain) return null;
+    if (!selectedDomain && !selectedSkill) return null;
     const skillIds = new Set(
-      domainSkill.filter(m => m.domainId === selectedDomain).map(m => m.skillId),
+      selectedSkill ? [selectedSkill] : domainSkill.filter(m => m.domainId === selectedDomain).map(m => m.skillId),
     );
+    const links: SkillCourseMapping[] = selectedSkill ? skillQuery.data?.data?.data ?? [] : skillCourse;
     const courseIds = new Set(
-      skillCourse.filter(m => skillIds.has(m.skillId)).map(m => m.courseId),
+      links.filter(m => skillIds.has(m.skillId)).map(m => m.courseId),
     );
     return courseIds;
-  }, [selectedDomain, domainSkill, skillCourse]);
+  }, [selectedDomain, selectedSkill, domainSkill, skillCourse, skillQuery.data]);
 
   // Matching courses — domain filter → level filter → search term (order preserved).
   const filtered = useMemo(
@@ -159,7 +166,8 @@ export const ExplorePage: React.FC = () => {
 
   // Course grid / list body (shared between layouts, varies by card variant).
   const courseList = (variant: 'mobile' | 'grid') => {
-    if (isLoading) {
+    if (coursesError || (selectedSkill && skillQuery.isError)) return <div role="alert" className="card p-5">Unable to load courses. <button className="text-primary-500" onClick={() => { void retryCourses(); if (selectedSkill) void skillQuery.refetch(); }}>Try again</button></div>;
+    if (isLoading || (selectedSkill && skillQuery.isLoading)) {
       return variant === 'mobile' ? (
         <div className="space-y-4">
           <SkeletonRepeat count={4}><CourseCardSkeleton /></SkeletonRepeat>

@@ -11,6 +11,8 @@ import { StreakCalendar } from '../components/profile/StreakCalendar';
 import { regionLabel } from '../utils/region';
 import { ProfileAvatar } from '../components/ui/ProfileAvatar';
 import './profile.css';
+import { NotificationSettings } from '../pwa/NotificationSettings';
+import { ProfileSharing } from '../components/profile/ProfileSharing';
 
 export const ProfilePage: React.FC = () => {
   const { t, i18n } = useTranslation();
@@ -66,6 +68,8 @@ export const ProfilePage: React.FC = () => {
         </section>
         */}
         <RegionEditor />
+        <NotificationSettings />
+        <ProfileSharing />
       </div>
     </div>
   );

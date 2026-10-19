@@ -1,25 +1,9 @@
-// ─────────────────────────────────────────────────────────────────────────────
-// SandboxClient — the main-thread handle to the worker-isolated runtime.
-//
-// Responsibilities:
-//   • spawn / dispose the worker (so the UI thread never blocks)
-//   • drive INIT (one-time per-machine WASM install) and surface progress
-//   • serialise RUN requests and race them against a hard timeout
-//   • expose a clean promise/callback API to React
-//
-// The heavy lifting (download, cache, VM, execution) is in the worker; this file
-// stays small and DOM-aware.
-// ─────────────────────────────────────────────────────────────────────────────
-
 import type {
-  Language,
-  WorkerRequest,
-  WorkerResponse,
-  ExecutionResult,
-  InitProgress,
+  Language, WorkerRequest, WorkerResponse, ExecutionResult, InitProgress, ExecutionErrorKind,
 } from './types';
 import { RUNTIME_MANIFESTS } from './manifests';
 import { isRuntimeInstalled } from './assetCache';
+import { failedExecution } from './executionErrors';
 
 export interface RunOptions {
   stdin?: string;
@@ -33,124 +17,141 @@ type PendingRun = {
   resolve: (r: ExecutionResult) => void;
   onStdout?: (c: string) => void;
   onStderr?: (c: string) => void;
+  timer: ReturnType<typeof setTimeout>;
+  started: number;
+  stdout: string;
+  stderr: string;
 };
 
 export class SandboxClient {
   private worker: Worker | null = null;
   private language: Language | null = null;
   private readyPromise: Promise<void> | null = null;
-  private readyResolve!: () => void;
-  private readyReject!: (e: Error) => void;
+  private readyResolve?: () => void;
+  private readyReject?: (e: Error) => void;
   private pending = new Map<string, PendingRun>();
   private progressCb?: (p: InitProgress) => void;
   private runSeq = 0;
 
-  /** True if every WASM asset for the language is already on this machine. */
   static isInstalled(language: Language): Promise<boolean> {
     return isRuntimeInstalled(RUNTIME_MANIFESTS[language].assets);
   }
 
-  /**
-   * Boot the worker and install/warm the runtime. Resolves once READY.
-   * Safe to call repeatedly for the same language (no-op after first).
-   */
+  /** Initialise or retry a runtime. Startup failures reject; run failures resolve. */
   init(language: Language, onProgress?: (p: InitProgress) => void): Promise<void> {
     if (this.language === language && this.readyPromise) return this.readyPromise;
-
-    // Switching language ⇒ tear down the old worker first.
-    if (this.worker) this.dispose();
-
+    this.dispose();
     this.language = language;
     this.progressCb = onProgress;
-
-    this.worker = new Worker(new URL('./sandbox.worker.ts', import.meta.url), {
-      type: 'module',
-      name: `sandbox-${language}`,
-    });
-    this.worker.onmessage = this.handleMessage;
-    this.worker.onerror = (e) => this.readyReject?.(new Error(e.message));
-
     this.readyPromise = new Promise<void>((resolve, reject) => {
       this.readyResolve = resolve;
       this.readyReject = reject;
     });
-
-    this.send({
-      type: 'INIT',
-      language,
-      manifest: RUNTIME_MANIFESTS[language],
-    });
-
-    return this.readyPromise;
+    const ready = this.readyPromise;
+    // Background recovery may not have a caller awaiting startup yet.
+    void ready.catch(() => {});
+    try {
+      const worker = new Worker(new URL('./sandbox.worker.ts', import.meta.url), {
+        type: 'module', name: `sandbox-${language}`,
+      });
+      this.worker = worker;
+      worker.onmessage = ev => {
+        if (this.worker === worker) this.handleMessage(ev);
+      };
+      worker.onerror = e => {
+        if (this.worker === worker) this.failWorker(new Error(e.message || 'Code executor worker failed'));
+      };
+      worker.onmessageerror = () => {
+        if (this.worker === worker) this.failWorker(new Error('Unable to decode code executor response'));
+      };
+      this.send({ type: 'INIT', language, manifest: RUNTIME_MANIFESTS[language] });
+    } catch (e) {
+      this.failWorker(e instanceof Error ? e : new Error(String(e)), 'initialization');
+    }
+    return ready;
   }
 
-  /** Execute code; resolves with stdout/stderr/result/timing. Never throws. */
+  /** Execute code. All failures resolve with an ExecutionResult, never reject. */
   async run(code: string, opts: RunOptions = {}): Promise<ExecutionResult> {
-    if (!this.worker || !this.language) {
-      return {
-        ok: false, stdout: '', stderr: 'Sandbox not initialised',
-        durationMs: 0, timedOut: false, error: 'Sandbox not initialised',
-      };
+    const worker = this.worker;
+    const language = this.language;
+    if (!worker || !language) return failedExecution('Sandbox not initialised', 'initialization');
+    try {
+      await this.readyPromise;
+    } catch (e) {
+      return failedExecution(e, 'initialization');
     }
-    await this.readyPromise;
+    if (this.worker !== worker) return failedExecution('Execution cancelled', 'cancelled');
+    // One runtime cannot safely execute overlapping programs (stdio is shared).
+    if (this.pending.size) return failedExecution('Another execution is already running', 'runtime');
 
     const runId = `run-${++this.runSeq}`;
     const timeoutMs = opts.timeoutMs ?? 10_000;
-
-    return new Promise<ExecutionResult>((resolve) => {
-      this.pending.set(runId, {
-        resolve,
-        onStdout: opts.onStdout,
-        onStderr: opts.onStderr,
-      });
-
-      this.send({
-        type: 'RUN',
-        runId,
-        language: this.language!,
-        code,
-        stdin: opts.stdin,
-        timeoutMs,
-      });
-
-      // Belt-and-braces: if the worker itself hangs (e.g. a runaway while-true
-      // that starves even the worker's own timer), hard-kill it.
-      setTimeout(() => {
-        const p = this.pending.get(runId);
-        if (!p) return;
-        this.pending.delete(runId);
+    if (!Number.isFinite(timeoutMs) || timeoutMs <= 0) {
+      return failedExecution('Execution timeout must be a positive finite number', 'runtime');
+    }
+    return new Promise<ExecutionResult>(resolve => {
+      const timer = setTimeout(() => {
+        const pending = this.pending.get(runId);
+        if (!pending) return;
+        this.finish(runId, failedExecution(
+          `Execution timed out after ${timeoutMs}ms`, 'timeout', timeoutMs,
+          pending.stdout, pending.stderr,
+        ));
         this.hardReset();
-        p.resolve({
-          ok: false, stdout: '', stderr: `Execution timed out after ${timeoutMs}ms`,
-          durationMs: timeoutMs, timedOut: true,
-          error: `Execution timed out after ${timeoutMs}ms`,
-        });
       }, timeoutMs + 500);
+      this.pending.set(runId, {
+        resolve, timer, started: performance.now(), stdout: '', stderr: '',
+        onStdout: opts.onStdout, onStderr: opts.onStderr,
+      });
+      try {
+        this.send({ type: 'RUN', runId, language, code, stdin: opts.stdin, timeoutMs });
+      } catch (e) {
+        this.failWorker(e instanceof Error ? e : new Error(String(e)));
+      }
     });
   }
 
   dispose() {
-    if (this.worker) {
-      try { this.send({ type: 'DISPOSE' }); } catch { /* noop */ }
-      this.worker.terminate();
+    this.readyReject?.(new Error('Execution cancelled: sandbox disposed'));
+    this.readyResolve = undefined;
+    this.readyReject = undefined;
+    for (const [id, pending] of this.pending) {
+      this.finish(id, failedExecution('Execution cancelled: sandbox disposed', 'cancelled',
+        performance.now() - pending.started, pending.stdout, pending.stderr));
     }
+    this.worker?.terminate();
     this.worker = null;
     this.language = null;
     this.readyPromise = null;
-    this.pending.clear();
   }
 
-  // ── internals ──────────────────────────────────────────────────────────────
   private send(msg: WorkerRequest) {
     this.worker?.postMessage(msg);
   }
 
-  /** Kill a wedged worker and respawn so the next run works. */
+  private finish(runId: string, result: ExecutionResult) {
+    const pending = this.pending.get(runId);
+    if (!pending) return;
+    clearTimeout(pending.timer);
+    this.pending.delete(runId);
+    pending.resolve(result);
+  }
+
+  private failWorker(error: Error, kind: ExecutionErrorKind = 'worker') {
+    this.readyReject?.(error);
+    for (const [id, pending] of this.pending) {
+      this.finish(id, failedExecution(error, kind, performance.now() - pending.started,
+        pending.stdout, pending.stderr));
+    }
+    this.dispose();
+  }
+
   private hardReset() {
-    const lang = this.language;
+    const language = this.language;
     const cb = this.progressCb;
     this.dispose();
-    if (lang) this.init(lang, cb);
+    if (language) void this.init(language, cb).catch(() => {});
   }
 
   private handleMessage = (ev: MessageEvent<WorkerResponse>) => {
@@ -159,42 +160,40 @@ export class SandboxClient {
       case 'READY':
         this.readyResolve?.();
         break;
-
       case 'INIT_PROGRESS':
         this.progressCb?.({
-          assetId: msg.assetId,
-          loaded: msg.loaded,
-          total: msg.total,
-          fromCache: msg.fromCache,
-          ratio: msg.total ? msg.loaded / msg.total : 0,
+          assetId: msg.assetId, loaded: msg.loaded, total: msg.total,
+          fromCache: msg.fromCache, ratio: msg.total ? msg.loaded / msg.total : 0,
         });
         break;
-
       case 'INIT_ERROR':
-        this.readyReject?.(new Error(msg.error));
+        this.failWorker(new Error(msg.error), 'initialization');
         break;
-
       case 'STDOUT':
-        this.pending.get(msg.runId)?.onStdout?.(msg.chunk);
+      case 'STDERR': {
+        const pending = this.pending.get(msg.runId);
+        if (!pending) break;
+        if (msg.type === 'STDOUT') {
+          pending.stdout += msg.chunk;
+          pending.onStdout?.(msg.chunk);
+        } else {
+          pending.stderr += msg.chunk;
+          pending.onStderr?.(msg.chunk);
+        }
         break;
-
-      case 'STDERR':
-        this.pending.get(msg.runId)?.onStderr?.(msg.chunk);
-        break;
-
+      }
       case 'RESULT': {
-        const p = this.pending.get(msg.runId);
-        if (!p) break;
-        this.pending.delete(msg.runId);
-        p.resolve({
-          ok: msg.ok,
-          stdout: msg.stdout,
-          stderr: msg.stderr,
-          returnValue: msg.returnValue,
-          durationMs: msg.durationMs,
-          timedOut: false,
-          error: msg.error,
+        const pending = this.pending.get(msg.runId);
+        if (!pending) break;
+        const timedOut = msg.timedOut ?? msg.errorDetails?.kind === 'timeout';
+        this.finish(msg.runId, {
+          ok: msg.ok, stdout: timedOut ? pending.stdout : msg.stdout,
+          stderr: timedOut ? pending.stderr + msg.stderr : msg.stderr,
+          returnValue: msg.returnValue, durationMs: msg.durationMs,
+          timedOut, error: msg.error, errorDetails: msg.errorDetails,
         });
+        // A timed-out Python coroutine may still be running. Replace its VM.
+        if (timedOut) this.hardReset();
         break;
       }
     }

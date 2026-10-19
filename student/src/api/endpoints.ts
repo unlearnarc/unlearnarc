@@ -211,6 +211,13 @@ export const interviewAPI = {
   delete:   (id: string)                  => api.delete(`/interview-experiences/${id}`),
 };
 
+// ── Opt-in public profiles ────────────────────────────────────────────────────
+export const profileSharingAPI = {
+  settings: () => api.get('/user-auth/me/sharing'),
+  update: (enabled: boolean) => api.put('/user-auth/me/sharing', { enabled }),
+  publicProfile: (token: string) => api.get(`/public/profiles/${encodeURIComponent(token)}`),
+};
+
 // ── Leaderboard ───────────────────────────────────────────────────────────────
 export const leaderboardAPI = {
   /** Global top-N (default 50, max 100). */
@@ -221,4 +228,5 @@ export const leaderboardAPI = {
   regions: ()                           => api.get('/leaderboard/regions'),
   /** The current user's own global standing (rank + points). */
   me:      ()                           => api.get('/leaderboard/me'),
+  rankChange: () => api.post('/leaderboard/me/rank-change'),
 };

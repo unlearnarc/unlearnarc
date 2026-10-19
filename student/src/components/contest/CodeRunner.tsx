@@ -55,9 +55,9 @@ export const CodeRunner: React.FC<CodeRunnerProps> = ({
       onStderr: chunk => setOutput(o => o + chunk),
     });
     setExitOk(result.ok && !result.timedOut);
-    if (result.timedOut) {
-      setOutput(o => o + `\n⏱ ${result.error}\n`);
-    }
+    // Use the final result as well as streaming: startup/worker failures may
+    // never emit a stderr event.
+    setOutput(result.stdout + result.stderr || result.error || (result.ok ? 'Completed with no output.' : 'Execution failed.'));
   };
 
   const busy = status === 'installing' || status === 'loading';
@@ -84,7 +84,7 @@ export const CodeRunner: React.FC<CodeRunnerProps> = ({
           )}
           <button
             onClick={handleRun}
-            disabled={status !== 'ready' && status !== 'running'}
+            disabled={status !== 'ready'}
             className="btn-primary py-1.5 px-3 text-xs disabled:opacity-50"
           >
             {status === 'running'

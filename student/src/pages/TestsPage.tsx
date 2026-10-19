@@ -685,6 +685,8 @@ export const TestsPage: React.FC = () => {
       setPhase('insights');
     } else if (preView === 'history') {
       setPhase('history');
+    } else {
+      setPhase('select');
     }
     // Startup is URL-driven, not phase-driven: an error must not restart it.
     // eslint-disable-next-line react-hooks/exhaustive-deps

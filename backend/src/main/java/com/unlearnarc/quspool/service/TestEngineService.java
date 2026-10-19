@@ -247,10 +247,10 @@ public class TestEngineService {
                 skipped++;
                 isCorrect = false;
             } else if (question.getQuestionType() == Question.QuestionType.MCQ) {
-                isCorrect = selectedIds.equals(correctIds);
+                isCorrect = ChoiceAnswerEvaluator.correct(question.getQuestionType(), correctIds, selectedIds);
             } else {
                 // MULTIPLE_CORRECT: all selected must be correct AND all correct must be selected
-                isCorrect = selectedIds.equals(correctIds);
+                isCorrect = ChoiceAnswerEvaluator.correct(question.getQuestionType(), correctIds, selectedIds);
             }
 
             if (isCorrect) {

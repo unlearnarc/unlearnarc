@@ -166,6 +166,7 @@ public class SecurityConfig {
 
                 // ── Public read-only catalog endpoints (no auth) ────────────
                 .requestMatchers(HttpMethod.GET,
+                        "/api/v1/public/profiles/*",
                         "/api/v1/domains",
                         "/api/v1/domains/*",
                         "/api/v1/courses",

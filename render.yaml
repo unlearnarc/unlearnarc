@@ -21,10 +21,10 @@ services:
         sync: false
       - key: DB_POOL_SIZE
         value: "10"
-      # Import schema.sql on a fresh DB / apply migrations before deploying.
-      # Do not run blocking ALTER TABLE operations during web-service startup.
+      # Create missing tables/columns from entity mappings on startup.
+      # Data backfills and other SQL-only changes still require manual migrations.
       - key: JPA_DDL_AUTO
-        value: validate
+        value: update
       - key: JPA_SHOW_SQL
         value: "false"
       - key: LOG_LEVEL_APP

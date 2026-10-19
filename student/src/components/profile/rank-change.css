@@ -1,0 +1,9 @@
+.rank-change { position: relative; overflow: hidden; width: min(360px, calc(100vw - 32px)); padding: 20px; background: var(--ua-surface); color: var(--ua-text-primary); border: 1px solid var(--ua-border); box-shadow: var(--ua-shadow-hover); border-radius: 14px; }
+.rank-change-hidden { opacity: 0; transition: opacity .2s; }
+.rank-change :is(a, button):focus-visible { outline: 2px solid var(--ua-focus-ring); outline-offset: 3px; }
+.rank-confetti { position: absolute; inset: 0; pointer-events: none; }
+.rank-confetti i { position: absolute; top: -12px; width: 6px; height: 10px; background: var(--ua-primary); animation: rank-confetti-fall 1.8s ease-out forwards; }
+.rank-confetti i:nth-child(3n) { background: var(--ua-success); }
+.rank-confetti i:nth-child(3n + 1) { background: var(--ua-tier-gold); }
+@keyframes rank-confetti-fall { to { transform: translate(12px, 190px) rotate(300deg); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .rank-confetti { display: none; } .rank-change-hidden { transition: none; } }

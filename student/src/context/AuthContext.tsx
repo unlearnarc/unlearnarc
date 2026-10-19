@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { userAuthAPI } from '../api/endpoints';
 import type { UserProfile } from '../types';
+import { disablePush } from '../pwa/notifications';
 
 interface AuthContextType {
   user: UserProfile | null;
@@ -129,6 +130,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const refreshUser = useCallback(() => loadProfile(), [loadProfile]);
 
   const logout = useCallback(() => {
+    void disablePush().catch(() => {});
     setToken(null);
     setUser(null);
     localStorage.removeItem('ua_user_token');

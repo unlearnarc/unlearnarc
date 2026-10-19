@@ -98,6 +98,12 @@ export const DashboardPage: React.FC = () => {
         </div>
       </section>
 
+      <section className="study-panel" aria-labelledby="daily-quiz-dashboard-title">
+        <h2 id="daily-quiz-dashboard-title">Daily Quiz</h2>
+        <p>Reinforce studied concepts with personalized retrieval practice.</p>
+        <Link className="study-button study-button-primary" to="/daily-quiz">Open today's quiz <ArrowRight size={16} /></Link>
+      </section>
+
       <div className="study-stats" role="group" aria-label={copy('statsLabel')}>
         {stats.map(({ icon: Icon, value, label, detail, tone, to }) => (
           <Link key={to} to={to} className={`study-stat study-tone-${tone}`}>

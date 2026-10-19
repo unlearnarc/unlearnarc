@@ -254,17 +254,11 @@ class ApiAutomationIT {
         }
 
         @Test
-        @DisplayName("unknown route is a client error, never a 2xx")
+        @DisplayName("unknown route returns 404, not 500")
         void unknownRoute() {
             ResponseEntity<String> res =
                     rest.getForEntity(base() + "/api/v1/this-does-not-exist", String.class);
-            // NOTE: Spring Boot does not throw NoHandlerFoundException by default,
-            // so unmapped routes currently fall through to the generic handler (500).
-            // RECOMMENDATION: set spring.mvc.throw-exception-if-no-handler-found=true
-            // and spring.web.resources.add-mappings=false, then add a
-            // @ExceptionHandler(NoHandlerFoundException.class) -> 404.
-            assertThat(res.getStatusCode().is2xxSuccessful())
-                    .as("unknown route must not succeed").isFalse();
+            assertThat(res.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
         }
 
         private void assertEnvelopeOk(String path) {

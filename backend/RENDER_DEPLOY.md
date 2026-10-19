@@ -1,21 +1,49 @@
 # Render backend deployment
 
+## Local runtime class-loading failures
+
+Use `./dev.sh --no-attach` to start the development stack. The backend runs with
+`-Dapp.build.directory=target-dev`, separate from the IDE and normal Maven test
+output in `target`. Do not run `clean` against the active server's output directory.
+Deleting/replacing loaded classes can cause `ClassNotFoundException`,
+`ClassFormatError`, or `NoClassDefFoundError` and API 500s until the backend is
+restarted. This can affect catalog DTOs and mappings, enrollments, roadmaps,
+contests, and test history as well as profile/leaderboard APIs. A JVM that has
+already failed to load a class must be restarted; recompiling alone is not enough.
+
+Confirm the backend process classpath contains `backend/target-dev/classes`, not
+`backend/target/classes`. After starting the isolated server, verify the affected
+routes with a student login. Run populated-data API regression tests separately:
+
+```sh
+cd backend
+./mvnw -Dapp.build.directory=target-api-regression -Dtest=StudentEndpointsIT test
+``` After changing this setting, restart the dev stack
+once so the backend uses the isolated output. Production uses the packaged JAR.
+
 ## Database preparation
 
-The web service validates the database schema at startup (`JPA_DDL_AUTO=validate`).
-It must not perform potentially slow or locking `ALTER TABLE` operations while
-Render waits for its HTTP port.
+The backend defaults to `JPA_DDL_AUTO=update`: Hibernate creates missing entity
+tables, columns and constraints during startup. This includes the profile-sharing
+and rank-alert fields from V13 and the Web Push tables from V12. Existing accounts
+remain private; nullable rank acknowledgements are initialized on first use.
+Hibernate does not execute the numbered SQL files or perform SQL-only data backfills.
 
-- For an **empty database**, import `backend/schema.sql` using your MySQL client.
-  That file creates and selects `unlearnarc`; if your provider requires another
-  database name, adjust both database statements before importing.
-- For an **existing database**, back it up and apply the outstanding migrations
-  in `backend/migrations` in order, checking their instructions. The fresh-install
-  script does not upgrade existing tables. If validation reports a remaining
-  mismatch, review and apply a targeted migration before redeploying.
-- Point `DATABASE_URL` at the prepared database, with the provider's required TLS
-  options. Do not change production to `create` or `create-drop`: these can
-  destroy existing data.
+- For an **existing database**, back it up before deploying schema changes.
+  No manual V13 SQL is needed when startup updates are enabled. Do not apply
+  V13's `ADD COLUMN` statements again after Hibernate has created the columns.
+- For an **empty database**, Hibernate creates the mapped tables. Alternatively,
+  import `backend/schema.sql` using your MySQL client; adjust its database name
+  statements if your provider requires a different name.
+- Review SQL-only migrations and data repairs separately; these are not handled
+  by Hibernate schema updates.
+- Point `DATABASE_URL` at the database with the provider's required TLS options.
+  The database user needs schema-alteration privileges for startup updates.
+  Never use production `create` or `create-drop`: these can destroy existing data.
+
+Schema updates can be slow or wait for database locks, delaying Render's port
+check. For deployments that must avoid startup DDL, explicitly set
+`JPA_DDL_AUTO=validate` and apply outstanding migrations separately before deploying.
 
 ## Render settings
 
@@ -23,7 +51,7 @@ Use the repository's `render.yaml` Blueprint, or configure an existing service:
 
 - Runtime: Docker; root directory: `backend`; Dockerfile: `./Dockerfile`.
 - Let Render supply `PORT`. Spring uses it and binds to `0.0.0.0`.
-- Set `JPA_DDL_AUTO=validate` and `JPA_SHOW_SQL=false` in the Render dashboard.
+- Set `JPA_DDL_AUTO=update` and `JPA_SHOW_SQL=false` in the Render dashboard.
   Existing manually configured services may retain their previous values even
   after repository changes; verify the live environment explicitly.
 - Health check path: `/api/v1/auth/health` (public, no token required).

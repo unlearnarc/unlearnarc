@@ -18,6 +18,9 @@ import { CourseDetailPage }  from './pages/CourseDetailPage';
 import { MyCoursesPage }     from './pages/MyCoursesPage';
 import { TestsPage }         from './pages/TestsPage';
 import { ProfilePage }       from './pages/ProfilePage';
+import { PublicProfilePage } from './pages/PublicProfilePage';
+import { StudyPlanPage } from './pages/StudyPlanPage';
+import { DailyQuizPage } from './pages/DailyQuizPage';
 import { AlgorithmsPage }      from './pages/AlgorithmsPage';
 import { AlgorithmDetailPage } from './pages/AlgorithmDetailPage';
 import { AnimationsPage }      from './pages/AnimationsPage';
@@ -53,6 +56,7 @@ function App() {
             {/* Public (no layout) */}
             <Route path="/"               element={<LandingPage />} />
             <Route path="/login"          element={<LoginPage />} />
+            <Route path="/p/:token"        element={<PublicProfilePage />} />
             <Route path="/auth/callback"  element={<AuthCallbackPage />} />
 
             {/* All app pages require a session, including direct/deep links. */}
@@ -70,6 +74,8 @@ function App() {
                 <Route path="/dashboard"            element={<DashboardPage />} />
                 <Route path="/courses/:id"          element={<CourseDetailPage />} />
                 <Route path="/my-courses"           element={<MyCoursesPage />} />
+                <Route path="/study-plan"           element={<StudyPlanPage />} />
+                <Route path="/daily-quiz"           element={<DailyQuizPage />} />
                 <Route path="/tests"                element={<TestsPage />} />
                 <Route path="/leaderboard"         element={<LeaderboardPage />} />
                 <Route path="/roadmap"              element={<RoadmapPage />} />

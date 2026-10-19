@@ -5,6 +5,7 @@ import clsx from 'clsx';
 import { LinkPicker, LinkBadge } from './LinkPicker';
 import { read, write, uid } from './storage';
 import type { LinkRef } from './types';
+import { type FocusSession } from '../../pwa/notifications';
 
 /* =============================================================================
    FocusPanel — "Deep Learning / Deep Work" mode.
@@ -65,8 +66,10 @@ function useAmbientNoise(enabled: boolean) {
 
 export const FocusPanel: React.FC = () => {
   const { t, i18n } = useTranslation();
-  const [running, setRunning] = useState(false);
-  const [startedAt, setStartedAt] = useState<number | null>(null);
+  const [savedSession] = useState(() => read<FocusSession | null>('focus_session', null));
+  const [running, setRunning] = useState(() => !!savedSession && savedSession.endsAt > Date.now());
+  const [startedAt, setStartedAt] = useState<number | null>(() => savedSession && savedSession.endsAt > Date.now() ? savedSession.startedAt : null);
+  const [dnd, setDnd] = useState(() => read('focus_dnd', true));
   const [elapsed, setElapsed] = useState(0);
   const [link, setLink] = useState<LinkRef | undefined>();
   const [sound, setSound] = useState(false);
@@ -80,8 +83,17 @@ export const FocusPanel: React.FC = () => {
     return () => window.clearInterval(id);
   }, [running, startedAt]);
 
+  const setDndEnabled = (enabled: boolean) => {
+    setDnd(enabled);
+    write('focus_dnd', enabled);
+    const session = read<FocusSession | null>('focus_session', null);
+    if (session && session.endsAt > Date.now()) write('focus_session', { ...session, dnd: enabled });
+  };
+
   const start = () => {
-    setStartedAt(Date.now());
+    const now = Date.now();
+    write<FocusSession>('focus_session', { startedAt: now, endsAt: now + 12 * 60 * 60 * 1000, dnd });
+    setStartedAt(now);
     setElapsed(0);
     setRunning(true);
   };
@@ -94,6 +106,7 @@ export const FocusPanel: React.FC = () => {
       write('focus_logs', next);
       setLogs(next);
     }
+    write('focus_session', null);
     setRunning(false);
     setStartedAt(null);
     setElapsed(0);
@@ -132,6 +145,10 @@ export const FocusPanel: React.FC = () => {
           )}
         </div>
 
+        <button role="switch" aria-checked={dnd} onClick={() => setDndEnabled(!dnd)} className="px-4 py-2 rounded-full border border-border text-text-secondary">
+          {dnd ? t('pwa.dndOn', 'Do not disturb: on') : t('pwa.dndOff', 'Do not disturb: off')}
+        </button>
+        <p className="text-xs text-text-muted">{t('pwa.dndHint', 'Silences UnlearnArc reminders and timer sounds during deep focus (up to 12 hours). Other apps and calls are controlled by your phone’s Focus / DND settings.')}</p>
         <div className="flex items-center gap-3">
           <button
             onClick={() => setSound((s) => !s)}
@@ -183,6 +200,13 @@ export const FocusPanel: React.FC = () => {
               <span className={clsx('absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform', sound ? 'translate-x-[18px]' : 'translate-x-0.5')} />
             </button>
           </label>
+          <div className="w-full rounded-[10px] border border-border bg-surface px-3 py-2.5 text-start">
+            <label className="flex items-center justify-between gap-3 text-sm text-text-secondary">
+              {t('pwa.dnd', 'Do not disturb during deep focus')}
+              <input type="checkbox" checked={dnd} onChange={e => setDndEnabled(e.target.checked)} />
+            </label>
+            <p className="mt-2 text-xs text-text-muted">{t('pwa.dndHint', 'Silences UnlearnArc reminders and timer sounds during deep focus (up to 12 hours). Other apps and calls are controlled by your phone’s Focus / DND settings.')}</p>
+          </div>
           <button
             onClick={start}
             className="w-full inline-flex items-center justify-center gap-2 h-12 rounded-full bg-primary-500 text-white font-semibold hover:bg-primary-600 transition shadow-[var(--ua-shadow-hover)]"

@@ -443,22 +443,6 @@ const ZoomControls: React.FC<{ zoom: number; onIn: () => void; onOut: () => void
       position: 'absolute', bottom: 14, right: 14,
       display: 'flex', flexDirection: 'column', gap: 4, zIndex: 20,
     }}>
-      {[
-        { icon: <ZoomIn size={14} />,    fn: onIn,    title: 'Zoom in' },
-        { icon: <ZoomOut size={14} />,   fn: onOut,   title: 'Zoom out' },
-        { icon: <Maximize2 size={14} />, fn: onFit,   title: 'Fit view' },
-        { icon: <RotateCcw size={14} />, fn: onReset, title: 'Reset view' },
-      ].map(({ icon, fn, title }) => (
-        <button key={title} onClick={fn} title={title} style={{
-          width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center',
-          borderRadius: 8, border: '1px solid var(--ua-border)',
-          background: 'var(--ua-surface)', color: 'var(--ua-text-secondary)',
-          cursor: 'pointer', boxShadow: '0 2px 8px rgba(0,0,0,.07)',
-        }}>{icon}</button>
-      ))}
-      <div style={{ textAlign: 'center', fontSize: 9, color: 'var(--ua-text-muted)', marginTop: 2 }}>
-        {Math.round(zoom * 100)}%
-      </div>
     </div>
   );
 

@@ -6,6 +6,19 @@
 
 export type Language = 'python' | 'javascript' | 'cpp' | 'c';
 
+export type ExecutionErrorKind = 'syntax' | 'runtime' | 'timeout' | 'initialization' | 'worker' | 'cancelled';
+
+export interface ExecutionError {
+  kind: ExecutionErrorKind;
+  name: string;
+  message: string;
+  line?: number;
+  column?: number;
+  sourceLine?: string;
+  /** Original exception for debugging; not the learner-facing output. */
+  traceback?: string;
+}
+
 /** A single WASM runtime asset that must be present before a language can run. */
 export interface RuntimeAsset {
   /** Stable identity used as the Cache API key. Bump `version` to invalidate. */
@@ -57,6 +70,8 @@ export type WorkerResponse =
       returnValue?: unknown;
       durationMs: number;
       error?: string;
+      errorDetails?: ExecutionError;
+      timedOut?: boolean;
     };
 
 // ── Public result surfaced to callers ────────────────────────────────────────
@@ -69,6 +84,7 @@ export interface ExecutionResult {
   /** Set when the run was aborted by the wall-clock timeout. */
   timedOut: boolean;
   error?: string;
+  errorDetails?: ExecutionError;
 }
 
 export interface InitProgress {

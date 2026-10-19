@@ -51,6 +51,7 @@ student/public/wasm/*.zip
 
 # ─── Java / backend ──────────────────────────────────────────────────────────
 target/
+target-dev/
 *.class
 *.jar
 !.mvn/wrapper/maven-wrapper.jar

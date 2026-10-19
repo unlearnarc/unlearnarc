@@ -67,7 +67,7 @@ const RunBar: React.FC<{ program: CodeProgram; sandboxLang: SandboxLanguage }> =
       onStdout: (c) => setOutput((o) => o + c),
       onStderr: (c) => setOutput((o) => o + c),
     });
-    if (res.timedOut) setOutput((o) => o + `\n⏱ ${res.error ?? 'timed out'}\n`);
+    setOutput(res.stdout + res.stderr || res.error || (res.ok ? 'Completed with no output.' : 'Execution failed.'));
   };
 
   const busy = status === 'installing' || status === 'loading' || status === 'running';
