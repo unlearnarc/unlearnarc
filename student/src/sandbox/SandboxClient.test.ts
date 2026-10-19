@@ -16,13 +16,14 @@ class MockWorker {
 let client: SandboxClient;
 async function boot() {
   const ready = client.init('javascript');
-  const worker = MockWorker.instances.at(-1)!;
+  const worker = MockWorker.instances[MockWorker.instances.length - 1]!;
   worker.emit({ type: 'READY', language: 'javascript' });
   await ready;
   return worker;
 }
 function runId(worker: MockWorker) {
-  const request = worker.postMessage.mock.calls.at(-1)![0];
+  const calls = worker.postMessage.mock.calls;
+  const request = calls[calls.length - 1]![0];
   if (request.type !== 'RUN') throw new Error('Expected RUN');
   return request.runId;
 }

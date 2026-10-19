@@ -20,14 +20,14 @@ export function normalizeExecutionError(
     // Pyodide wraps both compile-time and runtime exceptions in PythonError.
     // Read the final exception, not the wrapper or the first traceback frame.
     const lines = raw.split('\n');
-    const summary = lines.findLast(text => /^[\w.]+(?::|$)/.test(text) && text.trim());
+    const summary = lines.reverse().find(text => /^[\w.]+(?::|$)/.test(text) && text.trim());
     const match = summary?.match(/^([\w.]+)(?::\s?(.*))?$/);
     if (match) {
       name = match[1];
       message = match[2] ?? '';
     }
     const frames = [...raw.matchAll(/File "<(?:exec|student|string)>", line (\d+)([^\n]*)(?=\n([^\n]*)(?:\n([^\n]*))?)/g)];
-    const frame = frames.at(-1);
+    const frame = frames[frames.length - 1];
     if (frame) {
       line = Number(frame[1]);
       // Traceback source is padded by four spaces. Don't infer a column from
@@ -36,7 +36,8 @@ export function normalizeExecutionError(
         column = Math.max(1, frame[4].indexOf('^') - 4 + 1);
       }
     } else {
-      const location = [...raw.matchAll(/File "<(?:exec|student|string)>", line (\d+)/g)].at(-1);
+      const locations = [...raw.matchAll(/File "<(?:exec|student|string)>", line (\d+)/g)];
+      const location = locations[locations.length - 1];
       if (location) line = Number(location[1]);
     }
   }
